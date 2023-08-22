@@ -103,9 +103,13 @@ public class QueryRouter {
       assert offlineRoutingTable != null;
 
       // Specify the maximum size message that the Server can send in response to this query
-      offlineBrokerRequest.getPinotQuery().putToQueryOptions(
-              CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
-              "1000000");
+      if (!offlineBrokerRequest.getPinotQuery()
+              .getQueryOptions()
+              .containsKey(CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE)) {
+        offlineBrokerRequest.getPinotQuery().putToQueryOptions(
+                CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
+                "1000000");
+      }
 
       for (Map.Entry<ServerInstance, List<String>> entry : offlineRoutingTable.entrySet()) {
         ServerRoutingInstance serverRoutingInstance =
@@ -118,9 +122,13 @@ public class QueryRouter {
       assert realtimeRoutingTable != null;
 
       // Specify the maximum size message that the Server can send in response to this query
-      realtimeBrokerRequest.getPinotQuery().putToQueryOptions(
-              CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
-              "1000000");
+      if (!realtimeBrokerRequest.getPinotQuery()
+              .getQueryOptions()
+              .containsKey(CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE)) {
+        realtimeBrokerRequest.getPinotQuery().putToQueryOptions(
+                CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
+                "1000000");
+      }
 
       for (Map.Entry<ServerInstance, List<String>> entry : realtimeRoutingTable.entrySet()) {
         ServerRoutingInstance serverRoutingInstance =

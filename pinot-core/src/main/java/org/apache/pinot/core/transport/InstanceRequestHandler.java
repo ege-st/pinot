@@ -211,8 +211,8 @@ public class InstanceRequestHandler extends SimpleChannelInboundHandler<ByteBuf>
                     queryRequest.getRequestId(), queryRequest.getBrokerId(), maxBrokerBufLen);
             sendErrorResponse(ctx, queryRequest.getRequestId(), tableNameWithType, queryArrivalTimeMs,
                     DataTableBuilderFactory.getEmptyDataTable(),
-                    new Exception("Response exceeds maximum buffer size. We "
-                            + "suggest using filters to reduce the size of the result set."));
+                    new Exception(String.format("Response exceeds maximum buffer size (%d). We "
+                            + "suggest using filters to reduce the size of the result set.", maxBrokerBufLen)));
           }
         } else {
           // Send exception response.
