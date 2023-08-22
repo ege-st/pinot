@@ -93,10 +93,20 @@ public class QueryRouter {
     // can prefer but not require TLS until all servers guaranteed to be on TLS
     boolean preferTls = _serverChannelsTls != null;
 
+    // Compute the maximum size the response message can be
+    // Sum the total number of servers between real time and offline
+    // Divide the per query memory allocation by that size take the min of the result and the max buffer size absolute
+
     // Build map from server to request based on the routing table
     Map<ServerRoutingInstance, InstanceRequest> requestMap = new HashMap<>();
     if (offlineBrokerRequest != null) {
       assert offlineRoutingTable != null;
+
+      // Specify the maximum size message that the Server can send in response to this query
+      offlineBrokerRequest.getPinotQuery().putToQueryOptions(
+              CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
+              "1000000");
+
       for (Map.Entry<ServerInstance, List<String>> entry : offlineRoutingTable.entrySet()) {
         ServerRoutingInstance serverRoutingInstance =
             entry.getKey().toServerRoutingInstance(TableType.OFFLINE, preferTls);
@@ -106,6 +116,12 @@ public class QueryRouter {
     }
     if (realtimeBrokerRequest != null) {
       assert realtimeRoutingTable != null;
+
+      // Specify the maximum size message that the Server can send in response to this query
+      realtimeBrokerRequest.getPinotQuery().putToQueryOptions(
+              CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
+              "1000000");
+
       for (Map.Entry<ServerInstance, List<String>> entry : realtimeRoutingTable.entrySet()) {
         ServerRoutingInstance serverRoutingInstance =
             entry.getKey().toServerRoutingInstance(TableType.REALTIME, preferTls);

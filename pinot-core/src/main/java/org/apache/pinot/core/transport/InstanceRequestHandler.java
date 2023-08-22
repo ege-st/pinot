@@ -46,6 +46,7 @@ import org.apache.pinot.common.metrics.ServerMetrics;
 import org.apache.pinot.common.metrics.ServerQueryPhase;
 import org.apache.pinot.common.metrics.ServerTimer;
 import org.apache.pinot.common.request.InstanceRequest;
+import org.apache.pinot.common.utils.config.QueryOptionsUtils;
 import org.apache.pinot.core.common.datatable.DataTableBuilderFactory;
 import org.apache.pinot.core.query.request.ServerQueryRequest;
 import org.apache.pinot.core.query.scheduler.QueryScheduler;
@@ -194,7 +195,25 @@ public class InstanceRequestHandler extends SimpleChannelInboundHandler<ByteBuf>
         }
         if (responseBytes != null) {
           // responseBytes contains either query results or exception.
-          sendResponse(ctx, queryRequest.getTableNameWithType(), queryArrivalTimeMs, responseBytes);
+          int bufLen = responseBytes.length;
+
+          // Get the maximum buffer size the Broker can handle
+          // If there is none provided then use the default value in the Server config.
+          Integer maxBrokerBufLen = QueryOptionsUtils
+                  .getMaxBrokerChannelBufferSize(queryRequest.getQueryContext().getQueryOptions());
+          maxBrokerBufLen = maxBrokerBufLen != null ? maxBrokerBufLen : 1024 * 1024;  // TODO: put in config
+
+          if (bufLen <= maxBrokerBufLen) {
+            sendResponse(ctx, queryRequest.getTableNameWithType(), queryArrivalTimeMs, responseBytes);
+          } else {
+            // Message exceeded the max buffer size the Broker can accept.
+            LOGGER.error("Response for requestId {} from broker {} exceeded max buffer length: {}",
+                    queryRequest.getRequestId(), queryRequest.getBrokerId(), maxBrokerBufLen);
+            sendErrorResponse(ctx, queryRequest.getRequestId(), tableNameWithType, queryArrivalTimeMs,
+                    DataTableBuilderFactory.getEmptyDataTable(),
+                    new Exception("Response exceeds maximum buffer size. We "
+                            + "suggest using filters to reduce the size of the result set."));
+          }
         } else {
           // Send exception response.
           sendErrorResponse(ctx, queryRequest.getRequestId(), tableNameWithType, queryArrivalTimeMs,
