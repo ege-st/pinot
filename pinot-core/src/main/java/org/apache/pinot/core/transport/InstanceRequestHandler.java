@@ -209,6 +209,7 @@ public class InstanceRequestHandler extends SimpleChannelInboundHandler<ByteBuf>
             // Message exceeded the max buffer size the Broker can accept.
             LOGGER.error("Response for requestId {} from broker {} exceeded max buffer length: {}",
                     queryRequest.getRequestId(), queryRequest.getBrokerId(), maxBrokerBufLen);
+            _serverMetrics.addMeteredGlobalValue(ServerMeter.NETTY_DROPPED_RESPONSES, 1);
             sendErrorResponse(ctx, queryRequest.getRequestId(), tableNameWithType, queryArrivalTimeMs,
                     DataTableBuilderFactory.getEmptyDataTable(),
                     new Exception(String.format("Response exceeds maximum buffer size (%d). We "
