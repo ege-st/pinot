@@ -33,6 +33,7 @@ import org.apache.pinot.common.metrics.BrokerMeter;
 import org.apache.pinot.common.metrics.BrokerMetrics;
 import org.apache.pinot.common.request.BrokerRequest;
 import org.apache.pinot.common.request.InstanceRequest;
+import org.apache.pinot.common.utils.config.QueryOptionsUtils;
 import org.apache.pinot.core.transport.server.routing.stats.ServerRoutingStatsManager;
 import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.utils.CommonConstants;
@@ -90,26 +91,18 @@ public class QueryRouter {
       long timeoutMs) {
     assert offlineBrokerRequest != null || realtimeBrokerRequest != null;
 
+
     // can prefer but not require TLS until all servers guaranteed to be on TLS
     boolean preferTls = _serverChannelsTls != null;
 
-    // Compute the maximum size the response message can be
-    // Sum the total number of servers between real time and offline
-    // Divide the per query memory allocation by that size take the min of the result and the max buffer size absolute
+    // Check that the max broker channel buffer size is a valid integer
+    validateMaxBufferSizeOption(offlineBrokerRequest);
+    validateMaxBufferSizeOption(realtimeBrokerRequest);
 
     // Build map from server to request based on the routing table
     Map<ServerRoutingInstance, InstanceRequest> requestMap = new HashMap<>();
     if (offlineBrokerRequest != null) {
       assert offlineRoutingTable != null;
-
-      // Specify the maximum size message that the Server can send in response to this query
-      if (!offlineBrokerRequest.getPinotQuery()
-              .getQueryOptions()
-              .containsKey(CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE)) {
-        offlineBrokerRequest.getPinotQuery().putToQueryOptions(
-                CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
-                "1000000");
-      }
 
       for (Map.Entry<ServerInstance, List<String>> entry : offlineRoutingTable.entrySet()) {
         ServerRoutingInstance serverRoutingInstance =
@@ -120,15 +113,6 @@ public class QueryRouter {
     }
     if (realtimeBrokerRequest != null) {
       assert realtimeRoutingTable != null;
-
-      // Specify the maximum size message that the Server can send in response to this query
-      if (!realtimeBrokerRequest.getPinotQuery()
-              .getQueryOptions()
-              .containsKey(CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE)) {
-        realtimeBrokerRequest.getPinotQuery().putToQueryOptions(
-                CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
-                "1000000");
-      }
 
       for (Map.Entry<ServerInstance, List<String>> entry : realtimeRoutingTable.entrySet()) {
         ServerRoutingInstance serverRoutingInstance =
@@ -175,6 +159,22 @@ public class QueryRouter {
     LOGGER.error("Caught exception while sending request {} to server: {}, marking query failed", requestId,
         serverRoutingInstance, e);
     asyncQueryResponse.markQueryFailed(serverRoutingInstance, e);
+  }
+
+  private void validateMaxBufferSizeOption(@Nullable BrokerRequest request) {
+    if (request != null && request.getPinotQuery() != null) {
+      // Specify the maximum size message that the Server can send in response to this query
+      Map<String, String> options = request.getPinotQuery().getQueryOptions();
+      if (options.containsKey(CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE)) {
+        // Test that this is a valid integer
+        QueryOptionsUtils.getMaxBrokerChannelBufferSize(options);
+      } else {
+        // No value was provided so use the default value set by the Pinot Broker configuration
+        request.getPinotQuery().putToQueryOptions(
+                CommonConstants.Broker.Request.QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE,
+                "1000000");
+      }
+    }
   }
 
   /**

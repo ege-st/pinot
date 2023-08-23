@@ -130,7 +130,7 @@ public class QueryOptionsUtils {
   @Nullable
   public static Integer getMaxBrokerChannelBufferSize(Map<String, String> queryOptions) {
     String maxChannelBufferSize = queryOptions.get(QueryOptionKey.MAX_BROKER_CHANNEL_BUFFER_SIZE);
-    return maxChannelBufferSize != null ? Integer.parseInt(maxChannelBufferSize) : null;
+    return maxChannelBufferSize != null ? Integer.parseUnsignedInt(maxChannelBufferSize) : null;
   }
 
   public static boolean isExplainPlanVerbose(Map<String, String> queryOptions) {
