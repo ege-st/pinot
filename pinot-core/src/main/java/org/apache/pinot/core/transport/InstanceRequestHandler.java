@@ -240,12 +240,12 @@ public class InstanceRequestHandler extends SimpleChannelInboundHandler<ByteBuf>
     // If cause is Error (OutOfMemoryError or any other error), shutdown the process
     if (cause instanceof Error) {
       // Exit before attempting to use Netty again as Netty may be in a broken state
-      LOGGER.error("Caught Error, shutting down");
+      LOGGER.error("Unrecoverable error: shutting down.");
       System.exit(1);
+    } else {
+      sendErrorResponse(ctx, 0, null, System.currentTimeMillis(), DataTableBuilderFactory.getEmptyDataTable(),
+              new Exception(message, cause));
     }
-
-    sendErrorResponse(ctx, 0, null, System.currentTimeMillis(), DataTableBuilderFactory.getEmptyDataTable(),
-        new Exception(message, cause));
   }
 
   /**

@@ -83,9 +83,10 @@ public class DataTableHandler extends SimpleChannelInboundHandler<ByteBuf> {
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
     LOGGER.error("Caught exception while handling response from server: {}", _serverRoutingInstance, cause);
     _brokerMetrics.addMeteredGlobalValue(BrokerMeter.RESPONSE_FETCH_EXCEPTIONS, 1);
+
     // If cause is Error (OutOfMemoryError or any other error), shutdown the process
     if (cause instanceof Error) {
-      LOGGER.error("Caught Error, shutting down");
+      LOGGER.error("Unrecoverable error: shutting down.");
       System.exit(1);
     }
   }
