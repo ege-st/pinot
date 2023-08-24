@@ -236,6 +236,13 @@ public class InstanceRequestHandler extends SimpleChannelInboundHandler<ByteBuf>
     // will only be called if for some remote reason we are unable to handle exceptions in channelRead0.
     String message = "Unhandled Exception in " + getClass().getCanonicalName();
     LOGGER.error(message, cause);
+
+    // If cause is Error (OutOfMemoryError or any other error), shutdown the process
+    if (cause instanceof Error) {
+      LOGGER.error("Caught Error, shutting down");
+      System.exit(1);
+    }
+
     sendErrorResponse(ctx, 0, null, System.currentTimeMillis(), DataTableBuilderFactory.getEmptyDataTable(),
         new Exception(message, cause));
   }
