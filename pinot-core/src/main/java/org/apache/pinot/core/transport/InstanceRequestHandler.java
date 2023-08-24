@@ -239,6 +239,7 @@ public class InstanceRequestHandler extends SimpleChannelInboundHandler<ByteBuf>
 
     // If cause is Error (OutOfMemoryError or any other error), shutdown the process
     if (cause instanceof Error) {
+      // Exit before attempting to use Netty again as Netty may be in a broken state
       LOGGER.error("Caught Error, shutting down");
       System.exit(1);
     }
