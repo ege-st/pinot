@@ -236,8 +236,16 @@ public class InstanceRequestHandler extends SimpleChannelInboundHandler<ByteBuf>
     // will only be called if for some remote reason we are unable to handle exceptions in channelRead0.
     String message = "Unhandled Exception in " + getClass().getCanonicalName();
     LOGGER.error(message, cause);
-    sendErrorResponse(ctx, 0, null, System.currentTimeMillis(), DataTableBuilderFactory.getEmptyDataTable(),
-        new Exception(message, cause));
+
+    // If cause is Error (OutOfMemoryError or any other error), shutdown the process
+    if (cause instanceof Error) {
+      // Exit before attempting to use Netty again as Netty may be in a broken state
+      LOGGER.error("Unrecoverable error: shutting down.");
+      System.exit(1);
+    } else {
+      sendErrorResponse(ctx, 0, null, System.currentTimeMillis(), DataTableBuilderFactory.getEmptyDataTable(),
+              new Exception(message, cause));
+    }
   }
 
   /**
