@@ -522,6 +522,7 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
     final int messageCount = messagesAndOffsets.getMessageCount();
     final long startTimeMs = now();
     long totalTransformTimeNS = 0;
+    long totalDecodeTimeNS = 0;
     _rateLimiter.throttle(messageCount);
 
     PinotMeter realtimeRowsConsumedMeter = null;
@@ -568,7 +569,10 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
       }
 
       // Decode message
+      final long startDecodeNs = nowNS();
       StreamDataDecoderResult decodedRow = _streamDataDecoder.decode(messagesAndOffsets.getStreamMessage(index));
+      final long stopDecodeNs = nowNS();
+      totalDecodeTimeNS += stopDecodeNs - startDecodeNs;
       msgMetadata = messagesAndOffsets.getStreamMessage(index).getMetadata();
       if (decodedRow.getException() != null) {
         // TODO: based on a config, decide whether the record should be silently dropped or stop further consumption on
@@ -660,8 +664,8 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
       Uninterruptibles.sleepUninterruptibly(idlePipeSleepTimeMillis, TimeUnit.MILLISECONDS);
     }
     final long stopTimeMs = now();
-    _segmentLogger.info("Processed Events. Duration (ms): {}; Message Count: {}; Transform (ms): {}",
-        stopTimeMs - startTimeMs, messageCount, totalTransformTimeNS / 1000000);
+    _segmentLogger.info("Processed Events. Duration (ms): {}; Message Count: {}; Decode (ms): {}; Transform (ms): {}",
+        stopTimeMs - startTimeMs, messageCount, totalDecodeTimeNS / 1000000, totalTransformTimeNS / 1000000);
     return prematureExit;
   }
 
