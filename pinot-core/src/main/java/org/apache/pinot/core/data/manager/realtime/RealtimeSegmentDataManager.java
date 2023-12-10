@@ -422,6 +422,7 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
       // Update _currentOffset upon return from this method
       MessageBatch messageBatch;
       try {
+        final long fetchStartMs = now();
         messageBatch =
             _partitionGroupConsumer.fetchMessages(_currentOffset, null, _streamConfig.getFetchTimeoutMillis());
         if (_segmentLogger.isDebugEnabled()) {
@@ -431,6 +432,9 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
         }
         _endOfPartitionGroup = messageBatch.isEndOfPartitionGroup();
         _consecutiveErrorCount = 0;
+        final long fetchEndMs = now();
+        _segmentLogger.info("Fetch Messages. Duration (ms): {}; Count: {}",
+            fetchEndMs - fetchStartMs, messageBatch.getMessageCount());
       } catch (PermanentConsumerException e) {
         _serverMetrics.addMeteredGlobalValue(ServerMeter.REALTIME_CONSUMPTION_EXCEPTIONS, 1L);
         _serverMetrics.addMeteredTableValue(_tableStreamName, ServerMeter.REALTIME_CONSUMPTION_EXCEPTIONS,
@@ -515,7 +519,9 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
    * otherwise
    */
   private boolean processStreamEvents(MessageBatch messagesAndOffsets, long idlePipeSleepTimeMillis) {
-    int messageCount = messagesAndOffsets.getMessageCount();
+    final int messageCount = messagesAndOffsets.getMessageCount();
+    final long startTimeMs = now();
+    long totalTransformTimeNS = 0;
     _rateLimiter.throttle(messageCount);
 
     PinotMeter realtimeRowsConsumedMeter = null;
@@ -573,7 +579,10 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
         _numRowsErrored++;
       } else {
         try {
+          final long startNs = nowNS();
           _transformPipeline.processRow(decodedRow.getResult(), reusedResult);
+          final long stopNs = nowNS();
+          totalTransformTimeNS += stopNs - startNs;
         } catch (Exception e) {
           _numRowsErrored++;
           // when exception happens we prefer abandoning the whole batch and not partially indexing some rows
@@ -650,6 +659,9 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
       // If there were no messages to be fetched from stream, wait for a little bit as to avoid hammering the stream
       Uninterruptibles.sleepUninterruptibly(idlePipeSleepTimeMillis, TimeUnit.MILLISECONDS);
     }
+    final long stopTimeMs = now();
+    _segmentLogger.info("Processed Events. Duration (ms): {}; Message Count: {}; Transform (ms): {}",
+        stopTimeMs - startTimeMs, messageCount, totalTransformTimeNS / 1000000);
     return prematureExit;
   }
 
@@ -1279,6 +1291,10 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
 
   protected long now() {
     return System.currentTimeMillis();
+  }
+
+  protected long nowNS() {
+    return System.nanoTime();
   }
 
   private boolean catchupToFinalOffset(StreamPartitionMsgOffset endOffset, long timeoutMs) {
