@@ -433,7 +433,7 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
         _endOfPartitionGroup = messageBatch.isEndOfPartitionGroup();
         _consecutiveErrorCount = 0;
         final long fetchEndMs = now();
-        _segmentLogger.info("Fetch Messages. Duration (ms): {}; Count: {}",
+        _segmentLogger.info("Metric: Fetch Messages. Duration (ms): {}; Count: {}",
             fetchEndMs - fetchStartMs, messageBatch.getMessageCount());
       } catch (PermanentConsumerException e) {
         _serverMetrics.addMeteredGlobalValue(ServerMeter.REALTIME_CONSUMPTION_EXCEPTIONS, 1L);
@@ -664,7 +664,7 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
       Uninterruptibles.sleepUninterruptibly(idlePipeSleepTimeMillis, TimeUnit.MILLISECONDS);
     }
     final long stopTimeMs = now();
-    _segmentLogger.info("Processed Events. Duration (ms): {}; Message Count: {}; Decode (ms): {}; Transform (ms): {}",
+    _segmentLogger.info("Metric: Processed Events. Duration (ms): {}; Message Count: {}; Decode (ms): {}; Transform (ms): {}",
         stopTimeMs - startTimeMs, messageCount, totalDecodeTimeNS / 1000000, totalTransformTimeNS / 1000000);
     return prematureExit;
   }
