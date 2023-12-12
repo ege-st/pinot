@@ -38,14 +38,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * ERICH: This is the PoC class for an index storing the Sparse Map data structure.
+ * This PoC is working off a copy of FixedByteSVMutableForwardIndex.
  *
- * This class implements reader as well as writer interfaces for fixed-byte single column and single value data.
- * <ul>
- *   <li> Auto expands memory allocation on-demand. </li>
- *   <li> Supports random reads and writes. </li>
- *   <li> Callers should ensure they are only reading row that were written, as allocated but not written rows
- *   are not guaranteed to have a deterministic value. </li>
- * </ul>
+ * What this will need to handle:
+ * 1. Dictionary Encoding for key names and storing that encoding
+ * 2. Key major storage of triples: Key[ (DocId, Value)]
+ * 3. DocId will need to be found and recorded somehow.
+ * 4. DocId will need to be used for look-ups somehow.  We already use DocId for gets so I think I just need to make sure
+ * that sets have it.
+ * 5. Mapping from Key to the start of its block.  Maybe we use a buffer per key
+ * 6. If we use the buffer model then each key will need a list of buffers (following the model in FixedBSVFwdIndex)
+ * 7. Add new getter/setter methods ot the MutableForwardIndex interface and implement them here (look at the FixedByteMV...Index)
+ * 8. If the MutableFwdIdx interface has anything for aggregateMetrics, then mark it as unsupported in this class (for the PoC)
  */
 // TODO: Optimize it
 public class FixedByteSparseMapMutableForwardIndex implements MutableForwardIndex {
@@ -55,7 +59,6 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   private final List<WriterWithOffset> _writers = new ArrayList<>();
   private final List<ReaderWithOffset> _readers = new CopyOnWriteArrayList<>();
 
-  private final boolean _dictionaryEncoded;
   private final DataType _storedType;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
@@ -72,9 +75,8 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
    * @param memoryManager Memory manager to be used for allocating memory.
    * @param allocationContext Allocation allocationContext.
    */
-  public FixedByteSparseMapMutableForwardIndex(boolean dictionaryEncoded, DataType storedType, int fixedLength,
+  public FixedByteSparseMapMutableForwardIndex(DataType storedType, int fixedLength,
       int numRowsPerChunk, PinotDataBufferMemoryManager memoryManager, String allocationContext) {
-    _dictionaryEncoded = dictionaryEncoded;
     _storedType = storedType;
     if (!storedType.isFixedWidth()) {
       Preconditions.checkState(fixedLength > 0, "Fixed length must be provided for type: %s", storedType);
@@ -89,20 +91,22 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     addBuffer();
   }
 
-  public FixedByteSparseMapMutableForwardIndex(boolean dictionaryEncoded, DataType valueType, int numRowsPerChunk,
+  public FixedByteSparseMapMutableForwardIndex(DataType valueType, int numRowsPerChunk,
       PinotDataBufferMemoryManager memoryManager, String allocationContext) {
-    this(dictionaryEncoded, valueType, -1, numRowsPerChunk, memoryManager, allocationContext);
+    this(valueType, -1, numRowsPerChunk, memoryManager, allocationContext);
   }
 
   @Override
   public boolean isDictionaryEncoded() {
-    return _dictionaryEncoded;
+    return false;
   }
 
   @Override
   public boolean isSingleValue() {
     return true;
   }
+
+  // TODO(Erich): add isMapValue() to interface
 
   @Override
   public DataType getStoredType() {
@@ -268,6 +272,8 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   }
 
   private static class WriterWithOffset implements Closeable {
+    // TODO(ERICH): I assumed that within this class `row` is equivalent to `docId` in the outer class. Will rename to
+    //  docId because that's what will be written in the tuple.
     final FixedByteSingleValueMultiColWriter _writer;
     final int _startRowId;
 

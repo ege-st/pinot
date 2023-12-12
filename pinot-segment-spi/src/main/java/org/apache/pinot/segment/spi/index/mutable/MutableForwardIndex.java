@@ -666,6 +666,16 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
   }
 
   /**
+   * Writes the String, INT key value pair into a map of the given document id.
+   * @param docId Document ID
+   * @param key key in the map to write to
+   * @param value the value that is associated with the key
+   */
+  default void setIntMap(int docId, String key, int value){
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * Writes the LONG type multi-value into the given document id.
    *
    * @param docId Document id
