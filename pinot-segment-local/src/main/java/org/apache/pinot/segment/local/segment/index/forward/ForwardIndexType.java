@@ -267,6 +267,8 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
     int fixedLengthBytes = context.getFixedLengthBytes();
     boolean isSingleValue = context.getFieldSpec().isSingleValueField();
     if (!context.hasDictionary()) {
+      // TODO(ERICH): Expand in here or in the "HAS DICTIONARY" branch?
+      // TODO(ERICH): Add branch here for isMapValue
       if (isSingleValue) {
         String allocationContext =
             IndexUtil.buildAllocationContext(context.getSegmentName(), context.getFieldSpec().getName(),
@@ -298,6 +300,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
             storedType);
       }
     } else {
+      // TODO(ERICH): What is dictionary used for?  Could it be off-heap related?
       if (isSingleValue) {
         String allocationContext = IndexUtil.buildAllocationContext(segmentName, column,
             V1Constants.Indexes.UNSORTED_SV_FORWARD_INDEX_FILE_EXTENSION);
