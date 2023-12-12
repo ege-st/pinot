@@ -83,6 +83,7 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
 
   @Override
   default void add(@Nonnull Object[] value, @Nullable int[] dictIds, int docId) {
+    // TODO(ERICH): make a new 'add' method for map values
     if (dictIds != null) {
       setDictIdMV(docId, dictIds);
     } else {
