@@ -671,7 +671,11 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
    * @param key key in the map to write to
    * @param value the value that is associated with the key
    */
-  default void setIntMap(int docId, String key, int value){
+  default void setIntMap(int docId, int key, int value){
+    throw new UnsupportedOperationException();
+  }
+
+  default int getIntMap(int docId, int key) {
     throw new UnsupportedOperationException();
   }
 
