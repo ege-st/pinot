@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.pinot.segment.local.io.reader.impl.FixedByteMapValueMultiColReader;
 import org.apache.pinot.segment.local.io.reader.impl.FixedByteSingleValueMultiColReader;
@@ -71,10 +72,16 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   private static final Logger LOGGER = LoggerFactory.getLogger(FixedByteSparseMapMutableForwardIndex.class);
 
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
+  // TODO(ERICH): how does thread-safety work around this? Is there only one thread that can write and many threads
+  //   that can read?
   private final HashMap<Integer, KeyValueWriterWithOffset> _writers = new HashMap<>();
-  // TODO(ERICH):
-  private final List<KeyValueReaderWithOffset> _readers = new CopyOnWriteArrayList<>();
-
+  // TODO(ERICH): This needs to be thread safe (I'm assuming from the CoW), what to change to for the hashmap?
+  //    Use a ConcurrentHashMap?
+  //    eg: private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _readers = new ConcurrentHashMap<>();
+  //    ** Note to self: I think we need to be careful: if a Query thread is reading this Map column it might happen
+  //        that a Doc adds a key while the read is happening and there is "read skew" (right term?) where at one point
+  //        the query reads for the key for a doc and gets None and then later gets a value for that key.
+  private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _readers = new ConcurrentHashMap<>();
   private final DataType _storedType;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
@@ -183,7 +190,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     for (KeyValueWriterWithOffset writer : _writers.values()) {
       writer.close();
     }
-    for (KeyValueReaderWithOffset reader : _readers) {
+    for (KeyValueReaderWithOffset reader : _readers.values()) {
       reader.close();
     }
   }
@@ -197,9 +204,11 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
         key,
         new KeyValueWriterWithOffset(new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
             _capacityInRows));
-    _readers.add(new KeyValueReaderWithOffset(
-        new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, keySize, _valueSizeInBytes),
-        _capacityInRows));
+    _readers.put(
+        key,
+        new KeyValueReaderWithOffset(
+          new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, keySize, _valueSizeInBytes),
+          _capacityInRows));
     _capacityInRows += _numRowsPerChunk;
   }
 
