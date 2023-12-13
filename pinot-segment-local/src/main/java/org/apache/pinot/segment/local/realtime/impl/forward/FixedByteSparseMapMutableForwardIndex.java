@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.pinot.segment.local.io.reader.impl.FixedByteMapValueMultiColReader;
@@ -40,6 +41,21 @@ import org.slf4j.LoggerFactory;
  * ERICH: This is the PoC class for an index storing the Sparse Map data structure.
  * This PoC is working off a copy of FixedByteSVMutableForwardIndex.
  *
+ *
+ * This format is used for dealing with Key major Map (or Dictionary) data storage. Where
+ * at the top level a key is mapped to a buffer and in the buffer is the set of Doc Ids that
+ * have a value for the Key and what that value is:
+ *
+ *
+ *    | Key |  (Doc Id, Value) |
+ *    |-----------------------|
+ *    | foo |  (2, 56)        |
+ *    |     |  (5, 156)       |
+ *    |     |  (15, 336)      |
+ *    | bar |  (0, 1)         |
+ *    |     |  (4, 10)        |
+
+
  * What this will need to handle:
  * 1. Dictionary Encoding for key names and storing that encoding
  * 2. Key major storage of triples: Key[ (DocId, Value)]
@@ -51,19 +67,18 @@ import org.slf4j.LoggerFactory;
  * 7. Add new getter/setter methods ot the MutableForwardIndex interface and implement them here (look at the FixedByteMV...Index)
  * 8. If the MutableFwdIdx interface has anything for aggregateMetrics, then mark it as unsupported in this class (for the PoC)
  */
-// TODO: Optimize it
 public class FixedByteSparseMapMutableForwardIndex implements MutableForwardIndex {
   private static final Logger LOGGER = LoggerFactory.getLogger(FixedByteSparseMapMutableForwardIndex.class);
 
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
-  private final List<KeyValueWriterWithOffset> _writers = new ArrayList<>();
+  private final HashMap<Integer, KeyValueWriterWithOffset> _writers = new HashMap<>();
+  // TODO(ERICH):
   private final List<KeyValueReaderWithOffset> _readers = new CopyOnWriteArrayList<>();
 
   private final DataType _storedType;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
   private final long _chunkSizeInBytes;
-
   private final PinotDataBufferMemoryManager _memoryManager;
   private final String _allocationContext;
   private int _capacityInRows = 0;
@@ -77,6 +92,8 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
    */
   public FixedByteSparseMapMutableForwardIndex(DataType storedType, int fixedLength,
       int numRowsPerChunk, PinotDataBufferMemoryManager memoryManager, String allocationContext) {
+    assert storedType.isFixedWidth();
+
     _storedType = storedType;
     if (!storedType.isFixedWidth()) {
       Preconditions.checkState(fixedLength > 0, "Fixed length must be provided for type: %s", storedType);
@@ -84,11 +101,13 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     } else {
       _valueSizeInBytes = storedType.size();
     }
+
     _numRowsPerChunk = numRowsPerChunk;
     _chunkSizeInBytes = numRowsPerChunk * (long)_valueSizeInBytes;
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
-    addBuffer();
+    // ERICH: don't add any buffers until we start adding keys
+    //addBuffer();
   }
 
   public FixedByteSparseMapMutableForwardIndex(DataType valueType, int numRowsPerChunk,
@@ -124,29 +143,6 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   }
 
   @Override
-  public int getDictId(int docId) {
-    int bufferId = getBufferId(docId);
-    return _readers.get(bufferId).getInt(docId);
-  }
-
-  @Override
-  public void readDictIds(int[] docIds, int length, int[] dictIdBuffer) {
-    /*
-     * TODO
-     * Currently this will use 0 if the doc Id does not have a value for the specific Key.
-     * Need to update this to use "Null" for that situation.
-     */
-    if (_readers.size() == 1) {
-      _readers.get(0).getReader().readIntValues(docIds, 0, length, dictIdBuffer, 0);
-    } else {
-      for (int i = 0; i < length; i++) {
-        int docId = docIds[i];
-        dictIdBuffer[i] = _readers.get(getBufferId(docId)).getInt(docId);
-      }
-    }
-  }
-
-  @Override
   public int getInt(int docId) {
     int bufferId = getBufferId(docId);
     return _readers.get(bufferId).getInt(docId);
@@ -156,26 +152,35 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     return row / _numRowsPerChunk;
   }
 
-  @Override
-  public void setDictId(int docId, int dictId) {
-    addBufferIfNeeded(docId);
-    getWriterForRow(docId).setDocAndInt(docId, dictId);
+  /**
+   * Sets the value of the given key for the given DocId.
+   * @param docId - The docId whose map is being updated.
+   * @param key - The key to set for the docId in this map.
+   * @param value - The value that is associated with the key within this map.
+   */
+  public void setInt(int docId, int key, int value) {
+    // Get the buffer for the given key
+    // Add this docId, and its value to that buffer.
+    getWriterForKey(key).setDocAndInt(docId, value);
   }
 
-  @Override
-  public void setInt(int docId, int value) {
-    addBufferIfNeeded(docId);
-    getWriterForRow(docId).setDocAndInt(docId, value);
-  }
+  private KeyValueWriterWithOffset getWriterForKey(int key) {
+    var writer =  _writers.get(key);
 
-  private KeyValueWriterWithOffset getWriterForRow(int row) {
-    return _writers.get(getBufferId(row));
+    if(writer == null) {
+      // add a writer for this key
+      addBufferForKey(key);
+      writer = _writers.get(key);
+      assert writer != null;
+    }
+
+    return writer;
   }
 
   @Override
   public void close()
       throws IOException {
-    for (KeyValueWriterWithOffset writer : _writers) {
+    for (KeyValueWriterWithOffset writer : _writers.values()) {
       writer.close();
     }
     for (KeyValueReaderWithOffset reader : _readers) {
@@ -183,12 +188,13 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     }
   }
 
-  private void addBuffer() {
+  private void addBufferForKey(int key) {
     LOGGER.info("Allocating {} bytes for: {}", _chunkSizeInBytes, _allocationContext);
     // NOTE: PinotDataBuffer is tracked in the PinotDataBufferMemoryManager. No need to track it inside the class.
     PinotDataBuffer buffer = _memoryManager.allocate(_chunkSizeInBytes, _allocationContext);
     final int keySize = 4;
-    _writers.add(
+    _writers.put(
+        key,
         new KeyValueWriterWithOffset(new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
             _capacityInRows));
     _readers.add(new KeyValueReaderWithOffset(
@@ -205,7 +211,9 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
       // Adding _chunkSizeInBytes in the numerator for rounding up. +1 because rows are 0-based index.
       long buffersNeeded = (row + 1 - _capacityInRows + _numRowsPerChunk) / _numRowsPerChunk;
       for (int i = 0; i < buffersNeeded; i++) {
-        addBuffer();
+        // TODO(ERICH): use this so that a key may have multiple buffers as its data set grows.
+        //   for now, assuming that a key has as single buffer and if the limit is hit values are just dropped.
+        // addBuffer();
       }
     }
   }
