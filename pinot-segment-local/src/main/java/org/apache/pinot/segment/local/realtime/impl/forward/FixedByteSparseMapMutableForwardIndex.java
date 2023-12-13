@@ -21,15 +21,10 @@ package org.apache.pinot.segment.local.realtime.impl.forward;
 import com.google.common.base.Preconditions;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.pinot.segment.local.io.reader.impl.FixedByteMapValueMultiColReader;
-import org.apache.pinot.segment.local.io.reader.impl.FixedByteSingleValueMultiColReader;
 import org.apache.pinot.segment.local.io.writer.impl.FixedByteMapValueMultiColWriter;
-import org.apache.pinot.segment.local.io.writer.impl.FixedByteSingleValueMultiColWriter;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
@@ -74,7 +69,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
   // TODO(ERICH): how does thread-safety work around this? Is there only one thread that can write and many threads
   //   that can read?
-  private final HashMap<Integer, KeyValueWriterWithOffset> _writers = new HashMap<>();
+  private final HashMap<Integer, KeyValueWriterWithOffset> _keyWriters = new HashMap<>();
   // TODO(ERICH): This needs to be thread safe (I'm assuming from the CoW), what to change to for the hashmap?
   //    Use a ConcurrentHashMap?
   //    eg: private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _readers = new ConcurrentHashMap<>();
@@ -85,7 +80,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   //          so if a new (DocId,Value) is added to a Key's buffer it will show up in the middle of a query execution
   //          and create skew.
   //        Will this matter for anything other than joins?
-  private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _readers = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _keyReaders = new ConcurrentHashMap<>();
   private final DataType _storedType;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
@@ -172,7 +167,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
 
   @Override
   public int getIntMap(int docId, int key) {
-    var reader = _readers.get(key);
+    var reader = _keyReaders.get(key);
     if(reader != null) {
       return reader.getReader().getIntValue(docId);
     } else {
@@ -190,12 +185,12 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   }
 
   private KeyValueWriterWithOffset getWriterForKey(int key) {
-    var writer =  _writers.get(key);
+    var writer =  _keyWriters.get(key);
 
     if(writer == null) {
       // add a writer for this key
       addBufferForKey(key);
-      writer = _writers.get(key);
+      writer = _keyWriters.get(key);
       assert writer != null;
     }
 
@@ -205,10 +200,10 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   @Override
   public void close()
       throws IOException {
-    for (KeyValueWriterWithOffset writer : _writers.values()) {
+    for (KeyValueWriterWithOffset writer : _keyWriters.values()) {
       writer.close();
     }
-    for (KeyValueReaderWithOffset reader : _readers.values()) {
+    for (KeyValueReaderWithOffset reader : _keyReaders.values()) {
       reader.close();
     }
   }
@@ -218,12 +213,12 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     // NOTE: PinotDataBuffer is tracked in the PinotDataBufferMemoryManager. No need to track it inside the class.
     PinotDataBuffer buffer = _memoryManager.allocate(_chunkSizeInBytes, _allocationContext);
     final int keySize = 4;
-    _writers.put(
+    _keyWriters.put(
         key,
         new KeyValueWriterWithOffset(
             new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
             _capacityInRows));
-    _readers.put(
+    _keyReaders.put(
         key,
         new KeyValueReaderWithOffset(
             new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, keySize, _valueSizeInBytes),
