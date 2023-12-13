@@ -133,12 +133,8 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   public void readDictIds(int[] docIds, int length, int[] dictIdBuffer) {
     /*
      * TODO
-     * If we assume that the document ids are sorted, then we can write logic to move values from one reader
-     * at a time, identifying the rows in sequence that belong to the same block. This logic is more complex, but may
-     * perform better in the sorted case.
-     *
-     * An alternative is to not have multiple _dataBuffers, but just copy the values from one buffer to next as we
-     * increase the number of rows.
+     * Currently this will use 0 if the doc Id does not have a value for the specific Key.
+     * Need to update this to use "Null" for that situation.
      */
     if (_readers.size() == 1) {
       _readers.get(0).getReader().readIntValues(docIds, 0, length, dictIdBuffer, 0);
