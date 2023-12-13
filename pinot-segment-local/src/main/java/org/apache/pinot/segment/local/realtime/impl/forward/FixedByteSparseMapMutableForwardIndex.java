@@ -81,6 +81,10 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   //    ** Note to self: I think we need to be careful: if a Query thread is reading this Map column it might happen
   //        that a Doc adds a key while the read is happening and there is "read skew" (right term?) where at one point
   //        the query reads for the key for a doc and gets None and then later gets a value for that key.
+  //        Actually: I think worrying about this is pointless because at the BUFFER level we have no such protection
+  //          so if a new (DocId,Value) is added to a Key's buffer it will show up in the middle of a query execution
+  //          and create skew.
+  //        Will this matter for anything other than joins?
   private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _readers = new ConcurrentHashMap<>();
   private final DataType _storedType;
   private final int _valueSizeInBytes;
@@ -137,8 +141,6 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     return true;
   }
 
-  // TODO(Erich): add isMapValue() to interface
-
   @Override
   public DataType getStoredType() {
     return _storedType;
@@ -154,26 +156,37 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     return _valueSizeInBytes;
   }
 
-  @Override
-  public int getInt(int docId) {
-    int bufferId = getBufferId(docId);
-    return _readers.get(bufferId).getInt(docId);
-  }
-
-  private int getBufferId(int row) {
-    return row / _numRowsPerChunk;
-  }
-
   /**
    * Sets the value of the given key for the given DocId.
    * @param docId - The docId whose map is being updated.
    * @param key - The key to set for the docId in this map.
    * @param value - The value that is associated with the key within this map.
    */
-  public void setInt(int docId, int key, int value) {
+  @Override
+  public void setIntMap(int docId, int key, int value) {
     // Get the buffer for the given key
-    // Add this docId, and its value to that buffer.
-    getWriterForKey(key).setDocAndInt(docId, value);
+    var writer = getWriterForKey(key);
+    assert writer != null;
+    writer.setDocAndInt(docId, value);
+  }
+
+  @Override
+  public int getIntMap(int docId, int key) {
+    var reader = _readers.get(key);
+    if(reader != null) {
+      return reader.getReader().getIntValue(docId);
+    } else {
+      return 0;
+    }
+  }
+
+  public int getInt(int docId, int key) {
+    // Get the buffer for the key (if it exists)
+    // If the key has no buffer then return No result
+    // If the key has a buffer then search for the DocId and return the value
+
+    // TODO(ERICH): just return 0 for now then figure out null value stuff
+    return 0;
   }
 
   private KeyValueWriterWithOffset getWriterForKey(int key) {
@@ -207,13 +220,14 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     final int keySize = 4;
     _writers.put(
         key,
-        new KeyValueWriterWithOffset(new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
+        new KeyValueWriterWithOffset(
+            new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
             _capacityInRows));
     _readers.put(
         key,
         new KeyValueReaderWithOffset(
-          new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, keySize, _valueSizeInBytes),
-          _capacityInRows));
+            new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, keySize, _valueSizeInBytes),
+            _capacityInRows));
     _capacityInRows += _numRowsPerChunk;
   }
 
