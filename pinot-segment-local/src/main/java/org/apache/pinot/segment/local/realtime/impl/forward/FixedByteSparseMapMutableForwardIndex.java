@@ -141,7 +141,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
      * increase the number of rows.
      */
     if (_readers.size() == 1) {
-      _readers.get(0).getReader().readIntValues(docIds, 0, 0, length, dictIdBuffer, 0);
+      _readers.get(0).getReader().readIntValues(docIds, 0, length, dictIdBuffer, 0);
     } else {
       for (int i = 0; i < length; i++) {
         int docId = docIds[i];
@@ -196,7 +196,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
         new KeyValueWriterWithOffset(new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
             _capacityInRows));
     _readers.add(new KeyValueReaderWithOffset(
-        new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, new int[]{_valueSizeInBytes}),
+        new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, keySize, _valueSizeInBytes),
         _capacityInRows));
     _capacityInRows += _numRowsPerChunk;
   }

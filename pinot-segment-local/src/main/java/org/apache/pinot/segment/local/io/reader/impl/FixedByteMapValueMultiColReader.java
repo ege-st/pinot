@@ -41,178 +41,64 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class FixedByteMapValueMultiColReader implements Closeable {
   private final PinotDataBuffer _dataBuffer;
   private final int _numRows;
-  private final int[] _columnSizes;
-  private final int[] _columnOffSets;
+  private final int _keySize;
+  private final int _keyOffset;
+  private final int _columnSize;
+  private final int _columnOffSet;
   private final int _rowSize;
 
-  public FixedByteMapValueMultiColReader(PinotDataBuffer dataBuffer, int numRows, int[] columnSizes) {
+  public FixedByteMapValueMultiColReader(PinotDataBuffer dataBuffer, int numRows, int keySize, int columnSize) {
     _dataBuffer = dataBuffer;
     _numRows = numRows;
-    _columnSizes = columnSizes;
-    int numColumns = _columnSizes.length;
-    _columnOffSets = new int[numColumns];
-    int offset = 0;
-    for (int i = 0; i < numColumns; i++) {
-      _columnOffSets[i] = offset;
-      offset += columnSizes[i];
-    }
-    _rowSize = offset;
+    _keySize = keySize;
+    _columnSize = columnSize;
+    int numColumns = 1;
+    _keyOffset = 0;
+    _columnOffSet = _keyOffset + _keySize;
+    _rowSize = _keySize + _columnSize;
   }
 
   /**
    * Computes the offset where the actual column data can be read
    *
-   * @param row
-   * @param col
-   * @return
    */
-  private int computeOffset(int row, int col) {
-    final int offset = row * _rowSize + _columnOffSets[col];
+  private int computeKeyOffset(int row) {
+    final int offset = row * _rowSize + _keyOffset;
+    return offset;
+  }
+
+  private int computeValueOffset(int row) {
+    final int offset = row * _rowSize + _columnOffSet;
     return offset;
   }
 
   /**
    *
    * @param row
-   * @param col
    * @return
    */
-  public char getChar(int row, int col) {
-    final int offset = computeOffset(row, col);
-    return _dataBuffer.getChar(offset);
-  }
-
-  /**
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  public short getShort(int row, int col) {
-    final int offset = computeOffset(row, col);
-    return _dataBuffer.getShort(offset);
-  }
-
-  /**
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  public int getInt(int row, int col) {
-    assert getColumnSizes()[col] == 4;
-    final int offset = computeOffset(row, col);
+  public int getIntValue(int row) {
+    assert getColumnSize() == 4;
+    final int offset = computeValueOffset(row);
     return _dataBuffer.getInt(offset);
-  }
-
-  /**
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  public long getLong(int row, int col) {
-    assert getColumnSizes()[col] == 8;
-    final int offset = computeOffset(row, col);
-    return _dataBuffer.getLong(offset);
-  }
-
-  /**
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  public float getFloat(int row, int col) {
-    assert getColumnSizes()[col] == 4;
-    final int offset = computeOffset(row, col);
-    return _dataBuffer.getFloat(offset);
-  }
-
-  /**
-   * Reads the double at row,col
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  public double getDouble(int row, int col) {
-    assert getColumnSizes()[col] == 8;
-    final int offset = computeOffset(row, col);
-    return _dataBuffer.getDouble(offset);
-  }
-
-  /**
-   * Returns the string value, NOTE: It expects all String values in the file
-   * to be of same length
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  public String getString(int row, int col) {
-    return new String(getBytes(row, col), UTF_8);
-  }
-
-  /**
-   * Generic method to read the raw bytes
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  public byte[] getBytes(int row, int col) {
-    final int length = getColumnSizes()[col];
-    final byte[] dst = new byte[length];
-    final int offset = computeOffset(row, col);
-    _dataBuffer.copyTo(offset, dst, 0, length);
-    return dst;
   }
 
   public int getNumberOfRows() {
     return _numRows;
   }
 
-  public int[] getColumnSizes() {
-    return _columnSizes;
+  public int getColumnSize() {
+    return _columnSize;
   }
 
   public boolean open() {
     return false;
   }
 
-  public void readIntValues(int[] rows, int col, int startPos, int limit, int[] values, int outStartPos) {
+  public void readIntValues(int[] rows, int startPos, int limit, int[] values, int outStartPos) {
     int endPos = startPos + limit;
     for (int iter = startPos; iter < endPos; iter++) {
-      values[outStartPos++] = getInt(rows[iter], col);
-    }
-  }
-
-  public void readLongValues(int[] rows, int col, int startPos, int limit, long[] values, int outStartPos) {
-    int endPos = startPos + limit;
-    for (int iter = startPos; iter < endPos; iter++) {
-      values[outStartPos++] = getLong(rows[iter], col);
-    }
-  }
-
-  public void readFloatValues(int[] rows, int col, int startPos, int limit, float[] values, int outStartPos) {
-    int endPos = startPos + limit;
-    for (int iter = startPos; iter < endPos; iter++) {
-      values[outStartPos++] = getFloat(rows[iter], col);
-    }
-  }
-
-  public void readDoubleValues(int[] rows, int col, int startPos, int limit, double[] values, int outStartPos) {
-    int endPos = startPos + limit;
-    for (int iter = startPos; iter < endPos; iter++) {
-      values[outStartPos++] = getDouble(rows[iter], col);
-    }
-  }
-
-  public void readStringValues(int[] rows, int col, int startPos, int limit, String[] values, int outStartPos) {
-    int endPos = startPos + limit;
-    for (int iter = startPos; iter < endPos; iter++) {
-      values[outStartPos++] = getString(rows[iter], col);
+      values[outStartPos++] = getIntValue(rows[iter]);
     }
   }
 
