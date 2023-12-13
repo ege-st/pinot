@@ -66,42 +66,10 @@ public class FixedByteMapValueMultiColWriter implements Closeable {
     return true;
   }
 
-  public void setChar(int row, int col, char ch) {
-    int offset = _rowSizeInBytes * row + _columnOffsets[col];
-    _dataBuffer.putChar(offset, ch);
-  }
-
-  public void setInt(int row, int col, int i) {
-    int offset = _rowSizeInBytes * row + _columnOffsets[col];
-    _dataBuffer.putInt(offset, i);
-  }
-
-  public void setShort(int row, int col, short s) {
-    int offset = _rowSizeInBytes * row + _columnOffsets[col];
-    _dataBuffer.putShort(offset, s);
-  }
-
-  public void setLong(int row, int col, long l) {
-    int offset = _rowSizeInBytes * row + _columnOffsets[col];
-    _dataBuffer.putLong(offset, l);
-  }
-
-  public void setFloat(int row, int col, float f) {
-    int offset = _rowSizeInBytes * row + _columnOffsets[col];
-    _dataBuffer.putFloat(offset, f);
-  }
-
-  public void setDouble(int row, int col, double d) {
-    int offset = _rowSizeInBytes * row + _columnOffsets[col];
-    _dataBuffer.putDouble(offset, d);
-  }
-
-  public void setString(int row, int col, String string) {
-    setBytes(row, col, string.getBytes(UTF_8));
-  }
-
-  public void setBytes(int row, int col, byte[] bytes) {
-    int offset = _rowSizeInBytes * row + _columnOffsets[col];
-    _dataBuffer.readFrom(offset, bytes);
+  public void setInt(int row, int key, int i) {
+    int keyOffset = _rowSizeInBytes * row + _keyOffset;
+    int valueOffset = _rowSizeInBytes * row + _columnOffset;
+    _dataBuffer.putInt(keyOffset, key);
+    _dataBuffer.putInt(valueOffset, i);
   }
 }
