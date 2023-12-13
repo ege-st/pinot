@@ -21,17 +21,17 @@ package org.apache.pinot.segment.local.realtime.impl.forward;
 import com.google.common.base.Preconditions;
 import java.io.Closeable;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.apache.pinot.segment.local.io.reader.impl.FixedByteMapValueMultiColReader;
 import org.apache.pinot.segment.local.io.reader.impl.FixedByteSingleValueMultiColReader;
+import org.apache.pinot.segment.local.io.writer.impl.FixedByteMapValueMultiColWriter;
 import org.apache.pinot.segment.local.io.writer.impl.FixedByteSingleValueMultiColWriter;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
-import org.apache.pinot.spi.utils.BigDecimalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +56,8 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   private static final Logger LOGGER = LoggerFactory.getLogger(FixedByteSparseMapMutableForwardIndex.class);
 
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
-  private final List<WriterWithOffset> _writers = new ArrayList<>();
-  private final List<ReaderWithOffset> _readers = new CopyOnWriteArrayList<>();
+  private final List<KeyValueWriterWithOffset> _writers = new ArrayList<>();
+  private final List<KeyValueReaderWithOffset> _readers = new CopyOnWriteArrayList<>();
 
   private final DataType _storedType;
   private final int _valueSizeInBytes;
@@ -85,7 +85,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
       _valueSizeInBytes = storedType.size();
     }
     _numRowsPerChunk = numRowsPerChunk;
-    _chunkSizeInBytes = numRowsPerChunk * _valueSizeInBytes;
+    _chunkSizeInBytes = numRowsPerChunk * (long)_valueSizeInBytes;
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
     addBuffer();
@@ -156,30 +156,6 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     return _readers.get(bufferId).getInt(docId);
   }
 
-  @Override
-  public long getLong(int docId) {
-    int bufferId = getBufferId(docId);
-    return _readers.get(bufferId).getLong(docId);
-  }
-
-  @Override
-  public float getFloat(int docId) {
-    int bufferId = getBufferId(docId);
-    return _readers.get(bufferId).getFloat(docId);
-  }
-
-  @Override
-  public double getDouble(int docId) {
-    int bufferId = getBufferId(docId);
-    return _readers.get(bufferId).getDouble(docId);
-  }
-
-  @Override
-  public BigDecimal getBigDecimal(int docId) {
-    int bufferId = getBufferId(docId);
-    return _readers.get(bufferId).getBigDecimal(docId);
-  }
-
   private int getBufferId(int row) {
     return row / _numRowsPerChunk;
   }
@@ -187,59 +163,26 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   @Override
   public void setDictId(int docId, int dictId) {
     addBufferIfNeeded(docId);
-    getWriterForRow(docId).setInt(docId, dictId);
+    getWriterForRow(docId).setDocAndInt(docId, dictId);
   }
 
   @Override
   public void setInt(int docId, int value) {
     addBufferIfNeeded(docId);
-    getWriterForRow(docId).setInt(docId, value);
+    getWriterForRow(docId).setDocAndInt(docId, value);
   }
 
-  @Override
-  public void setLong(int docId, long value) {
-    addBufferIfNeeded(docId);
-    getWriterForRow(docId).setLong(docId, value);
-  }
-
-  @Override
-  public void setFloat(int docId, float value) {
-    addBufferIfNeeded(docId);
-    getWriterForRow(docId).setFloat(docId, value);
-  }
-
-  @Override
-  public void setDouble(int docId, double value) {
-    addBufferIfNeeded(docId);
-    getWriterForRow(docId).setDouble(docId, value);
-  }
-
-  @Override
-  public byte[] getBytes(int docId) {
-    int bufferId = getBufferId(docId);
-    return _readers.get(bufferId).getBytes(docId);
-  }
-
-  @Override
-  public void setBytes(int docId, byte[] value) {
-    Preconditions.checkArgument(value.length == _valueSizeInBytes, "Expected value size to be: %s but got: %s ",
-        _valueSizeInBytes, value.length);
-
-    addBufferIfNeeded(docId);
-    getWriterForRow(docId).setBytes(docId, value);
-  }
-
-  private WriterWithOffset getWriterForRow(int row) {
+  private KeyValueWriterWithOffset getWriterForRow(int row) {
     return _writers.get(getBufferId(row));
   }
 
   @Override
   public void close()
       throws IOException {
-    for (WriterWithOffset writer : _writers) {
+    for (KeyValueWriterWithOffset writer : _writers) {
       writer.close();
     }
-    for (ReaderWithOffset reader : _readers) {
+    for (KeyValueReaderWithOffset reader : _readers) {
       reader.close();
     }
   }
@@ -248,11 +191,12 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     LOGGER.info("Allocating {} bytes for: {}", _chunkSizeInBytes, _allocationContext);
     // NOTE: PinotDataBuffer is tracked in the PinotDataBufferMemoryManager. No need to track it inside the class.
     PinotDataBuffer buffer = _memoryManager.allocate(_chunkSizeInBytes, _allocationContext);
+    final int keySize = 4;
     _writers.add(
-        new WriterWithOffset(new FixedByteSingleValueMultiColWriter(buffer, /*cols=*/1, new int[]{_valueSizeInBytes}),
+        new KeyValueWriterWithOffset(new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
             _capacityInRows));
-    _readers.add(new ReaderWithOffset(
-        new FixedByteSingleValueMultiColReader(buffer, _numRowsPerChunk, new int[]{_valueSizeInBytes}),
+    _readers.add(new KeyValueReaderWithOffset(
+        new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, new int[]{_valueSizeInBytes}),
         _capacityInRows));
     _capacityInRows += _numRowsPerChunk;
   }
@@ -262,7 +206,6 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
    */
   private void addBufferIfNeeded(int row) {
     if (row >= _capacityInRows) {
-
       // Adding _chunkSizeInBytes in the numerator for rounding up. +1 because rows are 0-based index.
       long buffersNeeded = (row + 1 - _capacityInRows + _numRowsPerChunk) / _numRowsPerChunk;
       for (int i = 0; i < buffersNeeded; i++) {
@@ -271,15 +214,15 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     }
   }
 
-  private static class WriterWithOffset implements Closeable {
+  private static class KeyValueWriterWithOffset implements Closeable {
     // TODO(ERICH): I assumed that within this class `row` is equivalent to `docId` in the outer class. Will rename to
     //  docId because that's what will be written in the tuple.
-    final FixedByteSingleValueMultiColWriter _writer;
-    final int _startRowId;
+    final FixedByteMapValueMultiColWriter _writer;
+    final int _startDocId;
 
-    private WriterWithOffset(FixedByteSingleValueMultiColWriter writer, int startRowId) {
+    private KeyValueWriterWithOffset(FixedByteMapValueMultiColWriter writer, int startDocId) {
       _writer = writer;
-      _startRowId = startRowId;
+      _startDocId = startDocId;
     }
 
     @Override
@@ -288,37 +231,31 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
       _writer.close();
     }
 
-    public void setInt(int row, int value) {
-      _writer.setInt(row - _startRowId, 0, value);
-    }
+    public void setDocAndInt(int docId, int value) {
+      // Write the tuple of (docId, Value) to the index buffer
 
-    public void setLong(int row, long value) {
-      _writer.setLong(row - _startRowId, 0, value);
-    }
-
-    public void setFloat(int row, float value) {
-      _writer.setFloat(row - _startRowId, 0, value);
-    }
-
-    public void setDouble(int row, double value) {
-      _writer.setDouble(row - _startRowId, 0, value);
-    }
-
-    public void setBytes(int row, byte[] value) {
-      _writer.setBytes(row - _startRowId, 0, value);
+      /*
+        The format for the buffer is:
+        | docId (4 bytes) | value (4 bytes) | docId (4 bytes) | value (4 bytes) | ... |
+       */
     }
   }
 
   /**
    * Helper class that encapsulates reader and global startRowId.
+   *
+   * For reading from the sparse map, this will have to scan the buffer for
+   * any given docId.
    */
-  private static class ReaderWithOffset implements Closeable {
-    final FixedByteSingleValueMultiColReader _reader;
-    final int _startRowId;
+  private static class KeyValueReaderWithOffset implements Closeable {
+    // TODO(ERICH): change rowId to docId to make it more accurately reflect the sparse data structure.
+    //  - Move the creation of the FixedByteSVMultiColReader into this ctor so that it can make sure that it is configured for tuples
+    final FixedByteMapValueMultiColReader _reader;
+    final int _startDocId;
 
-    private ReaderWithOffset(FixedByteSingleValueMultiColReader reader, int startRowId) {
+    private KeyValueReaderWithOffset(FixedByteMapValueMultiColReader reader, int startDocId) {
       _reader = reader;
-      _startRowId = startRowId;
+      _startDocId = startDocId;
     }
 
     @Override
@@ -327,31 +264,20 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
       _reader.close();
     }
 
-    public int getInt(int row) {
-      return _reader.getInt(row - _startRowId, 0);
+    public int getInt(int docId) {
+      // From start of buffer iterate through each docId, int value pair until the docId
+      // specified is found
+      // The Doc ID and Values are written as pairs in memory, so the loop will need to read the docId while skipping
+      // over the value
+
+      /*
+        The format for the buffer is:
+        | docId (4 bytes) | value (4 bytes) | docId (4 bytes) | value (4 bytes) | ... |
+       */
+      return 0;
     }
 
-    public long getLong(int row) {
-      return _reader.getLong(row - _startRowId, 0);
-    }
-
-    public float getFloat(int row) {
-      return _reader.getFloat(row - _startRowId, 0);
-    }
-
-    public double getDouble(int row) {
-      return _reader.getDouble(row - _startRowId, 0);
-    }
-
-    public BigDecimal getBigDecimal(int row) {
-      return BigDecimalUtils.deserialize(_reader.getBytes(row - _startRowId, 0));
-    }
-
-    public byte[] getBytes(int row) {
-      return _reader.getBytes(row - _startRowId, 0);
-    }
-
-    public FixedByteSingleValueMultiColReader getReader() {
+    public FixedByteMapValueMultiColReader getReader() {
       return _reader;
     }
   }
