@@ -132,6 +132,11 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     return true;
   }
 
+  @Override
+  public boolean isMapValue() {
+    return true;
+  }
+
   // TODO(Erich): add isMapValue() to interface
 
   @Override

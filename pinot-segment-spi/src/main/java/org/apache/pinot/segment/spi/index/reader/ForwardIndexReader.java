@@ -49,6 +49,8 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    */
   boolean isSingleValue();
 
+  default boolean isMapValue() { return false; }
+
   /**
    * Returns the data type of the values in the forward index. Returns {@link DataType#INT} for dictionary-encoded
    * forward index.
