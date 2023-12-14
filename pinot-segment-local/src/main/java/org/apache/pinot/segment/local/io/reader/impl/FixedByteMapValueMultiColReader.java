@@ -86,10 +86,20 @@ public class FixedByteMapValueMultiColReader implements Closeable {
     return _dataBuffer.getInt(offset);
   }
 
-  public int getIntValue(int docId) {
+  public int getIntValue(int maxRow, int docId) {
     assert getColumnSize() == 4;
     // Scan the buffer to find the given key
     // TODO(ERICH): how to know when to stop scanning?
+    for(int row = 0; row < maxRow; row++){
+      final int docIdOffset = computeDocIdOffset(row);
+      final int currentDocId = _dataBuffer.getInt(docIdOffset);
+      if(currentDocId == docId) {
+        // The DocID has a value for this key
+        return getIntValueAt(row);
+      }
+    }
+
+    // The DocId does not have a value for this key so return Null
 
     // Return None if the docId has no value for this key
     // TODO(ERICH): what is done semantically if a  docId does not have the key? Treat as Null and then what?
@@ -116,10 +126,10 @@ public class FixedByteMapValueMultiColReader implements Closeable {
     }
   }
 
-  public void readIntValues(int[] docIds, int startPos, int limit, int[] values, int outStartPos) {
+  public void readIntValues(int maxRow, int[] docIds, int startPos, int limit, int[] values, int outStartPos) {
     int endPos = startPos + limit;
     for (int iter = startPos; iter < endPos; iter++) {
-      values[outStartPos++] = getIntValue(docIds[iter]);
+      values[outStartPos++] = getIntValue(maxRow, docIds[iter]);
     }
   }
 
