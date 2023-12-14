@@ -1,7 +1,6 @@
 package org.apache.pinot.segment.local.realtime.impl.forward;
 
 import org.apache.pinot.segment.local.io.writer.impl.DirectMemoryManager;
-import org.apache.pinot.segment.local.realtime.impl.dictionary.MultiValueDictionaryTest;
 import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.index.IndexUtil;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
@@ -13,14 +12,14 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertEquals;
 
 
-public class FixedByteSparseMapMutableForwardIndexTest {
+public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
   private static final int NROWS = 1000;
   private static final int MAX_N_VALUES = 1000;
   private PinotDataBufferMemoryManager _memoryManager;
 
   @BeforeClass
   public void setup() {
-    _memoryManager = new DirectMemoryManager(FixedByteSparseMapMutableForwardIndexTest.class.getName());
+    _memoryManager = new DirectMemoryManager(FixedByteSparseMapMutableForwardIndexKeyMajorTest.class.getName());
   }
 
   @AfterClass
@@ -33,7 +32,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseMapMutableForwardIndex(
+    var index = new FixedByteSparseMapMutableForwardIndexKeyMajor(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -51,7 +50,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseMapMutableForwardIndex(
+    var index = new FixedByteSparseMapMutableForwardIndexKeyMajor(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -74,7 +73,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseMapMutableForwardIndex(
+    var index = new FixedByteSparseMapMutableForwardIndexKeyMajor(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -95,7 +94,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseMapMutableForwardIndex(
+    var index = new FixedByteSparseMapMutableForwardIndexKeyMajor(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -125,7 +124,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseMapMutableForwardIndex(
+    var index = new FixedByteSparseMapMutableForwardIndexKeyMajor(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
