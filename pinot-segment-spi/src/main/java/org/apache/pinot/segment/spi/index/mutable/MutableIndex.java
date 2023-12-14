@@ -60,4 +60,14 @@ public interface MutableIndex extends IndexReader {
    * @param docId The document id of the given row. A non-negative value.
    */
   void add(@Nonnull Object[] values, @Nullable int[] dictIds, int docId);
+
+  /**
+   * Adds the given key value pair to the index for the given Document.
+   *
+   * @param key - the key to use under this map index
+   * @param value - the value to associate with the key
+   * @param dictId - dictId if using an dictionary encoded value
+   * @param docId - the Document whose Map value is being added to.
+   */
+  void add(@Nonnull String key, @Nonnull Object value, int dictId, int docId);
 }

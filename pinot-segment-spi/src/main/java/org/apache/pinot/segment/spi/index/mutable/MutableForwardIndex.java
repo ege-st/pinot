@@ -148,6 +148,42 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
     }
   }
 
+  @Override
+  default void add(@Nonnull String key, @Nonnull Object value, int dictId, int docId) {
+    if(dictId > 0) {
+      throw new UnsupportedOperationException();
+    } else {
+      switch (getStoredType()) {
+        case INT:
+          setIntMap(docId, key, (int) value);
+          break;
+        case LONG:
+          throw new UnsupportedOperationException();
+        case FLOAT:
+          throw new UnsupportedOperationException();
+        case DOUBLE:
+          throw new UnsupportedOperationException();
+        case BIG_DECIMAL:
+          // If the Big Decimal is already serialized as byte[], use it directly.
+          // This is only possible when the Big Decimal is generated from a realtime pre-aggregation
+          // where SumPrecisionValueAggregator uses BigDecimalUtils.serializeWithSize() to serialize the value
+          // instead of the normal BigDecimalUtils.serialize().
+          // setBigDecimal() underlying calls BigDecimalUtils.serialize() which is not the intention
+          // when the Big Decimal is already serialized.
+          throw new UnsupportedOperationException();
+        case STRING:
+          throw new UnsupportedOperationException();
+        case BYTES:
+          setBytes(docId, (byte[]) value);
+          throw new UnsupportedOperationException();
+        case JSON:
+          throw new UnsupportedOperationException();
+        default:
+          throw new IllegalStateException();
+      }
+    }
+  }
+
   /**
    * Returns the length (size in bytes) of the shortest elements inside the forward index.
    *

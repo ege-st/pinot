@@ -796,6 +796,14 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     throw new UnsupportedOperationException();
   }
 
+  default void setIntMap(int docId, String key, int value){
+    throw new UnsupportedOperationException();
+  }
+
+  default int getIntMap(int docId, String key) {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * Reads the LONG type multi-value at the given document id into the passed in value buffer (the buffer size must be
    * enough to hold all the values for the multi-value entry) and returns the number of values within the multi-value
