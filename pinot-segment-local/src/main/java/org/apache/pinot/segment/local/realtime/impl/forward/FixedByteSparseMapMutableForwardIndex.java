@@ -70,7 +70,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
   // TODO(ERICH): how does thread-safety work around this? Is there only one thread that can write and many threads
   //   that can read?
-  private final HashMap<Integer, KeyValueWriterWithOffset> _keyWriters = new HashMap<>();
+  private final HashMap<String, KeyValueWriterWithOffset> _keyWriters = new HashMap<>();
   // TODO(ERICH): This needs to be thread safe (I'm assuming from the CoW), what to change to for the hashmap?
   //    Use a ConcurrentHashMap?
   //    eg: private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _readers = new ConcurrentHashMap<>();
@@ -81,11 +81,11 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   //          so if a new (DocId,Value) is added to a Key's buffer it will show up in the middle of a query execution
   //          and create skew.
   //        Will this matter for anything other than joins?
-  private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _keyReaders = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, KeyValueReaderWithOffset> _keyReaders = new ConcurrentHashMap<>();
 
   // For each key buffer, this records how many rows have been written to that buffer. This is needed because
   // we need to be able to scan a key buffer for a particular doc id.
-  private final ConcurrentHashMap<Integer, AtomicInteger> _keyBufferSize = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, AtomicInteger> _keyBufferSize = new ConcurrentHashMap<>();
   private final DataType _storedType;
   private final int _keySizeInBytes = 4;
   private final int _valueSizeInBytes;
@@ -164,7 +164,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
    * @param value - The value that is associated with the key within this map.
    */
   @Override
-  public void setIntMap(int docId, int key, int value) {
+  public void setIntMap(int docId, String key, int value) {
     // Get the buffer for the given key
     var writer = getWriterForKey(key);
     assert writer != null;
@@ -174,7 +174,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   }
 
   @Override
-  public int getIntMap(int docId, int key) {
+  public int getIntMap(int docId, String key) {
     var reader = _keyReaders.get(key);
     if(reader != null) {
       var size = getBufferSizeForKey(key);
@@ -186,7 +186,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     }
   }
 
-  private KeyValueWriterWithOffset getWriterForKey(int key) {
+  private KeyValueWriterWithOffset getWriterForKey(String key) {
     var writer =  _keyWriters.get(key);
 
     if(writer == null) {
@@ -199,7 +199,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     return writer;
   }
 
-  private AtomicInteger getBufferSizeForKey(int key) {
+  private AtomicInteger getBufferSizeForKey(String key) {
     var size = _keyBufferSize.get(key);
     assert size != null;
     return size;
@@ -216,7 +216,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     }
   }
 
-  private void addBufferForKey(int key) {
+  private void addBufferForKey(String key) {
     LOGGER.info("Allocating {} bytes for: {}", _chunkSizeInBytes, _allocationContext);
     // NOTE: PinotDataBuffer is tracked in the PinotDataBufferMemoryManager. No need to track it inside the class.
     PinotDataBuffer buffer = _memoryManager.allocate(_chunkSizeInBytes, _allocationContext);
