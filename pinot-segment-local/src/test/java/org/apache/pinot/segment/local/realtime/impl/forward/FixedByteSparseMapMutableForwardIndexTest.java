@@ -122,7 +122,6 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     // Buffer size limit is NROWS per key
     // so add docs to one key until NROWS is exceeded
 
-    final int NROWS = 10;
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_SV_FORWARD_INDEX_FILE_EXTENSION);
@@ -135,7 +134,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     );
 
     // Fill up the buffer
-    for(int id = 0; id < NROWS-1; id++ ){
+    for(int id = 0; id < NROWS; id++ ){
       index.setIntMap(id, 5, id * 2);
     }
 
