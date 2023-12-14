@@ -711,6 +711,13 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Gets the value of the given key for the given DocId. If the Doc does not have that
+   * key in its map then return the Null value.
+   * @param docId
+   * @param key
+   * @return
+   */
   default int getIntMap(int docId, String key) {
     throw new UnsupportedOperationException();
   }
