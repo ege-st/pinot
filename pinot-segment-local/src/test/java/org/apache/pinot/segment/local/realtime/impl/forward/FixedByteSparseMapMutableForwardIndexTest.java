@@ -41,8 +41,8 @@ public class FixedByteSparseMapMutableForwardIndexTest {
         allocationContext
     );
 
-    index.setIntMap(0, 1, 15);
-    var actualValue = index.getIntMap(0, 1);
+    index.setIntMap(0, "k1", 15);
+    var actualValue = index.getIntMap(0, "k1");
     assertEquals(actualValue, 15);
   }
 
@@ -60,11 +60,11 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     );
 
     for(int id = 0; id < 100; id++ ){
-      index.setIntMap(id, 1, id * 2);
+      index.setIntMap(id, "k1", id * 2);
     }
 
     for(int id = 0; id < 100; id++) {
-      var actualValue = index.getIntMap(id, 1);
+      var actualValue = index.getIntMap(id, "k1");
       assertEquals(actualValue, id * 2);
     }
   }
@@ -82,9 +82,9 @@ public class FixedByteSparseMapMutableForwardIndexTest {
         allocationContext
     );
 
-    index.setIntMap(0, 1, 15);
+    index.setIntMap(0, "k1", 15);
     // Get a key that this doc does not have
-    var actualValue = index.getIntMap(0, 5);
+    var actualValue = index.getIntMap(0, "k5");
 
     // Start with 0 but this should be the Null symbol
     assertEquals(actualValue, 0);
@@ -104,15 +104,15 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     );
 
     for(int id = 0; id < 100; id++ ){
-      index.setIntMap(id, id, id * 2);
+      index.setIntMap(id, String.format("%d", id), id * 2);
     }
 
     for(int id = 0; id < 100; id++) {
-      var actualValue = index.getIntMap(id, id);
+      var actualValue = index.getIntMap(id, String.format("%d", id));
       assertEquals(actualValue, id * 2);
 
       // Check that this doc does not have a value for a key that it does not have in its map
-      var actualValue2 = index.getIntMap(id, id+1);
+      var actualValue2 = index.getIntMap(id, String.format("%d", id+1));
       assertEquals(actualValue2, 0);
     }
   }
@@ -135,13 +135,13 @@ public class FixedByteSparseMapMutableForwardIndexTest {
 
     // Fill up the buffer
     for(int id = 0; id < NROWS; id++ ) {
-      index.setIntMap(id, 5, id * 2);
+      index.setIntMap(id, "k5", id * 2);
     }
 
     // Exceed the key buffer size
     // TODO: currently this will fault but we'll want it to add a new buffer to the key's buffer set
     for(int id = NROWS; id <= NROWS + 5; id++ ) {
-      index.setIntMap(id, 5, id * 2);
+      index.setIntMap(id, "k5", id * 2);
     }
   }
 }
