@@ -23,6 +23,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.pinot.segment.local.io.reader.impl.FixedByteMapValueMultiColReader;
 import org.apache.pinot.segment.local.io.writer.impl.FixedByteMapValueMultiColWriter;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
@@ -81,6 +82,10 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   //          and create skew.
   //        Will this matter for anything other than joins?
   private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _keyReaders = new ConcurrentHashMap<>();
+
+  // For each key buffer, this records how many rows have been written to that buffer. This is needed because
+  // we need to be able to scan a key buffer for a particular doc id.
+  private final ConcurrentHashMap<Integer, AtomicInteger> _keyBufferSize = new ConcurrentHashMap<>();
   private final DataType _storedType;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
@@ -98,7 +103,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
    */
   public FixedByteSparseMapMutableForwardIndex(DataType storedType, int fixedLength,
       int numRowsPerChunk, PinotDataBufferMemoryManager memoryManager, String allocationContext) {
-    assert storedType.isFixedWidth();
+    assert storedType.isFixedWidth();  // TODO(ERICH): see what would trigger this path. For POC should only allow int as the value
 
     _storedType = storedType;
     if (!storedType.isFixedWidth()) {
@@ -112,7 +117,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     _chunkSizeInBytes = numRowsPerChunk * (long)_valueSizeInBytes;
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
-    // ERICH: don't add any buffers until we start adding keys
+    // TODO(ERICH): don't add any buffers until we start adding keys
     //addBuffer();
   }
 
@@ -163,25 +168,21 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     var writer = getWriterForKey(key);
     assert writer != null;
     writer.setDocAndInt(docId, value);
+    var size = getBufferSizeForKey(key);
+    size.incrementAndGet();
   }
 
   @Override
   public int getIntMap(int docId, int key) {
     var reader = _keyReaders.get(key);
     if(reader != null) {
-      return reader.getReader().getIntValue(docId);
+      var size = getBufferSizeForKey(key);
+      var maxRows = size.get();
+      return reader.getReader().getIntValue(maxRows, docId);
     } else {
+      // TODO(ERICH): if the key does not exist we should return the Null code
       return 0;
     }
-  }
-
-  public int getInt(int docId, int key) {
-    // Get the buffer for the key (if it exists)
-    // If the key has no buffer then return No result
-    // If the key has a buffer then search for the DocId and return the value
-
-    // TODO(ERICH): just return 0 for now then figure out null value stuff
-    return 0;
   }
 
   private KeyValueWriterWithOffset getWriterForKey(int key) {
@@ -195,6 +196,12 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     }
 
     return writer;
+  }
+
+  private AtomicInteger getBufferSizeForKey(int key) {
+    var size = _keyBufferSize.get(key);
+    assert size != null;
+    return size;
   }
 
   @Override
@@ -218,6 +225,9 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
         new KeyValueWriterWithOffset(
             new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
             _capacityInRows));
+
+    _keyBufferSize.put(key, new AtomicInteger(0));
+
     _keyReaders.put(
         key,
         new KeyValueReaderWithOffset(
@@ -246,10 +256,12 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     //  docId because that's what will be written in the tuple.
     final FixedByteMapValueMultiColWriter _writer;
     final int _startDocId;
+    int _nextRow;
 
     private KeyValueWriterWithOffset(FixedByteMapValueMultiColWriter writer, int startDocId) {
       _writer = writer;
       _startDocId = startDocId;
+      _nextRow = 0;
     }
 
     @Override
@@ -265,6 +277,8 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
         The format for the buffer is:
         | docId (4 bytes) | value (4 bytes) | docId (4 bytes) | value (4 bytes) | ... |
        */
+      _writer.setIntValue(_nextRow, docId, value);
+      _nextRow++;
     }
   }
 
