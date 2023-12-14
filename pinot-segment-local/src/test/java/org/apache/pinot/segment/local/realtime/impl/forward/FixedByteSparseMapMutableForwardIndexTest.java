@@ -116,4 +116,33 @@ public class FixedByteSparseMapMutableForwardIndexTest {
       assertEquals(actualValue2, 0);
     }
   }
+
+  @Test
+  public void testHitBufferSizeLimit() {
+    // Buffer size limit is NROWS per key
+    // so add docs to one key until NROWS is exceeded
+
+    final int NROWS = 10;
+    String allocationContext =
+        IndexUtil.buildAllocationContext("testSegment", "testMapCol",
+            V1Constants.Indexes.RAW_SV_FORWARD_INDEX_FILE_EXTENSION);
+    var index = new FixedByteSparseMapMutableForwardIndex(
+        FieldSpec.DataType.INT,
+        FieldSpec.DataType.INT.size(),
+        NROWS,
+        _memoryManager,
+        allocationContext
+    );
+
+    // Fill up the buffer
+    for(int id = 0; id < NROWS-1; id++ ){
+      index.setIntMap(id, 5, id * 2);
+    }
+
+    // Exceed the key buffer size
+    // TODO: currently this will fault but we'll want it to add a new buffer to the key's buffer set
+    for(int id = NROWS; id <= NROWS + 5; id++ ){
+      index.setIntMap(id, 5, id * 2);
+    }
+  }
 }
