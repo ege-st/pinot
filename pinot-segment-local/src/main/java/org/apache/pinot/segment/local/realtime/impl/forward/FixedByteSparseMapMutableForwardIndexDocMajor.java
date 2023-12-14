@@ -168,22 +168,23 @@ public class FixedByteSparseMapMutableForwardIndexDocMajor implements MutableFor
 
   @Override
   public int getIntMap(int docId, String key) {
-    throw new UnsupportedOperationException();
-  }
-
-  private KeyValueWriterWithOffset getWriterForKey(String key) {
-    throw new UnsupportedOperationException();
+    var keyId = _keyIds.get(key);
+    if(keyId != null) {
+      // Find where docId first occurs in the buffer
+      // Check the set of keys for that doc for the given key
+      // If found, get the value
+      throw new UnsupportedOperationException();
+    } else {
+      return 0;
+    }
   }
 
   @Override
   public void close()
       throws IOException {
-    for (Closeable writer : _keyWriters) {
-      writer.close();
-    }
-    for (KeyValueReaderWithOffset reader : _keyReaders) {
-      reader.close();
-    }
+    _keys.close();
+    _docIds.close();
+    _values.close();
   }
 
   /**
