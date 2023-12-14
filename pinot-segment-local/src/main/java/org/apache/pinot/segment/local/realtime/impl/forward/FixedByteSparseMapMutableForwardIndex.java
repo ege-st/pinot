@@ -87,6 +87,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
   // we need to be able to scan a key buffer for a particular doc id.
   private final ConcurrentHashMap<Integer, AtomicInteger> _keyBufferSize = new ConcurrentHashMap<>();
   private final DataType _storedType;
+  private final int _keySizeInBytes = 4;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
   private final long _chunkSizeInBytes;
@@ -114,7 +115,7 @@ public class FixedByteSparseMapMutableForwardIndex implements MutableForwardInde
     }
 
     _numRowsPerChunk = numRowsPerChunk;
-    _chunkSizeInBytes = numRowsPerChunk * (long)_valueSizeInBytes;
+    _chunkSizeInBytes = numRowsPerChunk * (long)(_valueSizeInBytes + _keySizeInBytes);
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
     // TODO(ERICH): don't add any buffers until we start adding keys
