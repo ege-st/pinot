@@ -32,7 +32,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
   public void testSetKeyValue() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_SV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -50,7 +50,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
   public void testManyValuesOneKey() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_SV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -73,7 +73,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
   public void testGetKeyNotPresent() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_SV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -94,7 +94,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
   public void testManyKeys() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_SV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -124,7 +124,7 @@ public class FixedByteSparseMapMutableForwardIndexTest {
 
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_SV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -134,13 +134,13 @@ public class FixedByteSparseMapMutableForwardIndexTest {
     );
 
     // Fill up the buffer
-    for(int id = 0; id < NROWS; id++ ){
+    for(int id = 0; id < NROWS; id++ ) {
       index.setIntMap(id, 5, id * 2);
     }
 
     // Exceed the key buffer size
     // TODO: currently this will fault but we'll want it to add a new buffer to the key's buffer set
-    for(int id = NROWS; id <= NROWS + 5; id++ ){
+    for(int id = NROWS; id <= NROWS + 5; id++ ) {
       index.setIntMap(id, 5, id * 2);
     }
   }
