@@ -117,6 +117,44 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
   }
 
   @Test
+  public void testDocHasKeysButGetKeyItDoesNotHave() {
+    String allocationContext =
+        IndexUtil.buildAllocationContext("testSegment", "testMapCol",
+            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+    var index = new FixedByteSparseMapMutableForwardIndexKeyMajor(
+        FieldSpec.DataType.INT,
+        FieldSpec.DataType.INT.size(),
+        NROWS,
+        _memoryManager,
+        allocationContext
+    );
+
+    index.setIntMap(0, "k1", 10);
+    index.setIntMap(0, "k2", 11);
+    index.setIntMap(0, "k3", 12);
+    assertEquals(index.getIntMap(0, "k1"), 10);
+    assertEquals(index.getIntMap(0, "k2"), 11);
+    assertEquals(index.getIntMap(0, "k3"), 12);
+
+    // Have a different doc have a value for key "k3"
+    index.setIntMap(1, "k1", 20);
+    index.setIntMap(1, "k2", 21);
+    assertEquals(index.getIntMap(1, "k1"), 20);
+    assertEquals(index.getIntMap(1, "k2"), 21);
+
+    index.setIntMap(2, "k1", 30);
+    index.setIntMap(2, "k2", 31);
+    index.setIntMap(2, "k3", 32);
+    assertEquals(index.getIntMap(2, "k1"), 30);
+    assertEquals(index.getIntMap(2, "k2"), 31);
+    assertEquals(index.getIntMap(2, "k3"), 32);
+
+    // Try to get the value of "k3" for docId 0.  This should return null or 0.
+    var actualValue = index.getIntMap(1, "k3");
+    assertEquals(actualValue, 0);
+  }
+
+  @Test
   public void testHitBufferSizeLimit() {
     // Buffer size limit is NROWS per key
     // so add docs to one key until NROWS is exceeded
@@ -138,7 +176,6 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     }
 
     // Exceed the key buffer size
-    // TODO: currently this will fault but we'll want it to add a new buffer to the key's buffer set
     for(int id = NROWS; id <= NROWS + 5; id++ ) {
       index.setIntMap(id, "k5", id * 2);
     }
