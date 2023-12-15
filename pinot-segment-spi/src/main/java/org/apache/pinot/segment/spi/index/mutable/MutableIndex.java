@@ -69,5 +69,7 @@ public interface MutableIndex extends IndexReader {
    * @param dictId - dictId if using an dictionary encoded value
    * @param docId - the Document whose Map value is being added to.
    */
-  void add(@Nonnull String key, @Nonnull Object value, int dictId, int docId);
+  default void add(@Nonnull String key, @Nonnull Object value, int dictId, int docId) {
+    throw new UnsupportedOperationException();
+  }
 }

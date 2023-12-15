@@ -223,6 +223,20 @@ public class FixedByteSVMutableForwardIndex implements MutableForwardIndex {
     getWriterForRow(docId).setBytes(docId, value);
   }
 
+  /**
+   * This will search the index for the given value.  This assumes that the values in the buffer are
+   * monotonic and increasing.  If the value is found it will return the rowId of that value. If
+   * the value is not found then it will return -1.
+   *
+   * @param docId
+   * @return -1 if _not_ found or rowId if found.
+   */
+  public int findDocIdPosition(int docId) {
+    // Iterate through the buffers and find the first buffer that could contain
+    // the docId (the first value is <= docId and the last value is >= docId.
+    return -1;
+  }
+
   private WriterWithOffset getWriterForRow(int row) {
     return _writers.get(getBufferId(row));
   }

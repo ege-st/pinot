@@ -70,24 +70,13 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
   // TODO(ERICH): how does thread-safety work around this? Is there only one thread that can write and many threads
   //   that can read?
-  private final HashMap<String, KeyValueWriterWithOffset> _keyWriters = new HashMap<>();
-  // TODO(ERICH): This needs to be thread safe (I'm assuming from the CoW), what to change to for the hashmap?
-  //    Use a ConcurrentHashMap?
-  //    eg: private final ConcurrentHashMap<Integer, KeyValueReaderWithOffset> _readers = new ConcurrentHashMap<>();
-  //    ** Note to self: I think we need to be careful: if a Query thread is reading this Map column it might happen
-  //        that a Doc adds a key while the read is happening and there is "read skew" (right term?) where at one point
-  //        the query reads for the key for a doc and gets None and then later gets a value for that key.
-  //        Actually: I think worrying about this is pointless because at the BUFFER level we have no such protection
-  //          so if a new (DocId,Value) is added to a Key's buffer it will show up in the middle of a query execution
-  //          and create skew.
-  //        Will this matter for anything other than joins?
-  private final ConcurrentHashMap<String, KeyValueReaderWithOffset> _keyReaders = new ConcurrentHashMap<>();
+  private final HashMap<String, FixedByteSVMutableForwardIndex> _keyIndexes = new HashMap<>();
 
   // For each key buffer, this records how many rows have been written to that buffer. This is needed because
   // we need to be able to scan a key buffer for a particular doc id.
   private final ConcurrentHashMap<String, AtomicInteger> _keyBufferSize = new ConcurrentHashMap<>();
   private final DataType _storedType;
-  private final int _keySizeInBytes = 4;
+  private final int _docIdSizeInBytes = 4;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
   private final long _chunkSizeInBytes;
@@ -115,7 +104,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
     }
 
     _numRowsPerChunk = numRowsPerChunk;
-    _chunkSizeInBytes = numRowsPerChunk * (long)(_valueSizeInBytes + _keySizeInBytes);
+    _chunkSizeInBytes = numRowsPerChunk * (long)(_valueSizeInBytes + _docIdSizeInBytes);
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
     // TODO(ERICH): don't add any buffers until we start adding keys
@@ -166,161 +155,37 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
   @Override
   public void setIntMap(int docId, String key, int value) {
     // Get the buffer for the given key
-    var writer = getWriterForKey(key);
-    assert writer != null;
-    writer.setDocAndInt(docId, value);
-    var size = getBufferSizeForKey(key);
-    size.incrementAndGet();
+    var keyIndex = getOrCreateKeyIndex(key);
+    keyIndex.setInt(docId, value);
+  }
+
+  private FixedByteSVMutableForwardIndex getOrCreateKeyIndex(String key) {
+    var keyIndex = _keyIndexes.get(key);
+    if(keyIndex == null) {
+      // If there is no fwd index for the given key then create one
+      keyIndex = new FixedByteSVMutableForwardIndex(false, _storedType, _storedType.size(),
+          _numRowsPerChunk, _memoryManager, _allocationContext);
+      _keyIndexes.put(key, keyIndex);
+    }
+    return keyIndex;
   }
 
   @Override
   public int getIntMap(int docId, String key) {
-    var reader = _keyReaders.get(key);
-    if(reader != null) {
-      var size = getBufferSizeForKey(key);
-      var maxRows = size.get();
-      return reader.getReader().getIntValue(maxRows, docId);
+    var keyIndex = _keyIndexes.get(key);
+    if(keyIndex != null) {
+      return keyIndex.getInt(docId);
     } else {
       // TODO(ERICH): if the key does not exist we should return the Null code
       return 0;
     }
   }
 
-  private KeyValueWriterWithOffset getWriterForKey(String key) {
-    var writer =  _keyWriters.get(key);
-
-    if(writer == null) {
-      // add a writer for this key
-      addBufferForKey(key);
-      writer = _keyWriters.get(key);
-      assert writer != null;
-    }
-
-    return writer;
-  }
-
-  private AtomicInteger getBufferSizeForKey(String key) {
-    var size = _keyBufferSize.get(key);
-    assert size != null;
-    return size;
-  }
-
   @Override
   public void close()
       throws IOException {
-    for (KeyValueWriterWithOffset writer : _keyWriters.values()) {
-      writer.close();
-    }
-    for (KeyValueReaderWithOffset reader : _keyReaders.values()) {
-      reader.close();
-    }
-  }
-
-  private void addBufferForKey(String key) {
-    LOGGER.info("Allocating {} bytes for: {}", _chunkSizeInBytes, _allocationContext);
-    // NOTE: PinotDataBuffer is tracked in the PinotDataBufferMemoryManager. No need to track it inside the class.
-    PinotDataBuffer buffer = _memoryManager.allocate(_chunkSizeInBytes, _allocationContext);
-    final int keySize = 4;
-    _keyWriters.put(
-        key,
-        new KeyValueWriterWithOffset(
-            new FixedByteMapValueMultiColWriter(buffer, keySize, _valueSizeInBytes),
-            _capacityInRows));
-
-    _keyBufferSize.put(key, new AtomicInteger(0));
-
-    _keyReaders.put(
-        key,
-        new KeyValueReaderWithOffset(
-            new FixedByteMapValueMultiColReader(buffer, _numRowsPerChunk, keySize, _valueSizeInBytes),
-            _capacityInRows));
-    _capacityInRows += _numRowsPerChunk;
-  }
-
-  /**
-   * Helper class that encapsulates writer and global startRowId.
-   */
-  private void addBufferIfNeeded(int row) {
-    if (row >= _capacityInRows) {
-      // Adding _chunkSizeInBytes in the numerator for rounding up. +1 because rows are 0-based index.
-      long buffersNeeded = (row + 1 - _capacityInRows + _numRowsPerChunk) / _numRowsPerChunk;
-      for (int i = 0; i < buffersNeeded; i++) {
-        // TODO(ERICH): use this so that a key may have multiple buffers as its data set grows.
-        //   for now, assuming that a key has as single buffer and if the limit is hit values are just dropped.
-        // addBuffer();
-      }
-    }
-  }
-
-  private static class KeyValueWriterWithOffset implements Closeable {
-    // TODO(ERICH): I assumed that within this class `row` is equivalent to `docId` in the outer class. Will rename to
-    //  docId because that's what will be written in the tuple.
-    final FixedByteMapValueMultiColWriter _writer;
-    final int _startDocId;
-    int _nextRow;
-
-    private KeyValueWriterWithOffset(FixedByteMapValueMultiColWriter writer, int startDocId) {
-      _writer = writer;
-      _startDocId = startDocId;
-      _nextRow = 0;
-    }
-
-    @Override
-    public void close()
-        throws IOException {
-      _writer.close();
-    }
-
-    public void setDocAndInt(int docId, int value) {
-      // Write the tuple of (docId, Value) to the index buffer
-
-      /*
-        The format for the buffer is:
-        | docId (4 bytes) | value (4 bytes) | docId (4 bytes) | value (4 bytes) | ... |
-       */
-      _writer.setIntValue(_nextRow, docId, value);
-      _nextRow++;
-    }
-  }
-
-  /**
-   * Helper class that encapsulates reader and global startRowId.
-   *
-   * For reading from the sparse map, this will have to scan the buffer for
-   * any given docId.
-   */
-  private static class KeyValueReaderWithOffset implements Closeable {
-    // TODO(ERICH): change rowId to docId to make it more accurately reflect the sparse data structure.
-    //  - Move the creation of the FixedByteSVMultiColReader into this ctor so that it can make sure that it is configured for tuples
-    final FixedByteMapValueMultiColReader _reader;
-    final int _startDocId;
-
-    private KeyValueReaderWithOffset(FixedByteMapValueMultiColReader reader, int startDocId) {
-      _reader = reader;
-      _startDocId = startDocId;
-    }
-
-    @Override
-    public void close()
-        throws IOException {
-      _reader.close();
-    }
-
-    public int getInt(int docId) {
-      // From start of buffer iterate through each docId, int value pair until the docId
-      // specified is found
-      // The Doc ID and Values are written as pairs in memory, so the loop will need to read the docId while skipping
-      // over the value
-
-      /*
-        The format for the buffer is:
-        | docId (4 bytes) | value (4 bytes) | docId (4 bytes) | value (4 bytes) | ... |
-       */
-      return 0;
-    }
-
-    public FixedByteMapValueMultiColReader getReader() {
-      return _reader;
+    for (var keyIndex : _keyIndexes.values()) {
+      keyIndex.close();
     }
   }
 }
