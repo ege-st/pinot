@@ -19,16 +19,13 @@
 package org.apache.pinot.segment.local.realtime.impl.forward;
 
 import com.google.common.base.Preconditions;
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.pinot.segment.local.io.reader.impl.FixedByteMapValueMultiColReader;
-import org.apache.pinot.segment.local.io.writer.impl.FixedByteMapValueMultiColWriter;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
-import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
+import org.apache.pinot.spi.data.FieldSpec;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,10 +76,8 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
   private final int _docIdSizeInBytes = 4;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
-  private final long _chunkSizeInBytes;
   private final PinotDataBufferMemoryManager _memoryManager;
   private final String _allocationContext;
-  private int _capacityInRows = 0;
 
   /**
    * @param storedType Data type of the values
@@ -104,11 +99,8 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
     }
 
     _numRowsPerChunk = numRowsPerChunk;
-    _chunkSizeInBytes = numRowsPerChunk * (long)(_valueSizeInBytes + _docIdSizeInBytes);
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
-    // TODO(ERICH): don't add any buffers until we start adding keys
-    //addBuffer();
   }
 
   public FixedByteSparseMapMutableForwardIndexKeyMajor(DataType valueType, int numRowsPerChunk,
@@ -148,6 +140,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
 
   /**
    * Sets the value of the given key for the given DocId.
+   *
    * @param docId - The docId whose map is being updated.
    * @param key - The key to set for the docId in this map.
    * @param value - The value that is associated with the key within this map.
@@ -170,6 +163,13 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
     return keyIndex;
   }
 
+  /**
+   *
+   *
+   * @param docId
+   * @param key
+   * @return
+   */
   @Override
   public int getIntMap(int docId, String key) {
     var keyIndex = _keyIndexes.get(key);
@@ -177,7 +177,9 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajor implements MutableFor
       return keyIndex.getInt(docId);
     } else {
       // TODO(ERICH): if the key does not exist we should return the Null code
-      return 0;
+      //   Have this handled at the segment builder where the null vector will be kept?
+      //   I think that will have to be the case because it will depend on if this a metric map or a dimensional map.
+      return FieldSpec.DEFAULT_METRIC_NULL_VALUE_OF_INT;
     }
   }
 
