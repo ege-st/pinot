@@ -423,15 +423,19 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
       MessageBatch messageBatch;
       try {
         final long fetchStartMs = now();
+
         messageBatch =
             _partitionGroupConsumer.fetchMessages(_currentOffset, null, _streamConfig.getFetchTimeoutMillis());
+
         if (_segmentLogger.isDebugEnabled()) {
           _segmentLogger.debug("message batch received. filtered={} unfiltered={} endOfPartitionGroup={}",
               messageBatch.getMessageCount(), messageBatch.getUnfilteredMessageCount(),
               messageBatch.isEndOfPartitionGroup());
         }
+
         _endOfPartitionGroup = messageBatch.isEndOfPartitionGroup();
         _consecutiveErrorCount = 0;
+
         final long fetchEndMs = now();
         _segmentLogger.info("Metric: Fetch Messages. Duration (ms): {}; Count: {}",
             fetchEndMs - fetchStartMs, messageBatch.getMessageCount());
