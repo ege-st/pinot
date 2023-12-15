@@ -146,6 +146,7 @@ public class FixedByteSparseMapMutableForwardIndexDocMajor implements MutableFor
 
   /**
    * Sets the value of the given key for the given DocId.
+   *
    * @param docId - The docId whose map is being updated.
    * @param key - The key to set for the docId in this map.
    * @param value - The value that is associated with the key within this map.
