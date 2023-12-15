@@ -149,9 +149,21 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     assertEquals(index.getIntMap(2, "k2"), 31);
     assertEquals(index.getIntMap(2, "k3"), 32);
 
+    index.setIntMap(4, "k1", 30);
+    index.setIntMap(4, "k2", 31);
+    index.setIntMap(4, "k3", 32);
+    assertEquals(index.getIntMap(4, "k1"), 30);
+    assertEquals(index.getIntMap(4, "k2"), 31);
+    assertEquals(index.getIntMap(4, "k3"), 32);
+
     // Try to get the value of "k3" for docId 0.  This should return null or 0.
     var actualValue = index.getIntMap(1, "k3");
     assertEquals(actualValue, 0);
+
+    // Check that docid 3 has no keys
+    assertEquals(index.getIntMap(3, "k1"), 0);
+    assertEquals(index.getIntMap(3, "k2"), 0);
+    assertEquals(index.getIntMap(3, "k3"), 0);
   }
 
   @Test
