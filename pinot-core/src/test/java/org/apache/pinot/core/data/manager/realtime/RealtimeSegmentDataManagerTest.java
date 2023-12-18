@@ -31,11 +31,13 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.helix.HelixManager;
 import org.apache.helix.store.zk.ZkHelixPropertyStore;
+import org.apache.helix.zookeeper.datamodel.ZNRecord;
 import org.apache.pinot.common.metadata.segment.SegmentZKMetadata;
 import org.apache.pinot.common.metrics.ServerMetrics;
 import org.apache.pinot.common.protocols.SegmentCompletionProtocol;
@@ -45,6 +47,7 @@ import org.apache.pinot.core.data.manager.offline.TableDataManagerProvider;
 import org.apache.pinot.core.realtime.impl.fakestream.FakeStreamConfigUtils;
 import org.apache.pinot.core.realtime.impl.fakestream.FakeStreamConsumerFactory;
 import org.apache.pinot.core.realtime.impl.fakestream.FakeStreamMessageDecoder;
+import org.apache.pinot.plugin.metrics.yammer.YammerMetricsRegistry;
 import org.apache.pinot.segment.local.data.manager.TableDataManager;
 import org.apache.pinot.segment.local.data.manager.TableDataManagerConfig;
 import org.apache.pinot.segment.local.realtime.impl.RealtimeSegmentStatsHistory;
@@ -56,6 +59,7 @@ import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.data.Schema;
 import org.apache.pinot.spi.env.PinotConfiguration;
 import org.apache.pinot.spi.metrics.PinotMetricUtils;
+import org.apache.pinot.spi.metrics.PinotMetricsRegistry;
 import org.apache.pinot.spi.stream.LongMsgOffset;
 import org.apache.pinot.spi.stream.LongMsgOffsetFactory;
 import org.apache.pinot.spi.stream.PermanentConsumerException;
@@ -907,6 +911,33 @@ public class RealtimeSegmentDataManagerTest {
     } finally {
       segmentDataManager.destroy();
     }
+  }
+
+  @Test
+  public void testIngestMapValues() throws Exception {
+    // Note: use this to test the ingestion of map values without having to make changes to anything outside of
+    // RealtimeSegmentDataManager.index()
+    var rttdm = new RealtimeTableDataManager(
+        new Semaphore(1)
+    );
+    var tableConfig = createTableConfig();
+    var zkMetadata = new SegmentZKMetadata(
+        new ZNRecord("1")
+    );
+    var schema = new Schema();
+    RealtimeSegmentDataManager dm = new RealtimeSegmentDataManager(
+        zkMetadata,
+        tableConfig,
+        rttdm,
+        "/tmp",
+        new IndexLoadingConfig(),
+        schema,
+        LLCSegmentName.of("tst_segment"),
+        new Semaphore(1),
+        new ServerMetrics(new YammerMetricsRegistry()),
+        null,
+        null,
+        () -> true);
   }
 
   private static class TimeSupplier implements Supplier<Long> {
