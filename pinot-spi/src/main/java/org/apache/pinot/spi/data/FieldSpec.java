@@ -161,6 +161,10 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
     return _isSingleValueField;
   }
 
+  public boolean isMapValueField() {
+    return false;
+  }
+
   // Required by JSON de-serializer. DO NOT REMOVE.
   public void setSingleValueField(boolean isSingleValueField) {
     _isSingleValueField = isSingleValueField;

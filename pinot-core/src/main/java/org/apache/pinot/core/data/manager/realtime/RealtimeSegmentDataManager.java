@@ -586,6 +586,7 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
                 realtimeRowsDroppedMeter);
         _numRowsErrored++;
       } else {
+        // Apply transformations to row.
         try {
           final long startNs = nowNS();
           _transformPipeline.processRow(decodedRow.getResult(), reusedResult);
@@ -613,6 +614,8 @@ public class RealtimeSegmentDataManager extends SegmentDataManager {
         if (transformedRows.size() > 0) {
           hasTransformedRows = true;
         }
+
+        // Index transformed row
         for (GenericRow transformedRow : transformedRows) {
           try {
             canTakeMore = _realtimeSegment.index(transformedRow, msgMetadata);

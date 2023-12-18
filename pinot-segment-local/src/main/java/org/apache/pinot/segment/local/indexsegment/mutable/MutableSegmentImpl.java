@@ -499,6 +499,7 @@ public class MutableSegmentImpl implements MutableSegment {
     }
 
     if (isUpsertEnabled()) {
+      // TODO(ERICH:map) - assume upsert is not used for map types to make poc simpler
       RecordInfo recordInfo = getRecordInfo(row, numDocsIndexed);
       GenericRow updatedRow = _partitionUpsertMetadataManager.updateRecord(row, recordInfo);
       // if record doesn't need to be dropped, then persist in segment and update metadata hashmap
@@ -626,6 +627,7 @@ public class MutableSegmentImpl implements MutableSegment {
 
       // aggregate metrics is enabled.
       if (indexContainer._valueAggregator != null) {
+        // TODO(ERICH: map) - skip aggregator for map poc
         Object value = row.getValue(indexContainer._sourceColumn);
 
         // Update numValues info
@@ -699,7 +701,7 @@ public class MutableSegmentImpl implements MutableSegment {
         indexContainer._valuesInfo.updateSVNumValues();
 
         // Update indexes
-        int dictId = indexContainer._dictId;
+        int dictId = indexContainer._dictId; // TODO(ERICH: Map) - how does this dictId get set?  Why is it at the index level?
         for (Map.Entry<IndexType, MutableIndex> indexEntry : indexContainer._mutableIndexes.entrySet()) {
           try {
             indexEntry.getValue().add(value, dictId, docId);
@@ -729,6 +731,19 @@ public class MutableSegmentImpl implements MutableSegment {
                 indexContainer._maxValue = comparable;
               }
             }
+          }
+        }
+      } else if (fieldSpec.isMapValueField()) {
+        // TODO(ERICH - map): add a branch here for map type column
+        for (Map.Entry<IndexType, MutableIndex> indexEntry : indexContainer._mutableIndexes.entrySet()) {
+          try {
+            // TODO(ERICH - map): get key and value and put here
+            var kv = (Object[]) value;  // TODO(ERICH: map) is passing as a tuple the best way to pass KV?
+            var key = (String)kv[0];
+            var val = kv[1];
+            indexEntry.getValue().add(key, val, -1, docId);
+          } catch (Exception e) {
+            recordIndexingError(indexEntry.getKey(), e);
           }
         }
       } else {
