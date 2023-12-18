@@ -101,6 +101,7 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
   protected String _name;
   protected DataType _dataType;
   protected boolean _isSingleValueField = true;
+  protected boolean _isMapValueField = false;
   protected boolean _notNull = false;
 
   // NOTE: This only applies to STRING column, which is the max number of characters
@@ -120,18 +121,24 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
   }
 
   public FieldSpec(String name, DataType dataType, boolean isSingleValueField) {
-    this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, null);
+    this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, null, false);
   }
 
   public FieldSpec(String name, DataType dataType, boolean isSingleValueField, @Nullable Object defaultNullValue) {
-    this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, defaultNullValue);
+    this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, defaultNullValue, false);
   }
 
   public FieldSpec(String name, DataType dataType, boolean isSingleValueField, int maxLength,
       @Nullable Object defaultNullValue) {
+    this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, defaultNullValue, false);
+  }
+
+  public FieldSpec(String name, DataType dataType, boolean isSingleValueField, int maxLength,
+      @Nullable Object defaultNullValue, boolean isMapValueField) {
     _name = name;
     _dataType = dataType;
     _isSingleValueField = isSingleValueField;
+    _isMapValueField = isMapValueField;
     _maxLength = maxLength;
     setDefaultNullValue(defaultNullValue);
   }
@@ -168,6 +175,10 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
   // Required by JSON de-serializer. DO NOT REMOVE.
   public void setSingleValueField(boolean isSingleValueField) {
     _isSingleValueField = isSingleValueField;
+  }
+
+  public void setMapValueField(boolean isMapValueField) {
+    _isMapValueField = isMapValueField;
   }
 
   public int getMaxLength() {
