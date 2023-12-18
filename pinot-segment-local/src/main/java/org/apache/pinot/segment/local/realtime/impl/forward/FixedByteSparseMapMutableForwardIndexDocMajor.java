@@ -19,18 +19,9 @@
 package org.apache.pinot.segment.local.realtime.impl.forward;
 
 import com.google.common.base.Preconditions;
-import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.pinot.segment.local.io.reader.impl.FixedByteMapValueMultiColReader;
-import org.apache.pinot.segment.local.io.writer.impl.FixedByteMapValueMultiColWriter;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
-import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 import org.slf4j.Logger;
