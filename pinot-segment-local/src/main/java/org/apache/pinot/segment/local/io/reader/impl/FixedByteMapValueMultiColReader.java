@@ -19,10 +19,8 @@
 package org.apache.pinot.segment.local.io.reader.impl;
 
 import java.io.Closeable;
-import java.util.Optional;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
