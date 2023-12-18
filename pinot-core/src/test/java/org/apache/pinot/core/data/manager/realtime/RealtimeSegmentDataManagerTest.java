@@ -917,6 +917,8 @@ public class RealtimeSegmentDataManagerTest {
   public void testIngestMapValues() throws Exception {
     // Note: use this to test the ingestion of map values without having to make changes to anything outside of
     // RealtimeSegmentDataManager.index()
+
+    // The following is just hacked together to get this to compile and get some basic test running
     var rttdm = new RealtimeTableDataManager(
         new Semaphore(1)
     );
