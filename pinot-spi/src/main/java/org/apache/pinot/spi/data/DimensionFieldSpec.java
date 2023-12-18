@@ -42,7 +42,7 @@ public final class DimensionFieldSpec extends FieldSpec {
 
   public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, int maxLength,
       @Nullable Object defaultNullValue) {
-    super(name, dataType, isSingleValueField, maxLength, defaultNullValue);
+    super(name, dataType, isSingleValueField, maxLength, defaultNullValue, false);
   }
 
   public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField,
