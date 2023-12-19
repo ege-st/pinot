@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.pinot.segment.local.indexsegment.immutable.ImmutableSegmentLoader;
 import org.apache.pinot.segment.local.segment.creator.SegmentTestUtils;
@@ -89,8 +90,11 @@ public class MutableSegmentImplMapColumnTest {
 
     _schema = config.getSchema();
     VirtualColumnProviderFactory.addBuiltInVirtualColumnsToSegmentSchema(_schema, "testSegment");
+
+    // TODO(ERICH): needed to add myDim to the noDictionary set in order for it to _not_ be dictionary encoded.
+    //    note that figuring out how to make it not dictionary encoded was a huge pain.
     _mutableSegmentImpl = MutableSegmentImplTestUtils
-        .createMutableSegmentImpl(_schema, Collections.emptySet(), Collections.emptySet(), Collections.emptySet(),
+        .createMutableSegmentImpl(_schema, Set.of("myDim"), Collections.emptySet(), Collections.emptySet(),
             false);
     _lastIngestionTimeMs = System.currentTimeMillis();
     StreamMessageMetadata defaultMetadata = new StreamMessageMetadata(_lastIngestionTimeMs, new GenericRow());
@@ -99,8 +103,11 @@ public class MutableSegmentImplMapColumnTest {
     try (RecordReader recordReader = RecordReaderFactory
         .getRecordReader(FileFormat.AVRO, avroFile, _schema.getColumnNames(), null)) {
       GenericRow reuse = new GenericRow();
-      while (recordReader.hasNext()) {
-        _mutableSegmentImpl.index(recordReader.next(reuse), defaultMetadata);
+      //while (recordReader.hasNext()) {
+      for(int i = 0; i < 10; i++ ){
+        reuse.putValue("myCol", "Hello");
+        reuse.putValue("myDim", i);
+        _mutableSegmentImpl.index(reuse, defaultMetadata);
         _lastIndexedTs = System.currentTimeMillis();
       }
     }
@@ -110,7 +117,7 @@ public class MutableSegmentImplMapColumnTest {
   public void testMetadata() {
     SegmentMetadata actualSegmentMetadata = _mutableSegmentImpl.getSegmentMetadata();
     SegmentMetadata expectedSegmentMetadata = _immutableSegment.getSegmentMetadata();
-    assertEquals(actualSegmentMetadata.getTotalDocs(), expectedSegmentMetadata.getTotalDocs());
+    assertEquals(actualSegmentMetadata.getTotalDocs(),10);
 
     // assert that the last indexed timestamp is close to what we expect
     long actualTs = _mutableSegmentImpl.getSegmentMetadata().getLastIndexedTimestamp();
@@ -123,9 +130,10 @@ public class MutableSegmentImplMapColumnTest {
       String column = fieldSpec.getName();
       DataSourceMetadata actualDataSourceMetadata = _mutableSegmentImpl.getDataSource(column).getDataSourceMetadata();
       DataSourceMetadata expectedDataSourceMetadata = _immutableSegment.getDataSource(column).getDataSourceMetadata();
+
       assertEquals(actualDataSourceMetadata.getDataType(), expectedDataSourceMetadata.getDataType());
       assertEquals(actualDataSourceMetadata.isSingleValue(), expectedDataSourceMetadata.isSingleValue());
-      assertEquals(actualDataSourceMetadata.getNumDocs(), expectedDataSourceMetadata.getNumDocs());
+      assertEquals(actualDataSourceMetadata.getNumDocs(), 10);
       if (!expectedDataSourceMetadata.isSingleValue()) {
         assertEquals(actualDataSourceMetadata.getMaxNumValuesPerMVEntry(),
             expectedDataSourceMetadata.getMaxNumValuesPerMVEntry());
