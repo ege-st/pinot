@@ -21,7 +21,11 @@ package org.apache.pinot.segment.local.segment.creator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.apache.avro.Schema.Field;
@@ -81,10 +85,14 @@ public class SegmentTestUtils {
     var schema = new Schema.SchemaBuilder()
         .setSchemaName(tableName)
         .addSingleValueDimension("myCol", FieldSpec.DataType.STRING)
-        .addSingleValueDimension("myDim", FieldSpec.DataType.BOOLEAN)
+
+        // TODO(ERICH): when I use a boolean column then for some reason ingestion goes down the "dictionary" encoding path even though
+        //   that doesn't seem to be supported for booleans.
+        .addSingleValueDimension("myDim", DataType.INT)
         .build();
     var tableConfig = new TableConfigBuilder(TableType.REALTIME)
         .setTableName(tableName)
+        .setNoDictionaryColumns(List.of("myDim"))
         .setRoutingConfig(new RoutingConfig(null, null, RoutingConfig.STRICT_REPLICA_GROUP_INSTANCE_SELECTOR_TYPE))
         .build();
     SegmentGeneratorConfig segmentGeneratorConfig =
@@ -92,6 +100,7 @@ public class SegmentTestUtils {
     segmentGeneratorConfig.setInputFilePath(avroFile.getAbsolutePath());
     segmentGeneratorConfig.setOutDir(outputDir.getAbsolutePath());
     segmentGeneratorConfig.setTableName(tableName);
+    segmentGeneratorConfig.setRawIndexCreationColumns(List.of("myDim"));
 
     return segmentGeneratorConfig;
   }

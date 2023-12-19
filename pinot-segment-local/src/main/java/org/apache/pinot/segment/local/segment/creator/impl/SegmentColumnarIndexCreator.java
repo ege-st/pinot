@@ -277,8 +277,8 @@ public class SegmentColumnarIndexCreator implements SegmentCreator {
       FieldSpec spec) {
     String column = spec.getName();
     boolean createDictionary = false;
-    if (config.getRawIndexCreationColumns().contains(column) || config.getRawIndexCompressionType()
-        .containsKey(column)) {
+    if (config.getRawIndexCreationColumns().contains(column)
+        || config.getRawIndexCompressionType().containsKey(column)) {
       return createDictionary;
     }
 
