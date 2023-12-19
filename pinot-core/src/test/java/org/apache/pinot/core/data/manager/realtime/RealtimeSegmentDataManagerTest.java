@@ -915,6 +915,7 @@ public class RealtimeSegmentDataManagerTest {
 
   @Test
   public void testIngestMapValues() throws Exception {
+    // TODO(ERICH: map): maybe delete this, I moved the unit test to MutableSegmentImplTest
     // Note: use this to test the ingestion of map values without having to make changes to anything outside of
     // RealtimeSegmentDataManager.index()
 
@@ -946,6 +947,7 @@ public class RealtimeSegmentDataManagerTest {
         null,
         null,
         () -> true);
+
   }
 
   private static class TimeSupplier implements Supplier<Long> {

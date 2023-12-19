@@ -101,7 +101,7 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
   protected String _name;
   protected DataType _dataType;
   protected boolean _isSingleValueField = true;
-  protected boolean _isMapValueField = false;
+  protected boolean _isMapValueField = false; // If true then this column is a map type that maps String -> _dataType
   protected boolean _notNull = false;
 
   // NOTE: This only applies to STRING column, which is the max number of characters

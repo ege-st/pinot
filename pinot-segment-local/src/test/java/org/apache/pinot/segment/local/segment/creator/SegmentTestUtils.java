@@ -39,6 +39,7 @@ import org.apache.pinot.segment.spi.creator.SegmentGeneratorConfig;
 import org.apache.pinot.segment.spi.creator.SegmentVersion;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.spi.config.table.IndexConfig;
+import org.apache.pinot.spi.config.table.RoutingConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.config.table.ingestion.IngestionConfig;
@@ -69,6 +70,29 @@ public class SegmentTestUtils {
     segmentGeneratorConfig.setInputFilePath(avroFile.getAbsolutePath());
     segmentGeneratorConfig.setOutDir(outputDir.getAbsolutePath());
     segmentGeneratorConfig.setTableName(tableName);
+    return segmentGeneratorConfig;
+  }
+
+  @Nonnull
+  public static SegmentGeneratorConfig getRealtimeSegmentGeneratorConfigWithoutTimeColumnWithMapColumn(
+      @Nonnull File avroFile,
+      @Nonnull File outputDir, @Nonnull String tableName)
+      throws IOException {
+    var schema = new Schema.SchemaBuilder()
+        .setSchemaName(tableName)
+        .addSingleValueDimension("myCol", FieldSpec.DataType.STRING)
+        .addSingleValueDimension("myDim", FieldSpec.DataType.BOOLEAN)
+        .build();
+    var tableConfig = new TableConfigBuilder(TableType.REALTIME)
+        .setTableName(tableName)
+        .setRoutingConfig(new RoutingConfig(null, null, RoutingConfig.STRICT_REPLICA_GROUP_INSTANCE_SELECTOR_TYPE))
+        .build();
+    SegmentGeneratorConfig segmentGeneratorConfig =
+        new SegmentGeneratorConfig(tableConfig, schema);
+    segmentGeneratorConfig.setInputFilePath(avroFile.getAbsolutePath());
+    segmentGeneratorConfig.setOutDir(outputDir.getAbsolutePath());
+    segmentGeneratorConfig.setTableName(tableName);
+
     return segmentGeneratorConfig;
   }
 
