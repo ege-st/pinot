@@ -591,6 +591,11 @@ public final class Schema implements Serializable {
       return this;
     }
 
+    public SchemaBuilder addMapValueDimension(String dimensionName, DataType dataType) {
+      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, false, true));
+      return this;
+    }
+
     /**
      * Add single value dimensionFieldSpec with a defaultNullValue
      */

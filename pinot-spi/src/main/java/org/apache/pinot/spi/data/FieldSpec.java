@@ -169,7 +169,7 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
   }
 
   public boolean isMapValueField() {
-    return false;
+    return _isMapValueField;
   }
 
   // Required by JSON de-serializer. DO NOT REMOVE.

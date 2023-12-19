@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteMVMutableForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSVMutableForwardIndex;
+import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSparseMapMutableForwardIndexKeyMajor;
 import org.apache.pinot.segment.local.realtime.impl.forward.VarByteSVMutableForwardIndex;
 import org.apache.pinot.segment.local.segment.index.loader.ConfigurableFromIndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.ForwardIndexHandler;
@@ -266,6 +267,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
     FieldSpec.DataType storedType = context.getFieldSpec().getDataType().getStoredType();
     int fixedLengthBytes = context.getFixedLengthBytes();
     boolean isSingleValue = context.getFieldSpec().isSingleValueField();
+    var isMapValue = context.getFieldSpec().isMapValueField();
     if (!context.hasDictionary()) {
       // TODO(ERICH): Expand in here or in the "HAS DICTIONARY" branch?
       // TODO(ERICH): Add branch here for isMapValue
@@ -288,6 +290,16 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
           return new VarByteSVMutableForwardIndex(storedType, context.getMemoryManager(), allocationContext,
               initialCapacity, NODICT_VARIABLE_WIDTH_ESTIMATED_AVERAGE_VALUE_LENGTH_DEFAULT);
         }
+      } else if (isMapValue) {
+        assert storedType.isFixedWidth();
+
+        String allocationContext =
+            IndexUtil.buildAllocationContext(context.getSegmentName(), context.getFieldSpec().getName(),
+                V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+        int initialCapacity = Math.min(context.getCapacity(),
+            NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
+        return new FixedByteSparseMapMutableForwardIndexKeyMajor(
+            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext);
       } else {
         // TODO: Add support for variable width (bytes, string, big decimal) MV RAW column types
         assert storedType.isFixedWidth();

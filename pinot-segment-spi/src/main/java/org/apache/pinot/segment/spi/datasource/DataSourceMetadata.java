@@ -48,6 +48,10 @@ public interface DataSourceMetadata {
     return getFieldSpec().isSingleValueField();
   }
 
+  default boolean isMapValue() {
+    return getFieldSpec().isMapValueField();
+  }
+
   /**
    * Returns {@code true} if the column is sorted, {@code false} otherwise.
    *
