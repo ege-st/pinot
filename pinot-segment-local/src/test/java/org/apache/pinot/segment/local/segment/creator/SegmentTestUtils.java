@@ -88,7 +88,7 @@ public class SegmentTestUtils {
 
         // TODO(ERICH): when I use a boolean column then for some reason ingestion goes down the "dictionary" encoding path even though
         //   that doesn't seem to be supported for booleans.
-        .addSingleValueDimension("myDim", DataType.INT)
+        .addMapValueDimension("myDim", DataType.INT)
         .build();
     var tableConfig = new TableConfigBuilder(TableType.REALTIME)
         .setTableName(tableName)

@@ -65,6 +65,7 @@ public class IndexService {
       builder.put(indexType.getId().toLowerCase(Locale.US), indexType);
     }
     _allIndexesById = builder.build();
+    // TODO(ERICH: map): add the MapValue forward index to this.
     _allIndexes = ImmutableSet.copyOf(_allIndexesById.values());
   }
 
