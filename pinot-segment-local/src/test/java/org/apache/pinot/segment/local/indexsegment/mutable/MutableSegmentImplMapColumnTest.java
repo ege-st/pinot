@@ -107,7 +107,7 @@ public class MutableSegmentImplMapColumnTest {
       //while (recordReader.hasNext()) {
       for(int i = 0; i < 10; i++ ){
         reuse.putValue("myCol", "Hello");
-        reuse.putValue("myDim", Map.of("foo", 10));
+        reuse.putValue("myDim", Map.of("foo", i, "key", i*10));
         _mutableSegmentImpl.index(reuse, defaultMetadata);
         _lastIndexedTs = System.currentTimeMillis();
       }
@@ -132,6 +132,7 @@ public class MutableSegmentImplMapColumnTest {
       DataSourceMetadata actualDataSourceMetadata = _mutableSegmentImpl.getDataSource(column).getDataSourceMetadata();
       DataSourceMetadata expectedDataSourceMetadata = _immutableSegment.getDataSource(column).getDataSourceMetadata();
 
+      // TODO(ERICH): currently the datatype is just set to the Value type
       assertEquals(actualDataSourceMetadata.getDataType(), expectedDataSourceMetadata.getDataType());
       assertEquals(actualDataSourceMetadata.isSingleValue(), expectedDataSourceMetadata.isSingleValue());
       assertEquals(actualDataSourceMetadata.getNumDocs(), 10);
@@ -147,35 +148,37 @@ public class MutableSegmentImplMapColumnTest {
   @Test
   public void testDataSourceForSVColumns()
       throws IOException {
-    for (FieldSpec fieldSpec : _schema.getAllFieldSpecs()) {
-      if (fieldSpec.isSingleValueField()) {
-        String column = fieldSpec.getName();
-        DataSource actualDataSource = _mutableSegmentImpl.getDataSource(column);
-        DataSource expectedDataSource = _immutableSegment.getDataSource(column);
+    String column = "myDim";
+    DataSource actualDataSource = _mutableSegmentImpl.getDataSource(column);
+    int actualNumDocs = actualDataSource.getDataSourceMetadata().getNumDocs();
+    int expectedNumDocs = 10; //expectedDataSource.getDataSourceMetadata().getNumDocs();
+    assertEquals(actualNumDocs, expectedNumDocs);
 
-        int actualNumDocs = actualDataSource.getDataSourceMetadata().getNumDocs();
-        int expectedNumDocs = expectedDataSource.getDataSourceMetadata().getNumDocs();
-        assertEquals(actualNumDocs, expectedNumDocs);
+    // Read through the contents of the map column
+    Dictionary actualDictionary = actualDataSource.getDictionary();
+    ForwardIndexReader actualReader = actualDataSource.getForwardIndex();
+    try (ForwardIndexReaderContext actualReaderContext = actualReader.createContext()){
+      for (int docId = 0; docId < expectedNumDocs; docId++) {
+        var val = actualReader.getIntMap(docId, "foo");
+        assertEquals(
+            val,
+            docId,
+            column + "[foo] failed (IN the map)"
+        );
 
-        Dictionary actualDictionary = actualDataSource.getDictionary();
-        Dictionary expectedDictionary = expectedDataSource.getDictionary();
-        assertEquals(actualDictionary.length(), expectedDictionary.length());
+        var val2 = actualReader.getIntMap(docId, "key");
+        assertEquals(
+            val2,
+            docId * 10,
+            column + "[key] failed (IN the map)"
+        );
 
-        // Allow the segment name to be different
-        if (column.equals(CommonConstants.Segment.BuiltInVirtualColumn.SEGMENTNAME)) {
-          continue;
-        }
-
-        ForwardIndexReader actualReader = actualDataSource.getForwardIndex();
-        ForwardIndexReader expectedReader = expectedDataSource.getForwardIndex();
-        try (ForwardIndexReaderContext actualReaderContext = actualReader.createContext();
-            ForwardIndexReaderContext expectedReaderContext = expectedReader.createContext()) {
-          for (int docId = 0; docId < expectedNumDocs; docId++) {
-            int actualDictId = actualReader.getDictId(docId, actualReaderContext);
-            int expectedDictId = expectedReader.getDictId(docId, expectedReaderContext);
-            assertEquals(actualDictionary.get(actualDictId), expectedDictionary.get(expectedDictId));
-          }
-        }
+        var val3 = actualReader.getIntMap(docId, "bar");
+        assertEquals(
+            val3,
+            0,
+            column + "[bar] failed (NOT in the map)"
+        );
       }
     }
   }
