@@ -60,6 +60,19 @@ import static org.testng.Assert.assertEquals;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class MutableSegmentImplMapColumnTest {
+  /* TODO Write tests for:
+      - LONG
+      - FLOAT
+      - STRING
+      - BOOLEAN
+      - BYTES
+      - JSON
+      - DOUBLE
+      - TIMESTAMP
+      - Big Decimal
+      - Test both key major and doc major models (for all types)
+      - Test getting entire map (for all types)
+   */
   private static final String AVRO_FILE = "data/test_data-mv.avro";
   private static final File TEMP_DIR = new File(FileUtils.getTempDirectory(), "MutableSegmentImplTest");
 

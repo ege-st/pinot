@@ -800,6 +800,24 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Returns the entire map.
+   *
+   * @param docId
+   * @return
+   */
+  default int getIntMap(int docId) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the value for the specified Key within this map for this docId.  If key is not in the map
+   * then this returns the NULL value.
+   *
+   * @param docId
+   * @param key
+   * @return value of the key.
+   */
   default int getIntMap(int docId, String key) {
     throw new UnsupportedOperationException();
   }
