@@ -270,6 +270,20 @@ public enum TransformFunctionType {
   VECTOR_NORM("vectorNorm", ReturnTypes.explicit(SqlTypeName.DOUBLE),
       OperandTypes.family(ImmutableList.of(SqlTypeFamily.ARRAY)), "vector_norm"),
 
+  // Map Operations
+
+ /*
+  MAP_VALUE("mapValue", ReturnTypes.cascade(opBinding ->
+      opBinding.getOperandType(2).getComponentType(), SqlTypeTransforms.FORCE_NULLABLE),
+      OperandTypes.family(ImmutableList.of(SqlTypeFamily.ANY, SqlTypeFamily.ANY, SqlTypeFamily.ANY)),
+      "map_value"),
+  */
+
+  ITEM("item",
+      ReturnTypes.cascade(opBinding -> opBinding.getOperandType(0).getComponentType(),
+          SqlTypeTransforms.FORCE_NULLABLE),
+      OperandTypes.family(ImmutableList.of(SqlTypeFamily.MAP, SqlTypeFamily.STRING))),
+
   ARRAY_VALUE_CONSTRUCTOR("arrayValueConstructor", "array_value_constructor"),
 
   // Trigonometry
