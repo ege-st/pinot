@@ -52,7 +52,7 @@ public class QueryEnvironmentTestBase {
   protected static final Random RANDOM_REQUEST_ID_GEN = new Random();
   public static final Map<String, List<String>> SERVER1_SEGMENTS =
       ImmutableMap.of("a_REALTIME", ImmutableList.of("a1", "a2"), "b_REALTIME", ImmutableList.of("b1"), "c_OFFLINE",
-          ImmutableList.of("c1"), "d_OFFLINE", ImmutableList.of("d1"), "e_OFFLINE", ImmutableList.of("e1"));
+          ImmutableList.of("c1"), "d_OFFLINE", ImmutableList.of("d1"), "e_OFFLINE", ImmutableList.of("e1"), "f_REALTIME", ImmutableList.of("f1"));
   public static final Map<String, List<String>> SERVER2_SEGMENTS =
       ImmutableMap.of("a_REALTIME", ImmutableList.of("a3"), "c_OFFLINE", ImmutableList.of("c2", "c3"),
           "d_REALTIME", ImmutableList.of("d2"), "d_OFFLINE", ImmutableList.of("d3"), "e_REALTIME",
