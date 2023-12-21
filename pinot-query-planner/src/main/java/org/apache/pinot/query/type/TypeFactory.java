@@ -69,8 +69,12 @@ public class TypeFactory extends JavaTypeFactoryImpl {
   private RelDataType toRelDataType(FieldSpec fieldSpec, Predicate<FieldSpec> isNullable) {
     RelDataType type = createSqlType(getSqlTypeName(fieldSpec));
     boolean isArray = !fieldSpec.isSingleValueField();
-    if (isArray) {
+    boolean isMap = fieldSpec.isMapValueField();
+    if (isArray && !isMap) {
       type = createArrayType(type, -1);
+    } else if(isMap) {
+      RelDataType keyType = createSqlType(SqlTypeName.VARCHAR);
+      type = createMapType(keyType, type);
     }
     if (isNullable.test(fieldSpec)) {
       type = createTypeWithNullability(type, true);

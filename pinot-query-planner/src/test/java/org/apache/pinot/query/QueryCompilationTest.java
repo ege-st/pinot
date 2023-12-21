@@ -74,6 +74,17 @@ public class QueryCompilationTest extends QueryEnvironmentTestBase {
     }
   }
 
+  @Test(dataProvider = "testQueryDataProvider")
+  public void erich_testQuery(String query)
+      throws Exception {
+    try {
+      DispatchableSubPlan dispatchableSubPlan = _queryEnvironment.planQuery("SELECT map_col1['foo'] FROM f");
+      Assert.assertNotNull(dispatchableSubPlan);
+    } catch (RuntimeException e) {
+      Assert.fail("failed to plan query: " + query, e);
+    }
+  }
+
   @Test(dataProvider = "testQueryExceptionDataProvider")
   public void testQueryWithException(String query, String exceptionSnippet) {
     try {
