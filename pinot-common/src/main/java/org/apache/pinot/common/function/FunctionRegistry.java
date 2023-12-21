@@ -145,7 +145,8 @@ public class FunctionRegistry {
    */
   @Nullable
   public static FunctionInfo getFunctionInfo(String functionName, int numParameters) {
-    Map<Integer, FunctionInfo> functionInfoMap = FUNCTION_INFO_MAP.get(canonicalize(functionName));
+    String canonicalName = canonicalize(functionName);
+    Map<Integer, FunctionInfo> functionInfoMap = FUNCTION_INFO_MAP.get(canonicalName);
     return functionInfoMap != null ? functionInfoMap.get(numParameters) : null;
   }
 

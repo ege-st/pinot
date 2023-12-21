@@ -89,11 +89,18 @@ public class QueryRunnerTest extends QueryRunnerTestBase {
     factory1.registerTable(SCHEMA_BUILDER.setSchemaName("b").build(), "b_REALTIME");
     factory1.registerTable(SCHEMA_BUILDER.setSchemaName("c").build(), "c_OFFLINE");
     factory1.registerTable(SCHEMA_BUILDER.setSchemaName("d").build(), "d");
+    factory1.registerTable(
+        SCHEMA_BUILDER.setSchemaName("f")
+            .addMapValueDimension("map_col1", FieldSpec.DataType.INT)
+            .build(),
+        "f");
+
     factory1.addSegment("a_REALTIME", buildRows("a_REALTIME"));
     factory1.addSegment("a_REALTIME", buildRows("a_REALTIME"));
     factory1.addSegment("b_REALTIME", buildRows("b_REALTIME"));
     factory1.addSegment("c_OFFLINE", buildRows("c_OFFLINE"));
     factory1.addSegment("d_OFFLINE", buildRows("d_OFFLINE"));
+    factory1.addSegment("f_REALTIME", buildRows("f_OFFLINE"));
 
     MockInstanceDataManagerFactory factory2 = new MockInstanceDataManagerFactory("server2");
     factory2.registerTable(SCHEMA_BUILDER.setSchemaName("a").build(), "a_REALTIME");

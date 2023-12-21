@@ -28,10 +28,12 @@ import org.testng.annotations.DataProvider;
  * add your test to appropriate files in {@link org.apache.pinot.query.runtime.queries} instead.
  */
 public class QueryTestSet {
-
   @DataProvider(name = "testSql")
   public Object[][] provideTestSql() {
     return new Object[][]{
+        // Map Item
+        new Object[]{"SELECT map_col1['foo'] FROM f"},
+
         // Order BY LIMIT
         new Object[]{"SELECT * FROM b ORDER BY col1, col2 DESC LIMIT 3"},
         new Object[]{"SELECT * FROM a ORDER BY col1, ts LIMIT 10"},
