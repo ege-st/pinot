@@ -83,6 +83,8 @@ public class QueryEnvironmentTestBase {
     TABLE_SCHEMAS.put("d", getSchemaBuilder("d").build());
     TABLE_SCHEMAS.put("e", getSchemaBuilder("e")
         .addMultiValueDimension("mcol1", FieldSpec.DataType.STRING).build());
+    TABLE_SCHEMAS.put("f", getSchemaBuilder("f")
+        .addMapValueDimension("map_col1", FieldSpec.DataType.INT).build());
   }
 
   static Schema.SchemaBuilder getSchemaBuilder(String schemaName) {
