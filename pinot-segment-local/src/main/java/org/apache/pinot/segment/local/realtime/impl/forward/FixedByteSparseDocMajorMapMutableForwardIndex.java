@@ -47,8 +47,8 @@ import org.slf4j.LoggerFactory;
  * 7. Add new getter/setter methods ot the MutableForwardIndex interface and implement them here (look at the FixedByteMV...Index)
  * 8. If the MutableFwdIdx interface has anything for aggregateMetrics, then mark it as unsupported in this class (for the PoC)
  */
-public class FixedByteSparseMapMutableForwardIndexDocMajor implements MutableForwardIndex {
-  private static final Logger LOGGER = LoggerFactory.getLogger(FixedByteSparseMapMutableForwardIndexDocMajor.class);
+public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableForwardIndex {
+  private static final Logger LOGGER = LoggerFactory.getLogger(FixedByteSparseDocMajorMapMutableForwardIndex.class);
 
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
   // TODO(ERICH): how does thread-safety work around this? Is there only one thread that can write and many threads
@@ -76,7 +76,7 @@ public class FixedByteSparseMapMutableForwardIndexDocMajor implements MutableFor
    * @param memoryManager Memory manager to be used for allocating memory.
    * @param allocationContext Allocation allocationContext.
    */
-  public FixedByteSparseMapMutableForwardIndexDocMajor(DataType storedType, int fixedLength,
+  public FixedByteSparseDocMajorMapMutableForwardIndex(DataType storedType, int fixedLength,
       int numRowsPerChunk, PinotDataBufferMemoryManager memoryManager, String allocationContext) {
     assert storedType.isFixedWidth();  // TODO(ERICH): see what would trigger this path. For POC should only allow int as the value
 
@@ -100,7 +100,7 @@ public class FixedByteSparseMapMutableForwardIndexDocMajor implements MutableFor
         numRowsPerChunk, _memoryManager, allocationContext);
   }
 
-  public FixedByteSparseMapMutableForwardIndexDocMajor(DataType valueType, int numRowsPerChunk,
+  public FixedByteSparseDocMajorMapMutableForwardIndex(DataType valueType, int numRowsPerChunk,
       PinotDataBufferMemoryManager memoryManager, String allocationContext) {
     this(valueType, -1, numRowsPerChunk, memoryManager, allocationContext);
   }

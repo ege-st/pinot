@@ -33,7 +33,7 @@ public class FixedByteSparseMapMutableForwardIndexBenchmark {
   private static final int NROWS = 1000;
   private static final int MAX_N_VALUES = 1000;
   private PinotDataBufferMemoryManager _memoryManager;
-  private FixedByteSparseMapMutableForwardIndexKeyMajor _index;
+  private FixedByteSparseKeyMajorMapMutableForwardIndex _index;
   private String _tmpDir;
 
   @BeforeClass
@@ -48,7 +48,7 @@ public class FixedByteSparseMapMutableForwardIndexBenchmark {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    _index = new FixedByteSparseMapMutableForwardIndexKeyMajor(
+    _index = new FixedByteSparseKeyMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
