@@ -43,6 +43,10 @@ public class TransformResultMetadata {
     return _isSingleValue;
   }
 
+  public boolean isMapValue() {
+    throw new UnsupportedOperationException();
+  }
+
   public boolean hasDictionary() {
     return _hasDictionary;
   }
