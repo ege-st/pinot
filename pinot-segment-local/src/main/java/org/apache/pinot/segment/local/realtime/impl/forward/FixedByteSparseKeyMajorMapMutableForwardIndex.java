@@ -21,6 +21,7 @@ package org.apache.pinot.segment.local.realtime.impl.forward;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
@@ -171,7 +172,7 @@ public class FixedByteSparseKeyMajorMapMutableForwardIndex implements MutableFor
    * @return
    */
   @Override
-  public int getIntMap(int docId, String key) {
+  public int getIntMapValue(int docId, String key) {
     var keyIndex = _keyIndexes.get(key);
     if(keyIndex != null) {
       return keyIndex.getInt(docId);
@@ -181,6 +182,20 @@ public class FixedByteSparseKeyMajorMapMutableForwardIndex implements MutableFor
       //   I think that will have to be the case because it will depend on if this a metric map or a dimensional map.
       return FieldSpec.DEFAULT_METRIC_NULL_VALUE_OF_INT;
     }
+  }
+
+  @Override
+  public Map<String, Integer> getIntMap(int docId) {
+    var map = new HashMap<String, Integer>();
+
+    // Iterate through the keys
+    for(Map.Entry<String, FixedByteSVMutableForwardIndex> entry : _keyIndexes.entrySet()) {
+      // Find each key that has this doc and add to map
+      var value = entry.getValue().getInt(docId);
+      map.put(entry.getKey(), value);
+    }
+
+    return map;
   }
 
   @Override

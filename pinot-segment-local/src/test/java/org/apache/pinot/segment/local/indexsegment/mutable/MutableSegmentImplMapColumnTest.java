@@ -45,7 +45,6 @@ import org.apache.pinot.spi.data.readers.GenericRow;
 import org.apache.pinot.spi.data.readers.RecordReader;
 import org.apache.pinot.spi.data.readers.RecordReaderFactory;
 import org.apache.pinot.spi.stream.StreamMessageMetadata;
-import org.apache.pinot.spi.utils.CommonConstants;
 import org.apache.pinot.spi.utils.ReadMode;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -172,21 +171,21 @@ public class MutableSegmentImplMapColumnTest {
     ForwardIndexReader actualReader = actualDataSource.getForwardIndex();
     try (ForwardIndexReaderContext actualReaderContext = actualReader.createContext()){
       for (int docId = 0; docId < expectedNumDocs; docId++) {
-        var val = actualReader.getIntMap(docId, "foo");
+        var val = actualReader.getIntMapValue(docId, "foo");
         assertEquals(
             val,
             docId,
             column + "[foo] failed (IN the map)"
         );
 
-        var val2 = actualReader.getIntMap(docId, "key");
+        var val2 = actualReader.getIntMapValue(docId, "key");
         assertEquals(
             val2,
             docId * 10,
             column + "[key] failed (IN the map)"
         );
 
-        var val3 = actualReader.getIntMap(docId, "bar");
+        var val3 = actualReader.getIntMapValue(docId, "bar");
         assertEquals(
             val3,
             0,

@@ -32,6 +32,20 @@ import org.slf4j.LoggerFactory;
  * ERICH: This is the PoC class for an index storing the Sparse Map data structure.
  * This PoC is working off a copy of FixedByteSVMutableForwardIndex.
  *
+ * This format stores the values contained in a map space by DocId/KeyId. With the data sorted by DocID then Key
+ * ID. To represent this: there are 3 SV indexes: one for DocIDs, One for Key IDs, and one for the Value:
+ *
+ *   | DocID|  | KeyID |  | Value |
+ *   |     0|  |    3  |  |     5 |
+ *   |     0|  |    4  |  |    15 |
+ *   |     0|  |    9  |  |    -1 |
+ *   |     4|  |    3  |  |    12 |
+ *   |     5|  |    1  |  |   250 |
+ *
+ *   Stores the space for a map column where documents 0, 4, and 5 have key/value pairs.  With Doc 0 having {3: 5, 4: 15,
+ *   9: -1}, doc 4 having {3: 12}, and doc 5 having {1: 250}.
+ *
+ *   A separate map is used to store the mapping of Key to Key ID.
  *
  * This is the doc major data format.  We will build an append only log that stores the
  * DocId, the Key Id, and the Value for the Key
@@ -159,13 +173,40 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
   }
 
   @Override
-  public int getIntMap(int docId, String key) {
+  public int getIntMapValue(int docId, String key) {
     var keyId = _keyIds.get(key);
+
     if(keyId != null) {
       // Find where docId first occurs in the buffer
       // Check the set of keys for that doc for the given key
       // If found, get the value
-      throw new UnsupportedOperationException();
+      var lowEntry  = 0;
+      var highEntry = _nextEntryId - 1;
+      var startOfDocBlock = -1;
+      while(lowEntry < highEntry) {
+        var currentEntry = (highEntry - lowEntry)/2 + lowEntry;
+        var currentDocId = _docIds.getInt(currentEntry);
+        var currentKeyId = _keys.getInt(currentEntry);
+        if(currentDocId == docId) {
+          if(currentKeyId == keyId) {
+            // Entry is found
+            return _values.getInt(currentEntry);
+          } else if (currentKeyId < keyId) {
+            // We are below the location where the document could be
+            lowEntry = currentEntry + 1;
+          } else {
+            // We are above the location where the document could be
+            highEntry = currentEntry - 1;
+          }
+        } else if(currentDocId < docId) {
+          lowEntry = currentEntry + 1;
+        } else {
+          highEntry = currentEntry - 1;
+        }
+      }
+
+      // Searched the chunks and did not find the given key
+      return 0;
     } else {
       return 0;
     }

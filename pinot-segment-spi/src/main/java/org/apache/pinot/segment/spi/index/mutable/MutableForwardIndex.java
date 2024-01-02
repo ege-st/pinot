@@ -19,6 +19,7 @@
 package org.apache.pinot.segment.spi.index.mutable;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
@@ -718,7 +719,18 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
    * @param key
    * @return
    */
-  default int getIntMap(int docId, String key) {
+  default int getIntMapValue(int docId, String key) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Gets a document's set of key value pairs for this map. If this document has nothing in this map then
+   * this will return an empty Map.
+   *
+   * @param docId The ID for a document.
+   * @return The Key Value pairs that the given document has for this map.
+   */
+  default Map<String, Integer> getIntMap(int docId) {
     throw new UnsupportedOperationException();
   }
 
