@@ -219,19 +219,4 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
     _docIds.close();
     _values.close();
   }
-
-  /**
-   * Helper class that encapsulates writer and global startRowId.
-   */
-  private void addBufferIfNeeded(int row) {
-    if (row >= _capacityInRows) {
-      // Adding _chunkSizeInBytes in the numerator for rounding up. +1 because rows are 0-based index.
-      long buffersNeeded = (row + 1 - _capacityInRows + _numRowsPerChunk) / _numRowsPerChunk;
-      for (int i = 0; i < buffersNeeded; i++) {
-        // TODO(ERICH): use this so that a key may have multiple buffers as its data set grows.
-        //   for now, assuming that a key has as single buffer and if the limit is hit values are just dropped.
-        // addBuffer();
-      }
-    }
-  }
 }
