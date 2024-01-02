@@ -205,11 +205,10 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
         }
       }
 
-      // Searched the chunks and did not find the given key
-      return 0;
-    } else {
-      return 0;
     }
+
+    // Searched the chunks and did not find the given key
+    return 0;
   }
 
   @Override
