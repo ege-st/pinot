@@ -806,7 +806,7 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    * @param docId
    * @return
    */
-  default int getIntMap(int docId) {
+  default int getIntMapValue(int docId) {
     throw new UnsupportedOperationException();
   }
 
@@ -818,7 +818,7 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    * @param key
    * @return value of the key.
    */
-  default int getIntMap(int docId, String key) {
+  default int getIntMapValue(int docId, String key) {
     throw new UnsupportedOperationException();
   }
 
