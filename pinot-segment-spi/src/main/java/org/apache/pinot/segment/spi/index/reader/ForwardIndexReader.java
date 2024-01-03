@@ -804,9 +804,9 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    * Returns the entire map.
    *
    * @param docId
-   * @return
+   * @return number of KV pairs
    */
-  default int getIntMapKeyValue(int docId) {
+  default int getIntMapKeyValue(int docId, String[] keys, int[] values) {
     throw new UnsupportedOperationException();
   }
 
