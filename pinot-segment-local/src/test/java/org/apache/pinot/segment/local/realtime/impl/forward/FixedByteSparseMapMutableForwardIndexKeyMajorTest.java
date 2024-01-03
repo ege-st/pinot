@@ -32,7 +32,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseKeyMajorMapMutableForwardIndex(
+    var index = new FixedByteKeyMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -50,7 +50,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseKeyMajorMapMutableForwardIndex(
+    var index = new FixedByteKeyMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -73,7 +73,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseKeyMajorMapMutableForwardIndex(
+    var index = new FixedByteKeyMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -94,7 +94,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseKeyMajorMapMutableForwardIndex(
+    var index = new FixedByteKeyMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -121,7 +121,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseKeyMajorMapMutableForwardIndex(
+    var index = new FixedByteKeyMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -174,7 +174,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteSparseKeyMajorMapMutableForwardIndex(
+    var index = new FixedByteKeyMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,

@@ -31,7 +31,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteMVMutableForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSVMutableForwardIndex;
-import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSparseKeyMajorMapMutableForwardIndex;
+import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteKeyMajorMapMutableForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.VarByteSVMutableForwardIndex;
 import org.apache.pinot.segment.local.segment.index.loader.ConfigurableFromIndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.ForwardIndexHandler;
@@ -298,7 +298,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
                 V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
         int initialCapacity = Math.min(context.getCapacity(),
             NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
-        return new FixedByteSparseKeyMajorMapMutableForwardIndex(
+        return new FixedByteKeyMajorMapMutableForwardIndex(
             storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext);
       } else {
         // TODO: Add support for variable width (bytes, string, big decimal) MV RAW column types
