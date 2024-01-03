@@ -796,9 +796,14 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     throw new UnsupportedOperationException();
   }
 
-  default void setIntMap(int docId, String key, int value){
+  default void setIntMapKeyValue(int docId, String key, int value){
     throw new UnsupportedOperationException();
   }
+
+  default void setIntMapValue(int docId, String[] keys, int[] values){
+    throw new UnsupportedOperationException();
+  }
+
 
   /**
    * Returns the entire map.

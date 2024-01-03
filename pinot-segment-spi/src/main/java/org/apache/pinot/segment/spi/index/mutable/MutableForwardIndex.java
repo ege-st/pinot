@@ -155,7 +155,7 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
     } else {
       switch (getStoredType()) {
         case INT:
-          setIntMap(docId, key, (int) value);
+          setIntMapKeyValue(docId, key, (int) value);
           break;
         case LONG:
           throw new UnsupportedOperationException();
@@ -707,7 +707,7 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
    * @param key key in the map to write to
    * @param value the value that is associated with the key
    */
-  default void setIntMap(int docId, String key, int value){
+  default void setIntMapKeyValue(int docId, String key, int value){
     throw new UnsupportedOperationException();
   }
 

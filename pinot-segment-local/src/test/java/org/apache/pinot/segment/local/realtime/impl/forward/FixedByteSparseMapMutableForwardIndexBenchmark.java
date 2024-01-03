@@ -69,7 +69,7 @@ public class FixedByteSparseMapMutableForwardIndexBenchmark {
     {
       var startNs = System.nanoTime();
       for(int i = 0; i < 100_000_000; i++) {
-        _index.setIntMap(i, "k1", i);
+        _index.setIntMapKeyValue(i, "k1", i);
       }
       var endNs = System.nanoTime();
       System.out.printf("Duration: %d\n", (endNs - startNs)/1000000);

@@ -40,7 +40,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
         allocationContext
     );
 
-    index.setIntMap(0, "k1", 15);
+    index.setIntMapKeyValue(0, "k1", 15);
     var actualValue = index.getIntMapKeyValue(0, "k1");
     assertEquals(actualValue, 15);
   }
@@ -59,7 +59,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     );
 
     for(int id = 0; id < 100; id++ ){
-      index.setIntMap(id, "k1", id * 2);
+      index.setIntMapKeyValue(id, "k1", id * 2);
     }
 
     for(int id = 0; id < 100; id++) {
@@ -81,7 +81,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
         allocationContext
     );
 
-    index.setIntMap(0, "k1", 15);
+    index.setIntMapKeyValue(0, "k1", 15);
     // Get a key that this doc does not have
     var actualValue = index.getIntMapKeyValue(0, "k5");
 
@@ -103,7 +103,7 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
     );
 
     for(int id = 0; id < 100; id++ ){
-      index.setIntMap(id, String.format("%d", id), id * 2);
+      index.setIntMapKeyValue(id, String.format("%d", id), id * 2);
     }
 
     for(int id = 0; id < 100; id++) {
@@ -129,29 +129,29 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
         allocationContext
     );
 
-    index.setIntMap(0, "k1", 10);
-    index.setIntMap(0, "k2", 11);
-    index.setIntMap(0, "k3", 12);
+    index.setIntMapKeyValue(0, "k1", 10);
+    index.setIntMapKeyValue(0, "k2", 11);
+    index.setIntMapKeyValue(0, "k3", 12);
     assertEquals(index.getIntMapKeyValue(0, "k1"), 10);
     assertEquals(index.getIntMapKeyValue(0, "k2"), 11);
     assertEquals(index.getIntMapKeyValue(0, "k3"), 12);
 
     // Have a different doc have a value for key "k3"
-    index.setIntMap(1, "k1", 20);
-    index.setIntMap(1, "k2", 21);
+    index.setIntMapKeyValue(1, "k1", 20);
+    index.setIntMapKeyValue(1, "k2", 21);
     assertEquals(index.getIntMapKeyValue(1, "k1"), 20);
     assertEquals(index.getIntMapKeyValue(1, "k2"), 21);
 
-    index.setIntMap(2, "k1", 30);
-    index.setIntMap(2, "k2", 31);
-    index.setIntMap(2, "k3", 32);
+    index.setIntMapKeyValue(2, "k1", 30);
+    index.setIntMapKeyValue(2, "k2", 31);
+    index.setIntMapKeyValue(2, "k3", 32);
     assertEquals(index.getIntMapKeyValue(2, "k1"), 30);
     assertEquals(index.getIntMapKeyValue(2, "k2"), 31);
     assertEquals(index.getIntMapKeyValue(2, "k3"), 32);
 
-    index.setIntMap(4, "k1", 30);
-    index.setIntMap(4, "k2", 31);
-    index.setIntMap(4, "k3", 32);
+    index.setIntMapKeyValue(4, "k1", 30);
+    index.setIntMapKeyValue(4, "k2", 31);
+    index.setIntMapKeyValue(4, "k3", 32);
     assertEquals(index.getIntMapKeyValue(4, "k1"), 30);
     assertEquals(index.getIntMapKeyValue(4, "k2"), 31);
     assertEquals(index.getIntMapKeyValue(4, "k3"), 32);
@@ -184,12 +184,12 @@ public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
 
     // Fill up the buffer
     for(int id = 0; id < NROWS; id++ ) {
-      index.setIntMap(id, "k5", id * 2);
+      index.setIntMapKeyValue(id, "k5", id * 2);
     }
 
     // Exceed the key buffer size
     for(int id = NROWS; id <= NROWS + 5; id++ ) {
-      index.setIntMap(id, "k5", id * 2);
+      index.setIntMapKeyValue(id, "k5", id * 2);
     }
   }
 }

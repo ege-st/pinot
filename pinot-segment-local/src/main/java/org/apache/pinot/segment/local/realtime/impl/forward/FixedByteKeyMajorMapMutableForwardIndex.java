@@ -147,7 +147,7 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
    * @param value - The value that is associated with the key within this map.
    */
   @Override
-  public void setIntMap(int docId, String key, int value) {
+  public void setIntMapKeyValue(int docId, String key, int value) {
     // Get the buffer for the given key
     var keyIndex = getOrCreateKeyIndex(key);
     keyIndex.setInt(docId, value);

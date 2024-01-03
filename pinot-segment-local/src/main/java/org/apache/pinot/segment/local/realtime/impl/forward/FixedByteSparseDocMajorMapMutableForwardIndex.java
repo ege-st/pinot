@@ -157,7 +157,7 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
    * @param value - The value that is associated with the key within this map.
    */
   @Override
-  public void setIntMap(int docId, String key, int value) {
+  public void setIntMapKeyValue(int docId, String key, int value) {
     // Get the Key ID
     var keyId = _keyIds.get(key);
     if(keyId == null) {
