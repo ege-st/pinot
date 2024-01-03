@@ -718,7 +718,7 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
    * @param key
    * @return
    */
-  default int getIntMapValue(int docId, String key) {
+  default int getIntMapKeyValue(int docId, String key) {
     throw new UnsupportedOperationException();
   }
 

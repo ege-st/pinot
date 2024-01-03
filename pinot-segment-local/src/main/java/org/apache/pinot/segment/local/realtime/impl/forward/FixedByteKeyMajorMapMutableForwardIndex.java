@@ -172,7 +172,7 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
    * @return
    */
   @Override
-  public int getIntMapValue(int docId, String key) {
+  public int getIntMapKeyValue(int docId, String key) {
     var keyIndex = _keyIndexes.get(key);
     if(keyIndex != null) {
       return keyIndex.getInt(docId);

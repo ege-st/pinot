@@ -173,7 +173,7 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
   }
 
   @Override
-  public int getIntMapValue(int docId, String key) {
+  public int getIntMapKeyValue(int docId, String key) {
     var keyId = _keyIds.get(key);
 
     if(keyId != null) {

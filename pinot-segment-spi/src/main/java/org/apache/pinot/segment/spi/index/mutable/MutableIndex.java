@@ -36,7 +36,6 @@ import org.apache.pinot.segment.spi.index.IndexReader;
  * their {@link #add(Object, int, int)} methods include an extra parameter that indicates the docId of the value to add.
  */
 public interface MutableIndex extends IndexReader {
-
   /**
    * Adds the given single value cell to the index.
    *
