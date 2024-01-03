@@ -805,7 +805,6 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     throw new UnsupportedOperationException();
   }
 
-
   /**
    * Returns the entire map.
    *
@@ -824,9 +823,40 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    * @param key
    * @return value of the key.
    */
+  default int getIntMapKeyValue(int docId, String key) {
+    throw new UnsupportedOperationException();
+  }
+
+  default void setIntMapKeyValue(int docId, String key, int value){
+    throw new UnsupportedOperationException();
+  }
+
+  default void setIntMapValue(int docId, String[] keys, int[] values){
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the entire map.
+   *
+   * @param docId
+   * @return number of KV pairs
+   */
+  default int getIntMapKeyValue(int docId, String[] keys, int[] values) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the value for the specified Key within this map for this docId.  If key is not in the map
+   * then this returns the NULL value.
+   *
+   * @param docId
+   * @param key
+   * @return value of the key.
+   */
   default int getIntMapKeyValue(int docId, String key, T context) {
     throw new UnsupportedOperationException();
   }
+
 
   /**
    * Reads the LONG type multi-value at the given document id into the passed in value buffer (the buffer size must be
