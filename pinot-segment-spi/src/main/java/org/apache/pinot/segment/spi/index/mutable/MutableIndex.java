@@ -72,4 +72,16 @@ public interface MutableIndex extends IndexReader {
   default void add(@Nonnull String key, @Nonnull Object value, int dictId, int docId) {
     throw new UnsupportedOperationException();
   }
+
+  /**
+   * Adds an entire map value to the index for a document.
+   *
+   * @param keys
+   * @param values
+   * @param dicIds
+   * @param docId
+   */
+  default void add(@Nonnull String[] keys, @Nonnull Object[] values, @Nullable int[] dicIds, int docId) {
+    throw new UnsupportedOperationException();
+  }
 }
