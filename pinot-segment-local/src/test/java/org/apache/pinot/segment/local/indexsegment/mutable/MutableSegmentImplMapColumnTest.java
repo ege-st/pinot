@@ -171,21 +171,21 @@ public class MutableSegmentImplMapColumnTest {
     ForwardIndexReader actualReader = actualDataSource.getForwardIndex();
     try (ForwardIndexReaderContext actualReaderContext = actualReader.createContext()){
       for (int docId = 0; docId < expectedNumDocs; docId++) {
-        var val = actualReader.getIntMapKeyValue(docId, "foo");
+        var val = actualReader.getIntMapKeyValue(docId, "foo", actualReaderContext);
         assertEquals(
             val,
             docId,
             column + "[foo] failed (IN the map)"
         );
 
-        var val2 = actualReader.getIntMapKeyValue(docId, "key");
+        var val2 = actualReader.getIntMapKeyValue(docId, "key", actualReaderContext);
         assertEquals(
             val2,
             docId * 10,
             column + "[key] failed (IN the map)"
         );
 
-        var val3 = actualReader.getIntMapKeyValue(docId, "bar");
+        var val3 = actualReader.getIntMapKeyValue(docId, "bar", actualReaderContext);
         assertEquals(
             val3,
             0,

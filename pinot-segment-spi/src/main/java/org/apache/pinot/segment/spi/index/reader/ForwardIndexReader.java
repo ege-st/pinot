@@ -49,6 +49,7 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    */
   boolean isSingleValue();
 
+  // TODO(ERICH): there is risk that code that checks isSingleValue will incorrectly flag a Map value as an Array value
   default boolean isMapValue() { return false; }
 
   /**
@@ -796,11 +797,11 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     throw new UnsupportedOperationException();
   }
 
-  default void setIntMapKeyValue(int docId, String key, int value){
+  default void setIntMapKeyValue(int docId, String key, int value, T context){
     throw new UnsupportedOperationException();
   }
 
-  default void setIntMapValue(int docId, String[] keys, int[] values){
+  default void setIntMapValue(int docId, String[] keys, int[] values, T context){
     throw new UnsupportedOperationException();
   }
 
@@ -811,7 +812,7 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    * @param docId
    * @return number of KV pairs
    */
-  default int getIntMapKeyValue(int docId, String[] keys, int[] values) {
+  default int getIntMapKeyValue(int docId, String[] keys, int[] values, T context) {
     throw new UnsupportedOperationException();
   }
 
@@ -823,7 +824,7 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    * @param key
    * @return value of the key.
    */
-  default int getIntMapKeyValue(int docId, String key) {
+  default int getIntMapKeyValue(int docId, String key, T context) {
     throw new UnsupportedOperationException();
   }
 
