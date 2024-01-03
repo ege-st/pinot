@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
  * 6. If we use the buffer model then each key will need a list of buffers (following the model in FixedBSVFwdIndex)
  * 7. Add new getter/setter methods ot the MutableForwardIndex interface and implement them here (look at the FixedByteMV...Index)
  * 8. If the MutableFwdIdx interface has anything for aggregateMetrics, then mark it as unsupported in this class (for the PoC)
+ *
  */
 public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableForwardIndex {
   private static final Logger LOGGER = LoggerFactory.getLogger(FixedByteSparseDocMajorMapMutableForwardIndex.class);

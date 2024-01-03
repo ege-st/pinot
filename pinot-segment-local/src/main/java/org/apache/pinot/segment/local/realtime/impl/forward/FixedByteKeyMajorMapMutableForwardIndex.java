@@ -148,6 +148,11 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
    */
   @Override
   public void setIntMapKeyValue(int docId, String key, int value) {
+    // TODO(ERICH):
+    //  - What happens if a key is encountered for the first time after the segment is started, then the
+    //    preceding docs (with null values) will be missing?
+    //  - What happens when there are docs that have no value for this key? How will their null values get added in?
+
     // Get the buffer for the given key
     var keyIndex = getOrCreateKeyIndex(key);
     keyIndex.setInt(docId, value);
