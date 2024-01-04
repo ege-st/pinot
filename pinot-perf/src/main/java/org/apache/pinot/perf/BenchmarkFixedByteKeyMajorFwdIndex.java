@@ -24,9 +24,6 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 
 @BenchmarkMode(Mode.Throughput)
@@ -36,7 +33,7 @@ import org.testng.annotations.Test;
 @Measurement(iterations = 5, time = 10)
 @State(Scope.Benchmark)
 
-public class FixedByteSparseMapMutableForwardIndexBenchmark {
+public class BenchmarkFixedByteKeyMajorFwdIndex {
   private static final int NROWS = 1000;
   private static final int MAX_N_VALUES = 1000;
   private PinotDataBufferMemoryManager _memoryManager;
@@ -81,6 +78,6 @@ public class FixedByteSparseMapMutableForwardIndexBenchmark {
 
   public static void main(String[] args)
       throws Exception {
-    new Runner(new OptionsBuilder().include(FixedByteSparseMapMutableForwardIndexBenchmark.class.getSimpleName()).build()).run();
+    new Runner(new OptionsBuilder().include(BenchmarkFixedByteKeyMajorFwdIndex.class.getSimpleName()).build()).run();
   }
 }
