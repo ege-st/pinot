@@ -114,6 +114,8 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
 
   @Override
   public boolean isSingleValue() {
+    // TODO(ERICH): This is not used in the ingestion pipeline (that I could tell).  Is it only used in the query engine?
+    //   It is used in the segment builder and in the segment loader and the datafetcher.
     return false;
   }
 
