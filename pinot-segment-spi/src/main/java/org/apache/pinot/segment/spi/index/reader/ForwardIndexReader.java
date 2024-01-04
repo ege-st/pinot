@@ -807,7 +807,28 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     throw new UnsupportedOperationException();
   }
 
-  default void setIntMapValue(int docId, String[] keys, int[] values){
+  default int readIntMapValues(int[] docIds, String[][] keys, int[][] values, T context) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the entire map.
+   *
+   * @param docId
+   * @return number of KV pairs
+   */
+  default int getIntMapValue(int docId, String[] outKeys, int[] outValues) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the values for a given key for each doc in the docIds array.
+   *
+   * @param docIds
+   * @param keys
+   * @return value of the key.
+   */
+  default int[] readIntMapKeyValues(int[] docIds, String[] keys, T context) {
     throw new UnsupportedOperationException();
   }
 
@@ -820,32 +841,6 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
    * @return value of the key.
    */
   default int getIntMapKeyValue(int docId, String key) {
-    throw new UnsupportedOperationException();
-  }
-
-  default void setIntMapKeyValue(int docId, String key, int value){
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Returns the entire map.
-   *
-   * @param docId
-   * @return number of KV pairs
-   */
-  default int getIntMapKeyValue(int docId, String[] keys, int[] values) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Returns the value for the specified Key within this map for this docId.  If key is not in the map
-   * then this returns the NULL value.
-   *
-   * @param docId
-   * @param key
-   * @return value of the key.
-   */
-  default int getIntMapKeyValue(int docId, String key, T context) {
     throw new UnsupportedOperationException();
   }
 
