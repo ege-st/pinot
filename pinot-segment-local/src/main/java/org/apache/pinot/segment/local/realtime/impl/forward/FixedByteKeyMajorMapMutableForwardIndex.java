@@ -114,9 +114,13 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
 
   @Override
   public boolean isSingleValue() {
-    return true;
+    return false;
   }
 
+  // TODO(ERICH): this isSingleValue semantics makes dealing with identifying a map value index a challenge b/c
+  //   a map value is not a singleValue but we currently use !isSingleValue to identify an array column.  So, I
+  //   have to set isSingleValue to false and isMapValue to true and make sure that at every point MV code is _only_
+  //   executed when isSingleValue == false and isMapValue == false.
   @Override
   public boolean isMapValue() {
     return true;

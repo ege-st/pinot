@@ -135,7 +135,7 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
 
   @Override
   public boolean isSingleValue() {
-    return true;
+    return false;
   }
 
   @Override
