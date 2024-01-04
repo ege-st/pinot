@@ -116,7 +116,6 @@ public class MutableSegmentImplMapColumnTest {
     try (RecordReader recordReader = RecordReaderFactory
         .getRecordReader(FileFormat.AVRO, avroFile, _schema.getColumnNames(), null)) {
       GenericRow reuse = new GenericRow();
-      //while (recordReader.hasNext()) {
       for(int i = 0; i < 10; i++ ){
         reuse.putValue("myCol", "Hello");
         reuse.putValue("myDim", Map.of("foo", i, "key", i*10));

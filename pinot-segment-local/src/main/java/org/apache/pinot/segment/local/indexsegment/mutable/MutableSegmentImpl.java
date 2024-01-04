@@ -734,11 +734,14 @@ public class MutableSegmentImpl implements MutableSegment {
           }
         }
       } else if (fieldSpec.isMapValueField()) {
-        // TODO(ERICH - map): add a branch here for map type column
+        // Map column using the dense column type
         for (Map.Entry<IndexType, MutableIndex> indexEntry : indexContainer._mutableIndexes.entrySet()) {
           try {
             // TODO(ERICH - map): get key and value and put here
             var kv = (java.util.Map<String, Object>) value;  // TODO(ERICH: map) is passing as a tuple the best way to pass KV?
+
+            // TODO(ERICH): this loop should be moved into the map index.  It will simplify code (and maybe reduce dynamic
+            //   dispatch function calls, not sure how JVM optimizes this kind of call)
             for(Map.Entry<String, Object> mapEntry: kv.entrySet()) {
               indexEntry.getValue().add(mapEntry.getKey(), mapEntry.getValue(), -1, docId);
             }
@@ -748,7 +751,6 @@ public class MutableSegmentImpl implements MutableSegment {
         }
       } else {
         // Multi-value column
-
         int[] dictIds = indexContainer._dictIds;
         indexContainer._valuesInfo.updateVarByteMVMaxRowLengthInBytes(value, dataType.getStoredType());
         Object[] values = (Object[]) value;
