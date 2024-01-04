@@ -169,11 +169,18 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
   public void setIntMapKeyValue(int docId, String key, int value) {
     // Get the Key ID
     var keyId = _keysDict.index(key);
-    var entryId = _nextEntryId.getAndIncrement();
+
+    // The next entry should not be incremented until _after_ the writes are made to avoid dirty reads
+    var entryId = _nextEntryId.get();
 
     _docIds.add(docId, -1, entryId);
     _keys.add(keyId, -1, entryId);
     _values.add(value, -1, entryId);
+
+    // Increment the next entry id counter and assert that it is the successor of the Entry ID that was used for
+    // this new entry
+    var newNextEntryId = _nextEntryId.incrementAndGet();
+    assert newNextEntryId == entryId + 1;
   }
 
   @Override
@@ -182,6 +189,7 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
 
     if(keyId > -1) {
       var maxEntryId = _nextEntryId.get();
+
       // Find where docId first occurs in the buffer
       // Check the set of keys for that doc for the given key
       // If found, get the value
