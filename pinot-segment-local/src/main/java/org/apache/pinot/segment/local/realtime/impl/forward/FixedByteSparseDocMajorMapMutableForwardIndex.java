@@ -21,6 +21,9 @@ package org.apache.pinot.segment.local.realtime.impl.forward;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.pinot.segment.local.realtime.impl.dictionary.StringOffHeapMutableDictionary;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
@@ -71,9 +74,10 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
   private final FixedByteSVMutableForwardIndex _docIds;
   private final FixedByteSVMutableForwardIndex _keys;
   private final FixedByteSVMutableForwardIndex _values;
-  private final HashMap<String, Integer> _keyIds = new HashMap<>();
+  //private final HashMap<String, Integer> _keyIds = new HashMap<>();
+  private final StringOffHeapMutableDictionary _keysDict;
   private int _nextKeyId = 0;
-  private int _nextEntryId = 0;
+  private AtomicInteger _nextEntryId = new AtomicInteger(0);
 
   private final DataType _storedType;
   private final int _keySizeInBytes = 4;
@@ -113,6 +117,10 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
         numRowsPerChunk, _memoryManager, allocationContext);
     _values = new FixedByteSVMutableForwardIndex(false, storedType, fixedLength,
         numRowsPerChunk, _memoryManager, allocationContext);
+
+    // Prepare the key dictionary which provides integer codes for keys.
+    _keysDict = new StringOffHeapMutableDictionary(1000, 2000,
+        _memoryManager, _allocationContext, 32);
   }
 
   public FixedByteSparseDocMajorMapMutableForwardIndex(DataType valueType, int numRowsPerChunk,
@@ -160,30 +168,25 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
   @Override
   public void setIntMapKeyValue(int docId, String key, int value) {
     // Get the Key ID
-    var keyId = _keyIds.get(key);
-    if(keyId == null) {
-      keyId = _nextKeyId;
-      _keyIds.put(key, _nextKeyId);
-      _nextKeyId++;
-    }
+    var keyId = _keysDict.index(key);
+    var entryId = _nextEntryId.getAndIncrement();
 
-    _docIds.add(docId, -1, _nextEntryId);
-    _keys.add(keyId, -1, _nextEntryId);
-    _values.add(value, -1, _nextEntryId);
-    _nextEntryId++;
+    _docIds.add(docId, -1, entryId);
+    _keys.add(keyId, -1, entryId);
+    _values.add(value, -1, entryId);
   }
 
   @Override
   public int getIntMapKeyValue(int docId, String key) {
-    var keyId = _keyIds.get(key);
+    var keyId = _keysDict.indexOf(key);
 
-    if(keyId != null) {
+    if(keyId > -1) {
+      var maxEntryId = _nextEntryId.get();
       // Find where docId first occurs in the buffer
       // Check the set of keys for that doc for the given key
       // If found, get the value
       var lowEntry  = 0;
-      var highEntry = _nextEntryId - 1;
-      var startOfDocBlock = -1;
+      var highEntry = maxEntryId;
       while(lowEntry < highEntry) {
         var currentEntry = (highEntry - lowEntry)/2 + lowEntry;
         var currentDocId = _docIds.getInt(currentEntry);
@@ -197,12 +200,12 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
             lowEntry = currentEntry + 1;
           } else {
             // We are above the location where the document could be
-            highEntry = currentEntry - 1;
+            highEntry = currentEntry;
           }
         } else if(currentDocId < docId) {
           lowEntry = currentEntry + 1;
         } else {
-          highEntry = currentEntry - 1;
+          highEntry = currentEntry;
         }
       }
 
@@ -210,6 +213,54 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
 
     // Searched the chunks and did not find the given key
     return 0;
+  }
+
+  @Override
+  public Map<String, Integer> getIntMap(int docId) {
+    // Find the first occurrence of the document id
+    // Find where docId first occurs in the buffer
+    // Check the set of keys for that doc for the given key
+    // If found, get the value
+    final var maxEntryId = _nextEntryId.get();
+    var lowEntry  = 0;
+    var highEntry = maxEntryId;
+    var firstOccurrence = -1;
+    while(lowEntry < highEntry && firstOccurrence == -1) {
+      var currentEntry = (highEntry - lowEntry)/2 + lowEntry;
+      var currentDocId = _docIds.getInt(currentEntry);
+      if(currentDocId == docId) {
+        if(currentDocId == 0) {
+          firstOccurrence = currentDocId;
+        } else {
+          var precedingDocId = _docIds.getInt(currentEntry - 1);
+          assert precedingDocId <= currentDocId;
+          if(precedingDocId < currentDocId) {
+            firstOccurrence = currentDocId;
+          } else {
+            highEntry = currentEntry;
+          }
+        }
+      } else if(currentDocId < docId) {
+        lowEntry = currentEntry + 1;
+      } else {
+        highEntry = currentEntry;
+      }
+    }
+
+    // Then scan through all KV pairs in the document
+    var map = new HashMap<String, Integer>();
+    if(firstOccurrence > -1) {
+      var currentEntry = firstOccurrence;
+      while(currentEntry < maxEntryId - 1) {
+        var keyId = _keys.getInt(currentEntry);
+        var key = _keysDict.getStringValue(keyId);
+        var value = _values.getInt(currentEntry);
+        map.put(key, value);
+      }
+      return map;
+    }
+
+    return map;
   }
 
   @Override

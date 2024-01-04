@@ -12,14 +12,14 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertEquals;
 
 
-public class FixedByteSparseMapMutableForwardIndexKeyMajorTest {
+public class FixedByteMapMutableForwardIndexKeyMajorTest {
   private static final int NROWS = 1000;
   private static final int MAX_N_VALUES = 1000;
   private PinotDataBufferMemoryManager _memoryManager;
 
   @BeforeClass
   public void setup() {
-    _memoryManager = new DirectMemoryManager(FixedByteSparseMapMutableForwardIndexKeyMajorTest.class.getName());
+    _memoryManager = new DirectMemoryManager(FixedByteMapMutableForwardIndexKeyMajorTest.class.getName());
   }
 
   @AfterClass

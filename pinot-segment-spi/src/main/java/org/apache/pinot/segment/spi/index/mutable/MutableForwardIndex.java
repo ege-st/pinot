@@ -726,6 +726,10 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
    * Gets a document's set of key value pairs for this map. If this document has nothing in this map then
    * this will return an empty Map.
    *
+   * TODO(ERICH): ideally this should not return or create a map type (if at all possible as that would be
+   * costly). But I am starting with a Map type here because it's easy to implement this as a return value
+   * and I will design a better solution after I read through and understand the query engine better.
+   *
    * @param docId The ID for a document.
    * @return The Key Value pairs that the given document has for this map.
    */

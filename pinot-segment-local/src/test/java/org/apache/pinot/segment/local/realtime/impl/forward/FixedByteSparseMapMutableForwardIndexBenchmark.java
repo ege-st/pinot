@@ -44,7 +44,7 @@ public class FixedByteSparseMapMutableForwardIndexBenchmark {
     dir.mkdir();
     dir.deleteOnExit();
 
-    _memoryManager = new MmapMemoryManager(_tmpDir, FixedByteSparseMapMutableForwardIndexKeyMajorTest.class.getName());
+    _memoryManager = new MmapMemoryManager(_tmpDir, FixedByteMapMutableForwardIndexKeyMajorTest.class.getName());
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
