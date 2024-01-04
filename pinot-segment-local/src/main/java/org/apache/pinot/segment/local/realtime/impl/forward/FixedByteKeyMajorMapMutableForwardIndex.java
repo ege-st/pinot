@@ -72,9 +72,7 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
 
   // For each key buffer, this records how many rows have been written to that buffer. This is needed because
   // we need to be able to scan a key buffer for a particular doc id.
-  private final ConcurrentHashMap<String, AtomicInteger> _keyBufferSize = new ConcurrentHashMap<>();
   private final DataType _storedType;
-  private final int _docIdSizeInBytes = 4;
   private final int _valueSizeInBytes;
   private final int _numRowsPerChunk;
   private final PinotDataBufferMemoryManager _memoryManager;
