@@ -797,21 +797,17 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     throw new UnsupportedOperationException();
   }
 
-  default void setIntMapKeyValue(int docId, String key, int value, T context){
-    throw new UnsupportedOperationException();
-  }
-
-  default void setIntMapValue(int docId, String[] keys, int[] values, T context){
-    throw new UnsupportedOperationException();
-  }
-
   /**
    * Returns the entire map.
    *
    * @param docId
    * @return number of KV pairs
    */
-  default int getIntMapKeyValue(int docId, String[] keys, int[] values, T context) {
+  default int getIntMapValue(int docId, String[] keys, int[] values, T context) {
+    throw new UnsupportedOperationException();
+  }
+
+  default void setIntMapValue(int docId, String[] keys, int[] values){
     throw new UnsupportedOperationException();
   }
 
@@ -828,10 +824,6 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
   }
 
   default void setIntMapKeyValue(int docId, String key, int value){
-    throw new UnsupportedOperationException();
-  }
-
-  default void setIntMapValue(int docId, String[] keys, int[] values){
     throw new UnsupportedOperationException();
   }
 
