@@ -294,6 +294,22 @@ public class DataFetcher {
   }
 
   /**
+   * Method for getting an integer value from a map calumn that maps String -> Integer.
+   *
+   * TODO(ERICH): should this use the TransformEvaluator that is being used in the JSON column fetchIntValues
+   *  method?
+   *
+   * @param column
+   * @param key
+   * @param inDocIds
+   * @param length
+   * @param outValues
+   */
+  public void fetchIntValues(String column, String key, int[] inDocIds, int length, int[] outValues) {
+    _columnValueReaderMap.get(column).readIntValuesMap(key, inDocIds, length, outValues);
+  }
+
+  /**
    * Fetch int[] values from a JSON column.
    *
    * @param column Column name
@@ -660,6 +676,15 @@ public class DataFetcher {
       Tracing.activeRecording().setInputDataType(_storedType, _singleValue);
       evaluator.evaluateBlock(docIds, length, _reader, getReaderContext(), _dictionary, getSVDictIdsBuffer(),
           valuesBuffer);
+    }
+
+    void readIntValuesMap(String key, int[] docIds, int length, int[] valuesBuffer) {
+      var readerContext = getReaderContext();
+      if(_dictionary != null) {
+        throw new UnsupportedOperationException("Have not added dictionary encoding support to maps yet");
+      } else {
+        _reader.readValuesMap(key, docIds, length, valuesBuffer, readerContext);
+      }
     }
 
     void readLongValuesMV(int[] docIds, int length, long[][] valuesBuffer) {

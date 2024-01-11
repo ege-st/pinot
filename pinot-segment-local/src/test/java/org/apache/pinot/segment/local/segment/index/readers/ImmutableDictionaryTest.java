@@ -132,22 +132,22 @@ public class ImmutableDictionaryTest {
     Arrays.sort(_bytesValues);
 
     try (SegmentDictionaryCreator dictionaryCreator = new SegmentDictionaryCreator(
-        new DimensionFieldSpec(INT_COLUMN_NAME, DataType.INT, true), TEMP_DIR)) {
+        new DimensionFieldSpec(INT_COLUMN_NAME, DataType.INT, true, false), TEMP_DIR)) {
       dictionaryCreator.build(_intValues);
     }
 
     try (SegmentDictionaryCreator dictionaryCreator = new SegmentDictionaryCreator(
-        new DimensionFieldSpec(LONG_COLUMN_NAME, DataType.LONG, true), TEMP_DIR)) {
+        new DimensionFieldSpec(LONG_COLUMN_NAME, DataType.LONG, true, false), TEMP_DIR)) {
       dictionaryCreator.build(_longValues);
     }
 
     try (SegmentDictionaryCreator dictionaryCreator = new SegmentDictionaryCreator(
-        new DimensionFieldSpec(FLOAT_COLUMN_NAME, DataType.FLOAT, true), TEMP_DIR)) {
+        new DimensionFieldSpec(FLOAT_COLUMN_NAME, DataType.FLOAT, true, false), TEMP_DIR)) {
       dictionaryCreator.build(_floatValues);
     }
 
     try (SegmentDictionaryCreator dictionaryCreator = new SegmentDictionaryCreator(
-        new DimensionFieldSpec(DOUBLE_COLUMN_NAME, DataType.DOUBLE, true), TEMP_DIR)) {
+        new DimensionFieldSpec(DOUBLE_COLUMN_NAME, DataType.DOUBLE, true, false), TEMP_DIR)) {
       dictionaryCreator.build(_doubleValues);
     }
 
@@ -161,13 +161,13 @@ public class ImmutableDictionaryTest {
     }
 
     try (SegmentDictionaryCreator dictionaryCreator = new SegmentDictionaryCreator(
-        new DimensionFieldSpec(STRING_COLUMN_NAME, DataType.STRING, true), TEMP_DIR)) {
+        new DimensionFieldSpec(STRING_COLUMN_NAME, DataType.STRING, true, false), TEMP_DIR)) {
       dictionaryCreator.build(_stringValues);
       _numBytesPerStringValue = dictionaryCreator.getNumBytesPerEntry();
     }
 
     try (SegmentDictionaryCreator dictionaryCreator = new SegmentDictionaryCreator(
-        new DimensionFieldSpec(BYTES_COLUMN_NAME, DataType.BYTES, true), TEMP_DIR)) {
+        new DimensionFieldSpec(BYTES_COLUMN_NAME, DataType.BYTES, true, false), TEMP_DIR)) {
       dictionaryCreator.build(_bytesValues);
       assertEquals(dictionaryCreator.getNumBytesPerEntry(), BYTES_LENGTH);
     }

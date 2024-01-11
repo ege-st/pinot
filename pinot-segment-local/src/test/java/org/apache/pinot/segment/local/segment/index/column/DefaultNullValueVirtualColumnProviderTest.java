@@ -37,19 +37,19 @@ import static org.testng.Assert.assertEquals;
 
 
 public class DefaultNullValueVirtualColumnProviderTest {
-  private static final FieldSpec SV_INT = new DimensionFieldSpec("svIntColumn", DataType.INT, true);
-  private static final FieldSpec SV_LONG = new DimensionFieldSpec("svLongColumn", DataType.LONG, true);
-  private static final FieldSpec SV_FLOAT = new DimensionFieldSpec("svFloatColumn", DataType.FLOAT, true);
-  private static final FieldSpec SV_DOUBLE = new DimensionFieldSpec("svDoubleColumn", DataType.DOUBLE, true);
-  private static final FieldSpec SV_STRING = new DimensionFieldSpec("svStringColumn", DataType.STRING, true);
+  private static final FieldSpec SV_INT = new DimensionFieldSpec("svIntColumn", DataType.INT, true, false);
+  private static final FieldSpec SV_LONG = new DimensionFieldSpec("svLongColumn", DataType.LONG, true, false);
+  private static final FieldSpec SV_FLOAT = new DimensionFieldSpec("svFloatColumn", DataType.FLOAT, true, false);
+  private static final FieldSpec SV_DOUBLE = new DimensionFieldSpec("svDoubleColumn", DataType.DOUBLE, true, false);
+  private static final FieldSpec SV_STRING = new DimensionFieldSpec("svStringColumn", DataType.STRING, true, false);
   private static final FieldSpec SV_STRING_WITH_DEFAULT =
-      new DimensionFieldSpec("svStringColumn", DataType.STRING, true, "default");
-  private static final FieldSpec SV_BYTES = new DimensionFieldSpec("svBytesColumn", DataType.BYTES, true);
-  private static final FieldSpec MV_INT = new DimensionFieldSpec("mvIntColumn", DataType.INT, false);
-  private static final FieldSpec MV_LONG = new DimensionFieldSpec("mvLongColumn", DataType.LONG, false);
-  private static final FieldSpec MV_FLOAT = new DimensionFieldSpec("mvFloatColumn", DataType.FLOAT, false);
-  private static final FieldSpec MV_DOUBLE = new DimensionFieldSpec("mvDoubleColumn", DataType.DOUBLE, false);
-  private static final FieldSpec MV_STRING = new DimensionFieldSpec("mvStringColumn", DataType.STRING, false);
+      new DimensionFieldSpec("svStringColumn", DataType.STRING, true, false, "default");
+  private static final FieldSpec SV_BYTES = new DimensionFieldSpec("svBytesColumn", DataType.BYTES, true, false);
+  private static final FieldSpec MV_INT = new DimensionFieldSpec("mvIntColumn", DataType.INT, false, false);
+  private static final FieldSpec MV_LONG = new DimensionFieldSpec("mvLongColumn", DataType.LONG, false, false);
+  private static final FieldSpec MV_FLOAT = new DimensionFieldSpec("mvFloatColumn", DataType.FLOAT, false, false);
+  private static final FieldSpec MV_DOUBLE = new DimensionFieldSpec("mvDoubleColumn", DataType.DOUBLE, false, false);
+  private static final FieldSpec MV_STRING = new DimensionFieldSpec("mvStringColumn", DataType.STRING, false, false);
 
   @Test
   public void testBuildMetadata() {

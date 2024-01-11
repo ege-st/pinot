@@ -43,17 +43,17 @@ public class GenericRowSerDeTest {
 
   @BeforeClass
   public void setUp() {
-    _fieldSpecs = Arrays.asList(new DimensionFieldSpec("intSV", DataType.INT, true),
-        new DimensionFieldSpec("longSV", DataType.LONG, true), new DimensionFieldSpec("floatSV", DataType.FLOAT, true),
-        new DimensionFieldSpec("doubleSV", DataType.DOUBLE, true),
-        new DimensionFieldSpec("stringSV", DataType.STRING, true),
-        new DimensionFieldSpec("bytesSV", DataType.BYTES, true),
-        new MetricFieldSpec("bigDecimalSV", DataType.BIG_DECIMAL), new DimensionFieldSpec("nullSV", DataType.INT, true),
-        new DimensionFieldSpec("intMV", DataType.INT, false), new DimensionFieldSpec("longMV", DataType.LONG, false),
-        new DimensionFieldSpec("floatMV", DataType.FLOAT, false),
-        new DimensionFieldSpec("doubleMV", DataType.DOUBLE, false),
-        new DimensionFieldSpec("stringMV", DataType.STRING, false),
-        new DimensionFieldSpec("nullMV", DataType.LONG, false));
+    _fieldSpecs = Arrays.asList(new DimensionFieldSpec("intSV", DataType.INT, true, false),
+        new DimensionFieldSpec("longSV", DataType.LONG, true, false), new DimensionFieldSpec("floatSV", DataType.FLOAT, true, false),
+        new DimensionFieldSpec("doubleSV", DataType.DOUBLE, true, false),
+        new DimensionFieldSpec("stringSV", DataType.STRING, true, false),
+        new DimensionFieldSpec("bytesSV", DataType.BYTES, true, false),
+        new MetricFieldSpec("bigDecimalSV", DataType.BIG_DECIMAL), new DimensionFieldSpec("nullSV", DataType.INT, true, false),
+        new DimensionFieldSpec("intMV", DataType.INT, false, false), new DimensionFieldSpec("longMV", DataType.LONG, false, false),
+        new DimensionFieldSpec("floatMV", DataType.FLOAT, false, false),
+        new DimensionFieldSpec("doubleMV", DataType.DOUBLE, false, false),
+        new DimensionFieldSpec("stringMV", DataType.STRING, false, false),
+        new DimensionFieldSpec("nullMV", DataType.LONG, false, false));
 
     _row = new GenericRow();
     _row.putValue("intSV", 123);
@@ -105,8 +105,8 @@ public class GenericRowSerDeTest {
 
   @Test
   public void testSerDeWithPartialFields() {
-    List<FieldSpec> fieldSpecs = Arrays.asList(new DimensionFieldSpec("intSV", DataType.INT, true),
-        new DimensionFieldSpec("nullSV", DataType.INT, true));
+    List<FieldSpec> fieldSpecs = Arrays.asList(new DimensionFieldSpec("intSV", DataType.INT, true, false),
+        new DimensionFieldSpec("nullSV", DataType.INT, true, false));
     GenericRowSerializer serializer = new GenericRowSerializer(fieldSpecs, true);
     byte[] bytes = serializer.serialize(_row);
     PinotDataBuffer dataBuffer = PinotDataBuffer.allocateDirect(bytes.length, PinotDataBuffer.NATIVE_ORDER, null);

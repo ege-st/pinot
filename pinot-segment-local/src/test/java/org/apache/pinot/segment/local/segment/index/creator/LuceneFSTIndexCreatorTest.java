@@ -58,7 +58,7 @@ public class LuceneFSTIndexCreatorTest {
     uniqueValues[1] = "hello-world123";
     uniqueValues[2] = "still";
 
-    FieldSpec fieldSpec = new DimensionFieldSpec("testFSTColumn", FieldSpec.DataType.STRING, true);
+    FieldSpec fieldSpec = new DimensionFieldSpec("testFSTColumn", FieldSpec.DataType.STRING, true, false);
     LuceneFSTIndexCreator creator = new LuceneFSTIndexCreator(
         INDEX_DIR, "testFSTColumn", uniqueValues);
     creator.seal();

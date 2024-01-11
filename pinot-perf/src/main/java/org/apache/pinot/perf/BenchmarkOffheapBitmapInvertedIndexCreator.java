@@ -84,7 +84,7 @@ public class BenchmarkOffheapBitmapInvertedIndexCreator {
       throws IOException {
     _indexDir = Files.createTempDirectory("index");
     _creator = new OffHeapBitmapInvertedIndexCreator(
-        _indexDir.toFile(), new DimensionFieldSpec("foo", FieldSpec.DataType.STRING, true),
+        _indexDir.toFile(), new DimensionFieldSpec("foo", FieldSpec.DataType.STRING, true, false),
         _cardinality, _numDocs, -1);
     _assignment.assign(_creator, _numDocs, _cardinality);
     _invertedIndexFile = _indexDir.resolve("foo" + V1Constants.Indexes.BITMAP_INVERTED_INDEX_FILE_EXTENSION).toFile();

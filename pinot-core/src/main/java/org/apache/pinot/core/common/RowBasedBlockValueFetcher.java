@@ -72,7 +72,10 @@ public class RowBasedBlockValueFetcher {
         default:
           throw new IllegalStateException("Unsupported value type: " + storedType + " for single-value column");
       }
-    } else {
+    } else if(blockValSet.isMapValue()) {
+      // TGODO
+      throw new UnsupportedOperationException();
+    }else {
       switch (storedType) {
         case INT:
           return new IntMultiValueFetcher(blockValSet.getIntValuesMV());

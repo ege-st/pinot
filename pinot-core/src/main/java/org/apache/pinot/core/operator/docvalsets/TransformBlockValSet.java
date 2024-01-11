@@ -72,6 +72,11 @@ public class TransformBlockValSet implements BlockValSet {
     return _transformFunction.getResultMetadata().isSingleValue();
   }
 
+  @Override
+  public boolean isMapValue() {
+    throw new UnsupportedOperationException();
+  }
+
   @Nullable
   @Override
   public Dictionary getDictionary() {

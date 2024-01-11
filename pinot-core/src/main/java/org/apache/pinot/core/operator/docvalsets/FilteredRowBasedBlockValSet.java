@@ -88,6 +88,11 @@ public class FilteredRowBasedBlockValSet implements BlockValSet {
     return true;
   }
 
+  @Override
+  public boolean isMapValue() {
+    return false;
+  }
+
   @Nullable
   @Override
   public Dictionary getDictionary() {

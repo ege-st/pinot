@@ -42,11 +42,11 @@ import org.openjdk.jmh.runner.options.TimeValue;
 
 @State(Scope.Benchmark)
 public class BenchmarkDictionaryCreation {
-  private static final FieldSpec INT_FIELD = new DimensionFieldSpec("int", FieldSpec.DataType.INT, true);
-  private static final FieldSpec LONG_FIELD = new DimensionFieldSpec("long", FieldSpec.DataType.LONG, true);
-  private static final FieldSpec FLOAT_FIELD = new DimensionFieldSpec("float", FieldSpec.DataType.FLOAT, true);
-  private static final FieldSpec DOUBLE_FIELD = new DimensionFieldSpec("double", FieldSpec.DataType.DOUBLE, true);
-  private static final FieldSpec STRING_FIELD = new DimensionFieldSpec("string", FieldSpec.DataType.STRING, true);
+  private static final FieldSpec INT_FIELD = new DimensionFieldSpec("int", FieldSpec.DataType.INT, true, false);
+  private static final FieldSpec LONG_FIELD = new DimensionFieldSpec("long", FieldSpec.DataType.LONG, true, false);
+  private static final FieldSpec FLOAT_FIELD = new DimensionFieldSpec("float", FieldSpec.DataType.FLOAT, true, false);
+  private static final FieldSpec DOUBLE_FIELD = new DimensionFieldSpec("double", FieldSpec.DataType.DOUBLE, true, false);
+  private static final FieldSpec STRING_FIELD = new DimensionFieldSpec("string", FieldSpec.DataType.STRING, true, false);
   private static final int CARDINALITY = 1_000_000;
   private static final File INDEX_DIR = new File(FileUtils.getTempDirectory(), "BenchmarkDictionaryCreation");
 

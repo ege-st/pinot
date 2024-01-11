@@ -120,15 +120,15 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
   public FieldSpec() {
   }
 
-  public FieldSpec(String name, DataType dataType, boolean isSingleValueField) {
-    this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, null, false);
+  public FieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField) {
+    this(name, dataType, isSingleValueField, isMapValueField, DEFAULT_MAX_LENGTH, null);
   }
 
-  public FieldSpec(String name, DataType dataType, boolean isSingleValueField, @Nullable Object defaultNullValue) {
-    this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, defaultNullValue, false);
+  public FieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField, @Nullable Object defaultNullValue) {
+    this(name, dataType, isSingleValueField, isMapValueField, DEFAULT_MAX_LENGTH, defaultNullValue);
   }
 
-  public FieldSpec(String name, DataType dataType, boolean isSingleValueField, int maxLength,
+  public FieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField, int maxLength,
       @Nullable Object defaultNullValue) {
     this(name, dataType, isSingleValueField, DEFAULT_MAX_LENGTH, defaultNullValue, false);
   }

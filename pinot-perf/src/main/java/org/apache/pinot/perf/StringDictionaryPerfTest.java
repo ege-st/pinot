@@ -80,7 +80,7 @@ public class StringDictionaryPerfTest {
     _indexDir = new File(TMP_DIR + File.separator + segmentName);
     _indexDir.deleteOnExit();
 
-    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, FieldSpec.DataType.STRING, true);
+    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, FieldSpec.DataType.STRING, true, false);
     schema.addField(fieldSpec);
     TableConfig tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName("test").build();
 

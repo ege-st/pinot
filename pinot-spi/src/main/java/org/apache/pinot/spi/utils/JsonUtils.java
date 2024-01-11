@@ -693,13 +693,13 @@ public class JsonUtils {
       boolean isSingleValueField, @Nullable Map<String, FieldSpec.FieldType> fieldTypeMap,
       @Nullable TimeUnit timeUnit) {
     if (fieldTypeMap == null) {
-      pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField));
+      pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField, false));
     } else {
       FieldSpec.FieldType fieldType = fieldTypeMap.getOrDefault(name, FieldSpec.FieldType.DIMENSION);
       Preconditions.checkNotNull(fieldType, "Field type not specified for field: %s", name);
       switch (fieldType) {
         case DIMENSION:
-          pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField));
+          pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField, false));
           break;
         case METRIC:
           Preconditions.checkState(isSingleValueField, "Metric field: %s cannot be multi-valued", name);

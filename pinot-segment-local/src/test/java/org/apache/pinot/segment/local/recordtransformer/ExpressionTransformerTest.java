@@ -204,7 +204,7 @@ public class ExpressionTransformerTest {
   @Test
   public void testValueAlreadyExists() {
     Schema pinotSchema = new Schema();
-    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("fullName", FieldSpec.DataType.STRING, true);
+    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("fullName", FieldSpec.DataType.STRING, true, false);
     pinotSchema.addField(dimensionFieldSpec);
     List<TransformConfig> transformConfigs = Collections.singletonList(
         new TransformConfig("fullName", "Groovy({firstName + ' ' + lastName}, firstName, lastName)"));
@@ -342,7 +342,7 @@ public class ExpressionTransformerTest {
   @Test
   public void testTransformFunctionWithWrongInput() {
     Schema pinotSchema = new Schema();
-    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("x", FieldSpec.DataType.INT, true);
+    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("x", FieldSpec.DataType.INT, true, false);
     pinotSchema.addField(dimensionFieldSpec);
     List<TransformConfig> transformConfigs = Collections.singletonList(
         new TransformConfig("y", "plus(x, 10)"));
@@ -372,7 +372,7 @@ public class ExpressionTransformerTest {
   @Test
   public void testTransformFunctionContinueOnError() {
     Schema pinotSchema = new Schema();
-    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("x", FieldSpec.DataType.INT, true);
+    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("x", FieldSpec.DataType.INT, true, false);
     pinotSchema.addField(dimensionFieldSpec);
     List<TransformConfig> transformConfigs = Collections.singletonList(
         new TransformConfig("y", "plus(x, 10)"));

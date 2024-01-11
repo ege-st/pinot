@@ -138,7 +138,7 @@ public class PercentileKLLQueriesTest extends BaseQueriesTest {
     Schema schema = new Schema();
     schema.addField(new MetricFieldSpec(DOUBLE_COLUMN, FieldSpec.DataType.DOUBLE));
     schema.addField(new MetricFieldSpec(KLL_COLUMN, FieldSpec.DataType.BYTES));
-    schema.addField(new DimensionFieldSpec(GROUP_BY_COLUMN, FieldSpec.DataType.STRING, true));
+    schema.addField(new DimensionFieldSpec(GROUP_BY_COLUMN, FieldSpec.DataType.STRING, true, false));
     TableConfig tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName(TABLE_NAME).build();
 
     SegmentGeneratorConfig config = new SegmentGeneratorConfig(tableConfig, schema);

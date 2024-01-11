@@ -766,7 +766,7 @@ public abstract class BaseClusterIntegrationTestSet extends BaseClusterIntegrati
   private DimensionFieldSpec constructNewDimension(FieldSpec.DataType dataType, boolean singleValue) {
     String column =
         "New" + StringUtils.capitalize(dataType.toString().toLowerCase()) + (singleValue ? "SV" : "MV") + "Dimension";
-    return new DimensionFieldSpec(column, dataType, singleValue);
+    return new DimensionFieldSpec(column, dataType, singleValue, false);
   }
 
   private MetricFieldSpec constructNewMetric(FieldSpec.DataType dataType) {

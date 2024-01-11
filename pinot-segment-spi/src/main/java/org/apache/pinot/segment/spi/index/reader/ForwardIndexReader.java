@@ -518,6 +518,17 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
     }
   }
 
+  default void readValuesMap(String key, int[] docIds, int length, int[] values, T context) {
+    switch (getStoredType()) {
+      case INT:
+        for (int i = 0; i < length; i++) {
+          values[i] = getIntMap(key, docIds[i], context);
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("readValuesMap not supported for type " + getStoredType());
+    }
+  }
   /**
    * Fills the values
    * @param docIds Array containing the document ids to read
@@ -798,20 +809,17 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
   }
 
   /**
-   * Returns the entire map.
-   *
+   * Reads the INT type value that is associated with the given key for this document id.
+   * @param context
    * @param docId
-   * @return number of KV pairs
+   * @return
    */
-  default int getIntMapValue(int docId, String[] keys, int[] values, T context) {
-    throw new UnsupportedOperationException();
-  }
-
-  default int readIntMapValues(int[] docIds, String[][] keys, int[][] values, T context) {
+  default int getIntMap(String key, int docId, T context) {
     throw new UnsupportedOperationException();
   }
 
   /**
+<<<<<<< Updated upstream
    * Returns the entire map.
    *
    * @param docId
@@ -846,6 +854,8 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
 
 
   /**
+=======
+>>>>>>> Stashed changes
    * Reads the LONG type multi-value at the given document id into the passed in value buffer (the buffer size must be
    * enough to hold all the values for the multi-value entry) and returns the number of values within the multi-value
    * entry.

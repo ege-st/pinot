@@ -94,7 +94,7 @@ public class FieldSpecTest {
     fieldSpec1.setName("svDimension");
     fieldSpec1.setDataType(TIMESTAMP);
     fieldSpec1.setDefaultNullValue(new Timestamp(0).toString());
-    fieldSpec2 = new DimensionFieldSpec("svDimension", TIMESTAMP, true, new Timestamp(0).toString());
+    fieldSpec2 = new DimensionFieldSpec("svDimension", TIMESTAMP, true, false, new Timestamp(0).toString());
     Assert.assertEquals(fieldSpec1, fieldSpec2);
     Assert.assertEquals(fieldSpec1.toString(), fieldSpec2.toString());
     Assert.assertEquals(fieldSpec1.hashCode(), fieldSpec2.hashCode());
@@ -105,7 +105,7 @@ public class FieldSpecTest {
     fieldSpec1.setName("svDimension");
     fieldSpec1.setDataType(STRING);
     fieldSpec1.setMaxLength(20000);
-    fieldSpec2 = new DimensionFieldSpec("svDimension", STRING, true, 20000, null);
+    fieldSpec2 = new DimensionFieldSpec("svDimension", STRING, true, false, 20000, null);
     Assert.assertEquals(fieldSpec1, fieldSpec2);
     Assert.assertEquals(fieldSpec1.toString(), fieldSpec2.toString());
     Assert.assertEquals(fieldSpec1.hashCode(), fieldSpec2.hashCode());
@@ -116,7 +116,7 @@ public class FieldSpecTest {
     fieldSpec1.setName("svDimension");
     fieldSpec1.setDataType(JSON);
     fieldSpec1.setMaxLength(20000);
-    fieldSpec2 = new DimensionFieldSpec("svDimension", JSON, true, 20000, null);
+    fieldSpec2 = new DimensionFieldSpec("svDimension", JSON, true, false, 20000, null);
     Assert.assertEquals(fieldSpec1, fieldSpec2);
     Assert.assertEquals(fieldSpec1.toString(), fieldSpec2.toString());
     Assert.assertEquals(fieldSpec1.hashCode(), fieldSpec2.hashCode());
@@ -127,7 +127,7 @@ public class FieldSpecTest {
     fieldSpec1.setName("mvDimension");
     fieldSpec1.setDataType(INT);
     fieldSpec1.setSingleValueField(false);
-    fieldSpec2 = new DimensionFieldSpec("mvDimension", INT, false);
+    fieldSpec2 = new DimensionFieldSpec("mvDimension", INT, false, false);
     Assert.assertEquals(fieldSpec1, fieldSpec2);
     Assert.assertEquals(fieldSpec1.toString(), fieldSpec2.toString());
     Assert.assertEquals(fieldSpec1.hashCode(), fieldSpec2.hashCode());
@@ -139,7 +139,7 @@ public class FieldSpecTest {
     fieldSpec1.setDataType(FLOAT);
     fieldSpec1.setSingleValueField(false);
     fieldSpec1.setDefaultNullValue(-0.1);
-    fieldSpec2 = new DimensionFieldSpec("mvDimension", FLOAT, false, -0.1);
+    fieldSpec2 = new DimensionFieldSpec("mvDimension", FLOAT, false, false, -0.1);
     Assert.assertEquals(fieldSpec1, fieldSpec2);
     Assert.assertEquals(fieldSpec1.toString(), fieldSpec2.toString());
     Assert.assertEquals(fieldSpec1.hashCode(), fieldSpec2.hashCode());
@@ -151,7 +151,7 @@ public class FieldSpecTest {
     fieldSpec1.setDataType(STRING);
     fieldSpec1.setSingleValueField(false);
     fieldSpec1.setMaxLength(20000);
-    fieldSpec2 = new DimensionFieldSpec("mvDimension", STRING, false, 20000, null);
+    fieldSpec2 = new DimensionFieldSpec("mvDimension", STRING, false, false, 20000, null);
     Assert.assertEquals(fieldSpec1, fieldSpec2);
     Assert.assertEquals(fieldSpec1.toString(), fieldSpec2.toString());
     Assert.assertEquals(fieldSpec1.hashCode(), fieldSpec2.hashCode());
@@ -315,7 +315,7 @@ public class FieldSpecTest {
         "\"defaultNullValue\":\"default\""
     };
     dimensionFieldSpec1 = JsonUtils.stringToObject(getRandomOrderJsonString(dimensionFields), DimensionFieldSpec.class);
-    dimensionFieldSpec2 = new DimensionFieldSpec("dimension", STRING, false, "default");
+    dimensionFieldSpec2 = new DimensionFieldSpec("dimension", STRING, false, false, "default");
     Assert.assertEquals(dimensionFieldSpec1, dimensionFieldSpec2, ERROR_MESSAGE);
     Assert.assertEquals(dimensionFieldSpec1.getDefaultNullValue(), "default", ERROR_MESSAGE);
 

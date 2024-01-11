@@ -133,7 +133,7 @@ public class RawIndexBenchmark {
 
     for (int i = 0; i < NUM_COLUMNS; i++) {
       String column = "column_" + i;
-      DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec(column, FieldSpec.DataType.STRING, true);
+      DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec(column, FieldSpec.DataType.STRING, true, false);
       schema.addField(dimensionFieldSpec);
     }
     TableConfig tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName("test").build();

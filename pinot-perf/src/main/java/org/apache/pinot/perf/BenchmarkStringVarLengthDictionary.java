@@ -92,7 +92,7 @@ public class BenchmarkStringVarLengthDictionary {
 
     // Create the schema and table config
     Schema schema = new Schema();
-    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, FieldSpec.DataType.STRING, true);
+    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, FieldSpec.DataType.STRING, true, false);
     schema.addField(fieldSpec);
     TableConfig tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName("test").build();
 

@@ -64,12 +64,12 @@ public class BitSlicedIndexCreatorTest {
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testFailToCreateRawString() {
-    new BitSlicedRangeIndexCreator(INDEX_DIR, new DimensionFieldSpec("foo", STRING, true), null, null);
+    new BitSlicedRangeIndexCreator(INDEX_DIR, new DimensionFieldSpec("foo", STRING, true, false), null, null);
   }
 
   @Test(expectedExceptions = IllegalArgumentException.class)
   public void testFailToCreateMV() {
-    new BitSlicedRangeIndexCreator(INDEX_DIR, new DimensionFieldSpec("foo", INT, false), 0, 10);
+    new BitSlicedRangeIndexCreator(INDEX_DIR, new DimensionFieldSpec("foo", INT, false, false), 0, 10);
   }
 
   @Test
@@ -485,7 +485,7 @@ public class BitSlicedIndexCreatorTest {
           .setTotalDocs(_numDocs)
           .setCardinality(_cardinality)
           .setHasDictionary(_data instanceof int[] && _dataType != INT)
-          .setFieldSpec(new DimensionFieldSpec(COLUMN_NAME, _dataType, true))
+          .setFieldSpec(new DimensionFieldSpec(COLUMN_NAME, _dataType, true, false))
           .build();
     }
 

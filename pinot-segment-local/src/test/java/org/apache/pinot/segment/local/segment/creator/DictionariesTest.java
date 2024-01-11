@@ -441,7 +441,7 @@ public class DictionariesTest {
       throws Exception {
     File indexDir = new File("/tmp/dict.test");
     indexDir.deleteOnExit();
-    FieldSpec fieldSpec = new DimensionFieldSpec("test", DataType.STRING, true);
+    FieldSpec fieldSpec = new DimensionFieldSpec("test", DataType.STRING, true, false);
 
     String[] inputStrings = new String[3];
     inputStrings[0] = new String(new byte[]{67, 97, 102, -61, -87}); // "Café";
@@ -469,7 +469,7 @@ public class DictionariesTest {
       throws Exception {
     File indexDir = new File("/tmp/dict.test");
     indexDir.deleteOnExit();
-    FieldSpec fieldSpec = new DimensionFieldSpec("test", DataType.STRING, true);
+    FieldSpec fieldSpec = new DimensionFieldSpec("test", DataType.STRING, true, false);
 
     try (SegmentDictionaryCreator dictionaryCreator = new SegmentDictionaryCreator(fieldSpec, indexDir)) {
       dictionaryCreator.build(new String[]{""});
@@ -489,7 +489,7 @@ public class DictionariesTest {
    */
   private AbstractColumnStatisticsCollector buildStatsCollector(String column, DataType dataType) {
     Schema schema = new Schema();
-    schema.addField(new DimensionFieldSpec(column, dataType, true));
+    schema.addField(new DimensionFieldSpec(column, dataType, true, false));
     StatsCollectorConfig statsCollectorConfig = new StatsCollectorConfig(_tableConfig, schema, null);
     return buildStatsCollector(column, dataType, statsCollectorConfig);
   }

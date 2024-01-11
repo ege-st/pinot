@@ -58,7 +58,7 @@ public class MutableSegmentImplAggregateMetricsTest {
         .addDateTime(TIME_COLUMN2, FieldSpec.DataType.INT, "1:HOURS:EPOCH", "1:HOURS").build();
     // Add virtual columns, which should not be aggregated
     DimensionFieldSpec virtualDimensionFieldSpec =
-        new DimensionFieldSpec("$virtualDimension", FieldSpec.DataType.INT, true, Object.class);
+        new DimensionFieldSpec("$virtualDimension", FieldSpec.DataType.INT, true, false, Object.class);
     schema.addField(virtualDimensionFieldSpec);
     MetricFieldSpec virtualMetricFieldSpec = new MetricFieldSpec("$virtualMetric", FieldSpec.DataType.INT);
     virtualMetricFieldSpec.setVirtualColumnProvider("provider.class");

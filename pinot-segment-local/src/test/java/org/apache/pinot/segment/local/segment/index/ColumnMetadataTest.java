@@ -85,7 +85,7 @@ public class ColumnMetadataTest {
   public void verifySegmentAfterLoading(SegmentMetadata segmentMetadata) {
     // Multi-value numeric dimension column.
     ColumnMetadata col7Meta = segmentMetadata.getColumnMetadataFor("column7");
-    Assert.assertEquals(col7Meta.getFieldSpec(), new DimensionFieldSpec("column7", DataType.INT, false));
+    Assert.assertEquals(col7Meta.getFieldSpec(), new DimensionFieldSpec("column7", DataType.INT, false, false));
     Assert.assertEquals(col7Meta.getCardinality(), 359);
     Assert.assertEquals(col7Meta.getTotalDocs(), 100000);
     Assert.assertEquals(col7Meta.getBitsPerElement(), 9);
@@ -98,7 +98,7 @@ public class ColumnMetadataTest {
 
     // Single-value string dimension column.
     ColumnMetadata col3Meta = segmentMetadata.getColumnMetadataFor("column3");
-    Assert.assertEquals(col3Meta.getFieldSpec(), new DimensionFieldSpec("column3", DataType.STRING, true));
+    Assert.assertEquals(col3Meta.getFieldSpec(), new DimensionFieldSpec("column3", DataType.STRING, true, false));
     Assert.assertEquals(col3Meta.getCardinality(), 5);
     Assert.assertEquals(col3Meta.getTotalDocs(), 100000);
     Assert.assertEquals(col3Meta.getBitsPerElement(), 3);
@@ -112,7 +112,7 @@ public class ColumnMetadataTest {
     // Time column.
     // FIXME: Currently it is modeled as dimension in the auto-generated schema
     ColumnMetadata timeColumn = segmentMetadata.getColumnMetadataFor("daysSinceEpoch");
-    Assert.assertEquals(timeColumn.getFieldSpec(), new DimensionFieldSpec("daysSinceEpoch", DataType.INT, true));
+    Assert.assertEquals(timeColumn.getFieldSpec(), new DimensionFieldSpec("daysSinceEpoch", DataType.INT, true, false));
     Assert.assertEquals(timeColumn.getColumnName(), "daysSinceEpoch");
     Assert.assertEquals(timeColumn.getCardinality(), 1);
     Assert.assertEquals(timeColumn.getTotalDocs(), 100000);

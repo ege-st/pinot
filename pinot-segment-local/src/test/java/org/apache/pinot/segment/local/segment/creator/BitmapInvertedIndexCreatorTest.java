@@ -88,7 +88,7 @@ public class BitmapInvertedIndexCreatorTest {
 
     // Generate inverted index using OffHeapBitmapInvertedIndexCreator
     try (OffHeapBitmapInvertedIndexCreator offHeapCreator = new OffHeapBitmapInvertedIndexCreator(OFF_HEAP_INDEX_DIR,
-        new DimensionFieldSpec(COLUMN_NAME, DataType.INT, true), CARDINALITY, NUM_DOCS, 0)) {
+        new DimensionFieldSpec(COLUMN_NAME, DataType.INT, true, false), CARDINALITY, NUM_DOCS, 0)) {
       for (int docId = 0; docId < NUM_DOCS; docId++) {
         offHeapCreator.add(dictIds[docId]);
       }
@@ -134,7 +134,7 @@ public class BitmapInvertedIndexCreatorTest {
 
     // Generate inverted index using OffHeapBitmapInvertedIndexCreator
     try (OffHeapBitmapInvertedIndexCreator offHeapCreator = new OffHeapBitmapInvertedIndexCreator(OFF_HEAP_INDEX_DIR,
-        new DimensionFieldSpec(COLUMN_NAME, DataType.INT, false), CARDINALITY, NUM_DOCS, numValues)) {
+        new DimensionFieldSpec(COLUMN_NAME, DataType.INT, false, false), CARDINALITY, NUM_DOCS, numValues)) {
       for (int docId = 0; docId < NUM_DOCS; docId++) {
         offHeapCreator.add(dictIds[docId], dictIds[docId].length);
       }

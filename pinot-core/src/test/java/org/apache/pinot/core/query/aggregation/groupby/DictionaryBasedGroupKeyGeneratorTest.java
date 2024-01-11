@@ -116,12 +116,12 @@ public class DictionaryBasedGroupKeyGeneratorTest {
 
     // Create an index segment with the random values
     Schema schema = new Schema();
-    schema.addField(new DimensionFieldSpec(FILTER_COLUMN, FieldSpec.DataType.INT, true));
+    schema.addField(new DimensionFieldSpec(FILTER_COLUMN, FieldSpec.DataType.INT, true, false));
     for (String singleValueColumn : SV_COLUMNS) {
-      schema.addField(new DimensionFieldSpec(singleValueColumn, FieldSpec.DataType.INT, true));
+      schema.addField(new DimensionFieldSpec(singleValueColumn, FieldSpec.DataType.INT, true, false));
     }
     for (String multiValueColumn : MV_COLUMNS) {
-      schema.addField(new DimensionFieldSpec(multiValueColumn, FieldSpec.DataType.INT, false));
+      schema.addField(new DimensionFieldSpec(multiValueColumn, FieldSpec.DataType.INT, false, false));
     }
 
     TableConfig tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName("test").build();

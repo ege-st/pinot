@@ -615,8 +615,8 @@ public class ControllerTest {
   public static Schema createDummySchema(String tableName) {
     Schema schema = new Schema();
     schema.setSchemaName(tableName);
-    schema.addField(new DimensionFieldSpec("dimA", FieldSpec.DataType.STRING, true, ""));
-    schema.addField(new DimensionFieldSpec("dimB", FieldSpec.DataType.STRING, true, 0));
+    schema.addField(new DimensionFieldSpec("dimA", FieldSpec.DataType.STRING, true, false, ""));
+    schema.addField(new DimensionFieldSpec("dimB", FieldSpec.DataType.STRING, true, false, 0));
     schema.addField(new MetricFieldSpec("metricA", FieldSpec.DataType.INT, 0));
     schema.addField(new MetricFieldSpec("metricB", FieldSpec.DataType.DOUBLE, -1));
     schema.addField(new DateTimeFieldSpec("timeColumn", FieldSpec.DataType.LONG, "1:MILLISECONDS:EPOCH", "1:DAYS"));

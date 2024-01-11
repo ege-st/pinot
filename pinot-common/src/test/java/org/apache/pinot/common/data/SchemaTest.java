@@ -52,12 +52,12 @@ public class SchemaTest {
     Schema schemaToValidate;
 
     schemaToValidate = new Schema();
-    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.LONG, true));
+    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.LONG, true, false));
     schemaToValidate.addField(new MetricFieldSpec("m", FieldSpec.DataType.LONG));
     schemaToValidate.validate();
 
     schemaToValidate = new Schema();
-    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.STRING, true));
+    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.STRING, true, false));
     schemaToValidate.validate();
 
     schemaToValidate = new Schema();
@@ -70,7 +70,7 @@ public class SchemaTest {
     }
 
     schemaToValidate = new Schema();
-    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.BOOLEAN, true));
+    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.BOOLEAN, true, false));
     schemaToValidate.validate();
 
     schemaToValidate = new Schema();
@@ -83,7 +83,7 @@ public class SchemaTest {
     }
 
     schemaToValidate = new Schema();
-    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.TIMESTAMP, true));
+    schemaToValidate.addField(new DimensionFieldSpec("d", FieldSpec.DataType.TIMESTAMP, true, false));
     schemaToValidate.validate();
 
     schemaToValidate = new Schema();

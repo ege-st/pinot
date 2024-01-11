@@ -370,13 +370,13 @@ public class TableCache implements PinotConfigProvider {
    */
   private static void addBuiltInVirtualColumns(Schema schema) {
     if (!schema.hasColumn(BuiltInVirtualColumn.DOCID)) {
-      schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.DOCID, FieldSpec.DataType.INT, true));
+      schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.DOCID, FieldSpec.DataType.INT, true, false));
     }
     if (!schema.hasColumn(BuiltInVirtualColumn.HOSTNAME)) {
-      schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.HOSTNAME, FieldSpec.DataType.STRING, true));
+      schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.HOSTNAME, FieldSpec.DataType.STRING, true, false));
     }
     if (!schema.hasColumn(BuiltInVirtualColumn.SEGMENTNAME)) {
-      schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.SEGMENTNAME, FieldSpec.DataType.STRING, true));
+      schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.SEGMENTNAME, FieldSpec.DataType.STRING, true, false));
     }
   }
 

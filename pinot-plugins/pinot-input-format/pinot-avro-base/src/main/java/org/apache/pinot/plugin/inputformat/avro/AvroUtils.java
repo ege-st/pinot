@@ -65,7 +65,8 @@ public class AvroUtils {
       String fieldName = field.name();
       DataType dataType = extractFieldDataType(field);
       boolean isSingleValueField = isSingleValueField(field);
-      addFieldToPinotSchema(pinotSchema, dataType, fieldName, isSingleValueField, fieldTypeMap, timeUnit);
+
+      addFieldToPinotSchema(pinotSchema, dataType, fieldName, isSingleValueField, false, fieldTypeMap, timeUnit);
     }
     return pinotSchema;
   }
@@ -320,16 +321,16 @@ public class AvroUtils {
               timeUnit, collectionNotUnnestedToJson);
         } else if (collectionNotUnnestedToJson == ComplexTypeConfig.CollectionNotUnnestedToJson.NON_PRIMITIVE
             && AvroSchemaUtil.isPrimitiveType(elementType.getType())) {
-          addFieldToPinotSchema(pinotSchema, AvroSchemaUtil.valueOf(elementType.getType()), path, false, fieldTypeMap,
+          addFieldToPinotSchema(pinotSchema, AvroSchemaUtil.valueOf(elementType.getType()), path, false, false, fieldTypeMap,
               timeUnit);
         } else if (shallConvertToJson(collectionNotUnnestedToJson, elementType)) {
-          addFieldToPinotSchema(pinotSchema, DataType.STRING, path, true, fieldTypeMap, timeUnit);
+          addFieldToPinotSchema(pinotSchema, DataType.STRING, path, true, false, fieldTypeMap, timeUnit);
         }
         // do not include the node for other cases
         break;
       default:
         DataType dataType = AvroSchemaUtil.valueOf(fieldType);
-        addFieldToPinotSchema(pinotSchema, dataType, path, true, fieldTypeMap, timeUnit);
+        addFieldToPinotSchema(pinotSchema, dataType, path, true, false, fieldTypeMap, timeUnit);
         break;
     }
   }
@@ -350,16 +351,16 @@ public class AvroUtils {
   }
 
   private static void addFieldToPinotSchema(Schema pinotSchema, DataType dataType, String name,
-      boolean isSingleValueField, @Nullable Map<String, FieldSpec.FieldType> fieldTypeMap,
+      boolean isSingleValueField, boolean isMapValueField, @Nullable Map<String, FieldSpec.FieldType> fieldTypeMap,
       @Nullable TimeUnit timeUnit) {
     if (fieldTypeMap == null) {
-      pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField));
+      pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField, isMapValueField));
     } else {
       FieldSpec.FieldType fieldType = fieldTypeMap.getOrDefault(name, FieldSpec.FieldType.DIMENSION);
       Preconditions.checkNotNull(fieldType, "Field type not specified for field: %s", name);
       switch (fieldType) {
         case DIMENSION:
-          pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField));
+          pinotSchema.addField(new DimensionFieldSpec(name, dataType, isSingleValueField, isMapValueField));
           break;
         case METRIC:
           Preconditions.checkState(isSingleValueField, "Metric field: %s cannot be multi-valued", name);

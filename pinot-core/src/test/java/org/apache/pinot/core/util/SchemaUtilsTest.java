@@ -209,7 +209,7 @@ public class SchemaUtilsTest {
     Schema pinotSchema;
     // source name used as destination name
     pinotSchema = new Schema();
-    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("dim1", DataType.STRING, true);
+    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("dim1", DataType.STRING, true, false);
     dimensionFieldSpec.setTransformFunction("Groovy({function}, argument1, dim1, argument3)");
     pinotSchema.addField(dimensionFieldSpec);
     try {
@@ -327,7 +327,7 @@ public class SchemaUtilsTest {
     // incorrect groovy function syntax
     pinotSchema = new Schema();
 
-    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("dim1", DataType.STRING, true);
+    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("dim1", DataType.STRING, true, false);
     dimensionFieldSpec.setTransformFunction("Groovy(function, argument3)");
     pinotSchema.addField(dimensionFieldSpec);
     checkValidationFails(pinotSchema);
@@ -335,7 +335,7 @@ public class SchemaUtilsTest {
     // valid schema, empty arguments
     pinotSchema = new Schema();
 
-    dimensionFieldSpec = new DimensionFieldSpec("dim1", DataType.STRING, true);
+    dimensionFieldSpec = new DimensionFieldSpec("dim1", DataType.STRING, true, false);
     dimensionFieldSpec.setTransformFunction("Groovy({function})");
     pinotSchema.addField(dimensionFieldSpec);
     SchemaUtils.validate(pinotSchema);

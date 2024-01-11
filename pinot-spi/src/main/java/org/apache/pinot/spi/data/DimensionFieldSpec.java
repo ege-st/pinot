@@ -31,33 +31,29 @@ public final class DimensionFieldSpec extends FieldSpec {
     super();
   }
 
-  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField) {
-    super(name, dataType, isSingleValueField);
+  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueFIeld) {
+    super(name, dataType, isSingleValueField, isMapValueFIeld);
   }
 
-  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField) {
-    super(name, dataType, isSingleValueField, FieldSpec.DEFAULT_MAX_LENGTH, null, isMapValueField );
-  }
-
-  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField,
+  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField,
       @Nullable Object defaultNullValue) {
-    super(name, dataType, isSingleValueField, defaultNullValue);
+    super(name, dataType, isSingleValueField, isMapValueField, defaultNullValue);
   }
 
-  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, int maxLength,
-      @Nullable Object defaultNullValue) {
-    super(name, dataType, isSingleValueField, maxLength, defaultNullValue, false);
+  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField,
+      int maxLength, @Nullable Object defaultNullValue) {
+    super(name, dataType, isSingleValueField, isMapValueField, maxLength, defaultNullValue);
   }
 
-  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField,
+  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField,
       Class virtualColumnProviderClass) {
-    super(name, dataType, isSingleValueField);
+    super(name, dataType, isSingleValueField, isMapValueField);
     _virtualColumnProvider = virtualColumnProviderClass.getName();
   }
 
-  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField,
+  public DimensionFieldSpec(String name, DataType dataType, boolean isSingleValueField, boolean isMapValueField,
       Class virtualColumnProviderClass, @Nullable Object defaultNullValue) {
-    super(name, dataType, isSingleValueField, defaultNullValue);
+    super(name, dataType, isSingleValueField, isMapValueField, defaultNullValue);
     _virtualColumnProvider = virtualColumnProviderClass.getName();
   }
 

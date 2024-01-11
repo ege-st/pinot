@@ -876,7 +876,7 @@ public class SegmentPreProcessorTest {
     SegmentMetadataImpl segmentMetadata = new SegmentMetadataImpl(_indexDir);
     ColumnMetadata columnMetadata = segmentMetadata.getColumnMetadataFor(column);
     assertEquals(columnMetadata.hasDictionary(), hasDictionary);
-    assertEquals(columnMetadata.getFieldSpec(), new DimensionFieldSpec(column, dataType, isSingleValued));
+    assertEquals(columnMetadata.getFieldSpec(), new DimensionFieldSpec(column, dataType, isSingleValued, false));
     assertEquals(columnMetadata.getCardinality(), cardinality);
     assertEquals(columnMetadata.getTotalDocs(), 100000);
     assertEquals(columnMetadata.getBitsPerElement(), bits);

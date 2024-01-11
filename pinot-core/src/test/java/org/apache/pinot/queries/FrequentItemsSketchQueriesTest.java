@@ -137,11 +137,11 @@ public class FrequentItemsSketchQueriesTest extends BaseQueriesTest {
     }
 
     Schema schema = new Schema();
-    schema.addField(new DimensionFieldSpec(LONG_COLUMN, FieldSpec.DataType.LONG, true));
-    schema.addField(new DimensionFieldSpec(STRING_COLUMN, FieldSpec.DataType.STRING, true));
+    schema.addField(new DimensionFieldSpec(LONG_COLUMN, FieldSpec.DataType.LONG, true, false));
+    schema.addField(new DimensionFieldSpec(STRING_COLUMN, FieldSpec.DataType.STRING, true, false));
     schema.addField(new MetricFieldSpec(LONG_SKETCH_COLUMN, FieldSpec.DataType.BYTES));
     schema.addField(new MetricFieldSpec(STRING_SKETCH_COLUMN, FieldSpec.DataType.BYTES));
-    schema.addField(new DimensionFieldSpec(GROUP_BY_COLUMN, FieldSpec.DataType.STRING, true));
+    schema.addField(new DimensionFieldSpec(GROUP_BY_COLUMN, FieldSpec.DataType.STRING, true, false));
     TableConfig tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName(TABLE_NAME).build();
 
     SegmentGeneratorConfig config = new SegmentGeneratorConfig(tableConfig, schema);

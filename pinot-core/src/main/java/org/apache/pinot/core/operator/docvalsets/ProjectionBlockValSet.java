@@ -92,6 +92,11 @@ public class ProjectionBlockValSet implements BlockValSet {
     return _dataSource.getDataSourceMetadata().isSingleValue();
   }
 
+  @Override
+  public boolean isMapValue() {
+    return _dataSource.getDataSourceMetadata().isMapValue();
+  }
+
   @Nullable
   @Override
   public Dictionary getDictionary() {
@@ -175,6 +180,14 @@ public class ProjectionBlockValSet implements BlockValSet {
     try (InvocationScope scope = Tracing.getTracer().createScope(ProjectionBlockValSet.class)) {
       recordReadValues(scope, DataType.INT, false);
       return _dataBlockCache.getIntValuesForMVColumn(_column);
+    }
+  }
+
+  @Override
+  public int[] getIntValuesMap(String key) {
+    try (InvocationScope scope = Tracing.getTracer().createScope(ProjectionBlockValSet.class)) {
+      recordReadValues(scope, DataType.INT, false);
+      return _dataBlockCache.getIntValuesForMapColumn(_column, key);
     }
   }
 

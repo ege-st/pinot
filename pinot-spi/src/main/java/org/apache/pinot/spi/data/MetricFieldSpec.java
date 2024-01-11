@@ -36,11 +36,11 @@ public final class MetricFieldSpec extends FieldSpec {
   }
 
   public MetricFieldSpec(String name, DataType dataType) {
-    super(name, dataType, true);
+    super(name, dataType, true, false);
   }
 
   public MetricFieldSpec(String name, DataType dataType, @Nullable Object defaultNullValue) {
-    super(name, dataType, true, defaultNullValue);
+    super(name, dataType, true, false, defaultNullValue);
   }
 
   @JsonIgnore

@@ -126,11 +126,11 @@ public class SegmentWithNullValueVectorTest {
       throws Exception {
 
     _schema = new Schema();
-    _schema.addField(new DimensionFieldSpec(INT_COLUMN, FieldSpec.DataType.INT, true));
-    _schema.addField(new DimensionFieldSpec(LONG_COLUMN, FieldSpec.DataType.LONG, true));
-    _schema.addField(new DimensionFieldSpec(FLOAT_COLUMN, FieldSpec.DataType.FLOAT, true));
-    _schema.addField(new DimensionFieldSpec(DOUBLE_COLUMN, FieldSpec.DataType.DOUBLE, true));
-    _schema.addField(new DimensionFieldSpec(STRING_COLUMN, FieldSpec.DataType.STRING, true));
+    _schema.addField(new DimensionFieldSpec(INT_COLUMN, FieldSpec.DataType.INT, true, false));
+    _schema.addField(new DimensionFieldSpec(LONG_COLUMN, FieldSpec.DataType.LONG, true, false));
+    _schema.addField(new DimensionFieldSpec(FLOAT_COLUMN, FieldSpec.DataType.FLOAT, true, false));
+    _schema.addField(new DimensionFieldSpec(DOUBLE_COLUMN, FieldSpec.DataType.DOUBLE, true, false));
+    _schema.addField(new DimensionFieldSpec(STRING_COLUMN, FieldSpec.DataType.STRING, true, false));
 
     TableConfig tableConfig =
         new TableConfigBuilder(TableType.OFFLINE).setTableName(RAW_TABLE_NAME).setNullHandlingEnabled(true).build();

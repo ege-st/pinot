@@ -46,17 +46,17 @@ public class VirtualColumnProviderFactory {
   public static void addBuiltInVirtualColumnsToSegmentSchema(Schema schema, String segmentName) {
     if (!schema.hasColumn(BuiltInVirtualColumn.DOCID)) {
       schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.DOCID, FieldSpec.DataType.INT, true,
-          DocIdVirtualColumnProvider.class));
+          false, DocIdVirtualColumnProvider.class));
     }
 
     if (!schema.hasColumn(BuiltInVirtualColumn.HOSTNAME)) {
       schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.HOSTNAME, FieldSpec.DataType.STRING, true,
-          DefaultNullValueVirtualColumnProvider.class, NetUtils.getHostnameOrAddress()));
+          false, DefaultNullValueVirtualColumnProvider.class, NetUtils.getHostnameOrAddress()));
     }
 
     if (!schema.hasColumn(BuiltInVirtualColumn.SEGMENTNAME)) {
       schema.addField(new DimensionFieldSpec(BuiltInVirtualColumn.SEGMENTNAME, FieldSpec.DataType.STRING, true,
-          DefaultNullValueVirtualColumnProvider.class, segmentName));
+          false, DefaultNullValueVirtualColumnProvider.class, segmentName));
     }
   }
 }

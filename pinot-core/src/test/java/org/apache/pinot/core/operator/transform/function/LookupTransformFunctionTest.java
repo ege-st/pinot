@@ -68,29 +68,29 @@ public class LookupTransformFunctionTest extends BaseTransformFunctionTest {
     when(_tableManager.getPrimaryKeyColumns()).thenReturn(Arrays.asList("teamID"));
     when(_tableManager.isPopulated()).thenReturn(true);
     when(_tableManager.getColumnFieldSpec("teamID"))
-        .thenReturn(new DimensionFieldSpec("teamID", FieldSpec.DataType.STRING, true));
+        .thenReturn(new DimensionFieldSpec("teamID", FieldSpec.DataType.STRING, true, false));
     when(_tableManager.getColumnFieldSpec("teamName"))
-        .thenReturn(new DimensionFieldSpec("teamName", FieldSpec.DataType.STRING, true));
+        .thenReturn(new DimensionFieldSpec("teamName", FieldSpec.DataType.STRING, true, false));
     when(_tableManager.getColumnFieldSpec("teamName_MV"))
-        .thenReturn(new DimensionFieldSpec("teamName_MV", FieldSpec.DataType.STRING, false));
+        .thenReturn(new DimensionFieldSpec("teamName_MV", FieldSpec.DataType.STRING, false, false));
     when(_tableManager.getColumnFieldSpec("teamInteger"))
-        .thenReturn(new DimensionFieldSpec("teamInteger", FieldSpec.DataType.INT, true));
+        .thenReturn(new DimensionFieldSpec("teamInteger", FieldSpec.DataType.INT, true, false));
     when(_tableManager.getColumnFieldSpec("teamInteger_MV"))
-        .thenReturn(new DimensionFieldSpec("teamInteger_MV", FieldSpec.DataType.INT, false));
+        .thenReturn(new DimensionFieldSpec("teamInteger_MV", FieldSpec.DataType.INT, false, false));
     when(_tableManager.getColumnFieldSpec("teamFloat"))
-        .thenReturn(new DimensionFieldSpec("teamFloat", FieldSpec.DataType.FLOAT, true));
+        .thenReturn(new DimensionFieldSpec("teamFloat", FieldSpec.DataType.FLOAT, true, false));
     when(_tableManager.getColumnFieldSpec("teamFloat_MV"))
-        .thenReturn(new DimensionFieldSpec("teamFloat_MV", FieldSpec.DataType.FLOAT, false));
+        .thenReturn(new DimensionFieldSpec("teamFloat_MV", FieldSpec.DataType.FLOAT, false, false));
     when(_tableManager.getColumnFieldSpec("teamDouble"))
-        .thenReturn(new DimensionFieldSpec("teamDouble", FieldSpec.DataType.DOUBLE, true));
+        .thenReturn(new DimensionFieldSpec("teamDouble", FieldSpec.DataType.DOUBLE, true, false));
     when(_tableManager.getColumnFieldSpec("teamDouble_MV"))
-        .thenReturn(new DimensionFieldSpec("teamDouble_MV", FieldSpec.DataType.DOUBLE, false));
+        .thenReturn(new DimensionFieldSpec("teamDouble_MV", FieldSpec.DataType.DOUBLE, false, false));
     when(_tableManager.getColumnFieldSpec("teamLong"))
-        .thenReturn(new DimensionFieldSpec("teamLong", FieldSpec.DataType.LONG, true));
+        .thenReturn(new DimensionFieldSpec("teamLong", FieldSpec.DataType.LONG, true, false));
     when(_tableManager.getColumnFieldSpec("teamLong_MV"))
-        .thenReturn(new DimensionFieldSpec("teamLong_MV", FieldSpec.DataType.LONG, false));
+        .thenReturn(new DimensionFieldSpec("teamLong_MV", FieldSpec.DataType.LONG, false, false));
     when(_tableManager.getColumnFieldSpec("teamBytes"))
-        .thenReturn(new DimensionFieldSpec("teamNameBytes", FieldSpec.DataType.BYTES, true));
+        .thenReturn(new DimensionFieldSpec("teamNameBytes", FieldSpec.DataType.BYTES, true, false));
     when(_tableManager.lookupRowByPrimaryKey(any(PrimaryKey.class))).thenAnswer(invocation -> {
       PrimaryKey key = invocation.getArgument(0);
       GenericRow row = new GenericRow();
@@ -181,9 +181,9 @@ public class LookupTransformFunctionTest extends BaseTransformFunctionTest {
     when(tableManager.isPopulated()).thenReturn(false);
     when(tableManager.getPrimaryKeyColumns()).thenReturn(Arrays.asList("leagueID"));
     when(tableManager.getColumnFieldSpec("leagueID"))
-        .thenReturn(new DimensionFieldSpec("leagueID", FieldSpec.DataType.STRING, true));
+        .thenReturn(new DimensionFieldSpec("leagueID", FieldSpec.DataType.STRING, true, false));
     when(tableManager.getColumnFieldSpec("leagueName"))
-        .thenReturn(new DimensionFieldSpec("leagueName", FieldSpec.DataType.STRING, true));
+        .thenReturn(new DimensionFieldSpec("leagueName", FieldSpec.DataType.STRING, true, false));
 
     DimensionTableDataManager.registerDimensionTable("baseballLeagues_OFFLINE", tableManager);
 
@@ -204,9 +204,9 @@ public class LookupTransformFunctionTest extends BaseTransformFunctionTest {
     when(tableManager.isPopulated()).thenReturn(true);
     when(tableManager.getPrimaryKeyColumns()).thenReturn(Arrays.asList("playerID"));
     when(tableManager.getColumnFieldSpec("playerID"))
-        .thenReturn(new DimensionFieldSpec("playerID", FieldSpec.DataType.STRING, true));
+        .thenReturn(new DimensionFieldSpec("playerID", FieldSpec.DataType.STRING, true, false));
     when(tableManager.getColumnFieldSpec("playerName"))
-        .thenReturn(new DimensionFieldSpec("playerName", FieldSpec.DataType.STRING, true));
+        .thenReturn(new DimensionFieldSpec("playerName", FieldSpec.DataType.STRING, true, false));
 
     DimensionTableDataManager.registerDimensionTable("baseballPlayers_OFFLINE", tableManager);
 
@@ -357,9 +357,9 @@ public class LookupTransformFunctionTest extends BaseTransformFunctionTest {
       when(mgr.isPopulated()).thenReturn(true);
       when(mgr.getPrimaryKeyColumns()).thenReturn(Arrays.asList("primaryColumn"));
       when(mgr.getColumnFieldSpec("primaryColumn"))
-          .thenReturn(new DimensionFieldSpec("primaryColumn", table.getValue(), true));
+          .thenReturn(new DimensionFieldSpec("primaryColumn", table.getValue(), true, false));
       when(mgr.getColumnFieldSpec("lookupColumn"))
-          .thenReturn(new DimensionFieldSpec("lookupColumn", FieldSpec.DataType.STRING, true));
+          .thenReturn(new DimensionFieldSpec("lookupColumn", FieldSpec.DataType.STRING, true, false));
       when(mgr.lookupRowByPrimaryKey(any(PrimaryKey.class))).thenAnswer(invocation -> {
         PrimaryKey key = invocation.getArgument(0);
         GenericRow row = new GenericRow();

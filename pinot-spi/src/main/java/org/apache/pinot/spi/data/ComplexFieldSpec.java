@@ -61,7 +61,7 @@ public final class ComplexFieldSpec extends FieldSpec {
   }
 
   public ComplexFieldSpec(@Nonnull String name, DataType dataType, boolean isSingleValueField) {
-    super(name, dataType, isSingleValueField);
+    super(name, dataType, isSingleValueField, false);
     Preconditions.checkArgument(dataType == DataType.STRUCT || dataType == DataType.MAP || dataType == DataType.LIST);
     _childFieldSpecs = new HashMap<>();
   }

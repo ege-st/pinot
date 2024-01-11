@@ -348,6 +348,13 @@ public class DataBlockCache {
     return intValues;
   }
 
+  public int[] getIntValuesForMapColumn(String column, String key) {
+    var values = new int[_length];
+    _dataFetcher.fetchIntValues(column, key, _docIds, _length, values);
+
+    return values;
+  }
+
   /**
    * Get the int[][] values for a column.
    *

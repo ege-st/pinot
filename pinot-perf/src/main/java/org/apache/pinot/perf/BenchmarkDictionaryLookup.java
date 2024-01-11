@@ -79,7 +79,7 @@ public class BenchmarkDictionaryLookup {
     Arrays.sort(sortedValues);
     int maxLength;
     try (SegmentDictionaryCreator creator = new SegmentDictionaryCreator(
-        new DimensionFieldSpec(COLUMN_NAME, DataType.STRING, true), INDEX_DIR, false)) {
+        new DimensionFieldSpec(COLUMN_NAME, DataType.STRING, true, false), INDEX_DIR, false)) {
       creator.build(sortedValues);
       maxLength = creator.getNumBytesPerEntry();
     }

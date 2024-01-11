@@ -318,8 +318,8 @@ public class PurgeMinionClusterIntegrationTest extends BaseClusterIntegrationTes
 
     // add new columns to schema
     Schema schema = createSchema();
-    schema.addField(new DimensionFieldSpec("ColumnABC", FieldSpec.DataType.INT, true));
-    schema.addField(new DimensionFieldSpec("ColumnXYZ", FieldSpec.DataType.INT, true));
+    schema.addField(new DimensionFieldSpec("ColumnABC", FieldSpec.DataType.INT, true, false));
+    schema.addField(new DimensionFieldSpec("ColumnXYZ", FieldSpec.DataType.INT, true, false));
     schema.setSchemaName(PURGE_OLD_SEGMENTS_WITH_NEW_INDICES_TABLE);
     updateSchema(schema);
 

@@ -587,7 +587,7 @@ public final class Schema implements Serializable {
      * Add single value dimensionFieldSpec
      */
     public SchemaBuilder addSingleValueDimension(String dimensionName, DataType dataType) {
-      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, true));
+      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, true, false));
       return this;
     }
 
@@ -600,7 +600,7 @@ public final class Schema implements Serializable {
      * Add single value dimensionFieldSpec with a defaultNullValue
      */
     public SchemaBuilder addSingleValueDimension(String dimensionName, DataType dataType, Object defaultNullValue) {
-      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, true, defaultNullValue));
+      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, true, false, defaultNullValue));
       return this;
     }
 
@@ -611,7 +611,7 @@ public final class Schema implements Serializable {
         Object defaultNullValue) {
       Preconditions.checkArgument(dataType == DataType.STRING,
           "The maxLength field only applies to STRING field right now");
-      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, true, maxLength, defaultNullValue));
+      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, true, false, maxLength, defaultNullValue));
       return this;
     }
 
@@ -619,7 +619,7 @@ public final class Schema implements Serializable {
      * Add multi value dimensionFieldSpec
      */
     public SchemaBuilder addMultiValueDimension(String dimensionName, DataType dataType) {
-      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, false));
+      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, false, false));
       return this;
     }
 
@@ -627,7 +627,7 @@ public final class Schema implements Serializable {
      * Add multi value dimensionFieldSpec with defaultNullValue
      */
     public SchemaBuilder addMultiValueDimension(String dimensionName, DataType dataType, Object defaultNullValue) {
-      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, false, defaultNullValue));
+      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, false, false, defaultNullValue));
       return this;
     }
 
@@ -638,7 +638,7 @@ public final class Schema implements Serializable {
         Object defaultNullValue) {
       Preconditions.checkArgument(dataType == DataType.STRING,
           "The maxLength field only applies to STRING field right now");
-      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, false, maxLength, defaultNullValue));
+      _schema.addField(new DimensionFieldSpec(dimensionName, dataType, false, false, maxLength, defaultNullValue));
       return this;
     }
 

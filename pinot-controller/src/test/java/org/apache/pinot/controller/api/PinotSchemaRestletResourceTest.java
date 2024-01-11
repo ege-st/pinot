@@ -75,7 +75,7 @@ public class PinotSchemaRestletResourceTest {
     assertEquals(resp.getStatusCode(), 200);
 
     // Add a new column
-    DimensionFieldSpec newColumnFieldSpec = new DimensionFieldSpec("newColumn", DataType.STRING, true);
+    DimensionFieldSpec newColumnFieldSpec = new DimensionFieldSpec("newColumn", DataType.STRING, true, false);
     schema.addField(newColumnFieldSpec);
 
     // Update the schema with addSchema api and override off
@@ -93,7 +93,7 @@ public class PinotSchemaRestletResourceTest {
     assertTrue(remoteSchema.hasColumn(newColumnFieldSpec.getName()));
 
     // Add another new column
-    DimensionFieldSpec newColumnFieldSpec2 = new DimensionFieldSpec("newColumn2", DataType.STRING, true);
+    DimensionFieldSpec newColumnFieldSpec2 = new DimensionFieldSpec("newColumn2", DataType.STRING, true, false);
     schema.addField(newColumnFieldSpec2);
 
     // Update the schema with updateSchema api
@@ -154,7 +154,7 @@ public class PinotSchemaRestletResourceTest {
     assertEquals(remoteSchema.getFieldSpecFor(newColumnFieldSpec2.getName()).getDefaultNullValue(), "1");
 
     // Add a new BOOLEAN column
-    DimensionFieldSpec newColumnFieldSpec3 = new DimensionFieldSpec("newColumn3", DataType.BOOLEAN, true);
+    DimensionFieldSpec newColumnFieldSpec3 = new DimensionFieldSpec("newColumn3", DataType.BOOLEAN, true, false);
     schema.addField(newColumnFieldSpec3);
 
     // Update the schema with updateSchema api

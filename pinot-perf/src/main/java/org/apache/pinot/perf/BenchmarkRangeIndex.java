@@ -83,7 +83,7 @@ public class BenchmarkRangeIndex {
 
     public void setup()
         throws IOException {
-      _fieldSpec = new DimensionFieldSpec(COLUMN_NAME, _dataType, true);
+      _fieldSpec = new DimensionFieldSpec(COLUMN_NAME, _dataType, true, false);
       _indexDir = new File(FileUtils.getTempDirectory(), "BenchmarkRangeIndex");
       FileUtils.forceMkdir(_indexDir);
       switch (_dataType) {

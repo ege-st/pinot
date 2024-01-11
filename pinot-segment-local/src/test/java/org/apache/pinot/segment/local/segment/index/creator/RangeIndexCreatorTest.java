@@ -109,7 +109,7 @@ public class RangeIndexCreatorTest {
 
   private void testDataType(DataType dataType)
       throws IOException {
-    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, dataType, true);
+    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, dataType, true, false);
     int numDocs = 1000;
     Object values = valuesArray(dataType, numDocs);
 
@@ -134,7 +134,7 @@ public class RangeIndexCreatorTest {
 
   private void testDataTypeMV(DataType dataType)
       throws IOException {
-    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, dataType, false);
+    FieldSpec fieldSpec = new DimensionFieldSpec(COLUMN_NAME, dataType, false, false);
     int numDocs = 1000;
     int numValuesPerMVEntry = 10;
     int numValues = numDocs * numValuesPerMVEntry;

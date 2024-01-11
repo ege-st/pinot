@@ -95,17 +95,17 @@ public class RawIndexCreatorTest {
   public void setup()
       throws Exception {
     Schema schema = new Schema();
-    schema.addField(new DimensionFieldSpec(INT_COLUMN, DataType.INT, true));
-    schema.addField(new DimensionFieldSpec(LONG_COLUMN, DataType.LONG, true));
-    schema.addField(new DimensionFieldSpec(FLOAT_COLUMN, DataType.FLOAT, true));
-    schema.addField(new DimensionFieldSpec(DOUBLE_COLUMN, DataType.DOUBLE, true));
-    schema.addField(new DimensionFieldSpec(STRING_COLUMN, DataType.STRING, true));
-    schema.addField(new DimensionFieldSpec(INT_MV_COLUMN, DataType.INT, false));
-    schema.addField(new DimensionFieldSpec(LONG_MV_COLUMN, DataType.LONG, false));
-    schema.addField(new DimensionFieldSpec(FLOAT_MV_COLUMN, DataType.FLOAT, false));
-    schema.addField(new DimensionFieldSpec(DOUBLE_MV_COLUMN, DataType.DOUBLE, false));
-    schema.addField(new DimensionFieldSpec(STRING_MV_COLUMN, DataType.STRING, false));
-    schema.addField(new DimensionFieldSpec(BYTES_MV_COLUMN, DataType.BYTES, false));
+    schema.addField(new DimensionFieldSpec(INT_COLUMN, DataType.INT, true, false));
+    schema.addField(new DimensionFieldSpec(LONG_COLUMN, DataType.LONG, true, false));
+    schema.addField(new DimensionFieldSpec(FLOAT_COLUMN, DataType.FLOAT, true, false));
+    schema.addField(new DimensionFieldSpec(DOUBLE_COLUMN, DataType.DOUBLE, true, false));
+    schema.addField(new DimensionFieldSpec(STRING_COLUMN, DataType.STRING, true, false));
+    schema.addField(new DimensionFieldSpec(INT_MV_COLUMN, DataType.INT, false, false));
+    schema.addField(new DimensionFieldSpec(LONG_MV_COLUMN, DataType.LONG, false, false));
+    schema.addField(new DimensionFieldSpec(FLOAT_MV_COLUMN, DataType.FLOAT, false, false));
+    schema.addField(new DimensionFieldSpec(DOUBLE_MV_COLUMN, DataType.DOUBLE, false, false));
+    schema.addField(new DimensionFieldSpec(STRING_MV_COLUMN, DataType.STRING, false, false));
+    schema.addField(new DimensionFieldSpec(BYTES_MV_COLUMN, DataType.BYTES, false, false));
 
     TableConfig tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName("test").build();
 

@@ -233,7 +233,8 @@ public class ColumnMetadataImpl implements ColumnMetadata {
     switch (fieldType) {
       case DIMENSION:
         boolean isSingleValue = config.getBoolean(Column.getKeyFor(column, Column.IS_SINGLE_VALUED));
-        fieldSpec = new DimensionFieldSpec(column, dataType, isSingleValue, defaultNullValueString);
+        boolean isMapValue = config.getBoolean(Column.getKeyFor(column, Column.IS_MAP_VALUED));
+        fieldSpec = new DimensionFieldSpec(column, dataType, isSingleValue, isMapValue, defaultNullValueString);
         break;
       case METRIC:
         fieldSpec = new MetricFieldSpec(column, dataType, defaultNullValueString);

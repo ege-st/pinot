@@ -57,7 +57,7 @@ public class NativeTextIndexCreatorTest {
     uniqueValues[2] = "still";
     uniqueValues[3] = "zoobar";
 
-    FieldSpec fieldSpec = new DimensionFieldSpec("testFSTColumn", FieldSpec.DataType.STRING, true);
+    FieldSpec fieldSpec = new DimensionFieldSpec("testFSTColumn", FieldSpec.DataType.STRING, true, false);
     try (NativeTextIndexCreator creator = new NativeTextIndexCreator("testFSTColumn", INDEX_DIR)) {
       for (int i = 0; i < 4; i++) {
         creator.add(uniqueValues[i]);

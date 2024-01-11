@@ -47,6 +47,9 @@ public interface BlockValSet {
    */
   boolean isSingleValue();
 
+
+  boolean isMapValue();
+
   /**
    * Returns the dictionary for the column, or {@code null} if the column is not dictionary-encoded.
    */
@@ -130,6 +133,15 @@ public interface BlockValSet {
    * @return Array of int values
    */
   int[][] getIntValuesMV();
+
+  /**
+   *
+   * @param key
+   * @return
+   */
+  default int[] getIntValuesMap(String key) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Returns the long values for a multi-valued column.

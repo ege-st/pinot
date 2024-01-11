@@ -121,7 +121,7 @@ public class TableCacheTest {
     assertFalse(tableCache.registerSchemaChangeListener(schemaChangeListener));
 
     // Update the schema
-    schema.addField(new DimensionFieldSpec("newColumn", DataType.LONG, true));
+    schema.addField(new DimensionFieldSpec("newColumn", DataType.LONG, true, false));
     TEST_INSTANCE.getHelixResourceManager().updateSchema(schema, false, false);
     // Wait for at most 10 seconds for the callback to update the schema in the cache
     // NOTE:
@@ -129,7 +129,7 @@ public class TableCacheTest {
     // - Schema change listener callback should always contain 1 schema
     // - Verify if the callback is fully done by checking the schema change lister because it is the last step of the
     //   callback handling
-    expectedSchema.addField(new DimensionFieldSpec("newColumn", DataType.LONG, true));
+    expectedSchema.addField(new DimensionFieldSpec("newColumn", DataType.LONG, true, false));
     expectedColumnMap.put(isCaseInsensitive ? "newcolumn" : "newColumn", "newColumn");
     TestUtils.waitForCondition(aVoid -> {
       assertNotNull(tableCache.getSchema(RAW_TABLE_NAME));

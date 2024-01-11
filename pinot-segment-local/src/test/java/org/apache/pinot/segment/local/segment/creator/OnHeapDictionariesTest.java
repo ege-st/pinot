@@ -209,11 +209,11 @@ public class OnHeapDictionariesTest {
    */
   private static Schema buildSchema() {
     Schema schema = new Schema();
-    schema.addField(new DimensionFieldSpec(INT_COLUMN, FieldSpec.DataType.INT, true));
-    schema.addField(new DimensionFieldSpec(LONG_COLUMN, FieldSpec.DataType.LONG, true));
-    schema.addField(new DimensionFieldSpec(FLOAT_COLUMN, FieldSpec.DataType.FLOAT, true));
-    schema.addField(new DimensionFieldSpec(DOUBLE_COLUMN, FieldSpec.DataType.DOUBLE, true));
-    schema.addField(new DimensionFieldSpec(STRING_COLUMN, FieldSpec.DataType.STRING, true));
+    schema.addField(new DimensionFieldSpec(INT_COLUMN, FieldSpec.DataType.INT, true, false));
+    schema.addField(new DimensionFieldSpec(LONG_COLUMN, FieldSpec.DataType.LONG, true, false));
+    schema.addField(new DimensionFieldSpec(FLOAT_COLUMN, FieldSpec.DataType.FLOAT, true, false));
+    schema.addField(new DimensionFieldSpec(DOUBLE_COLUMN, FieldSpec.DataType.DOUBLE, true, false));
+    schema.addField(new DimensionFieldSpec(STRING_COLUMN, FieldSpec.DataType.STRING, true, false));
     return schema;
   }
 }

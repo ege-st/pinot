@@ -1552,22 +1552,22 @@ public class OfflineClusterIntegrationTest extends BaseClusterIntegrationTestSet
     schema.addField(new MetricFieldSpec("NewAddedDoubleMetric", DataType.DOUBLE));
     schema.addField(new MetricFieldSpec("NewAddedBigDecimalMetric", DataType.BIG_DECIMAL));
     schema.addField(new MetricFieldSpec("NewAddedBytesMetric", DataType.BYTES));
-    schema.addField(new DimensionFieldSpec("NewAddedMVIntDimension", DataType.INT, false));
-    schema.addField(new DimensionFieldSpec("NewAddedMVLongDimension", DataType.LONG, false));
-    schema.addField(new DimensionFieldSpec("NewAddedMVFloatDimension", DataType.FLOAT, false));
-    schema.addField(new DimensionFieldSpec("NewAddedMVDoubleDimension", DataType.DOUBLE, false));
-    schema.addField(new DimensionFieldSpec("NewAddedMVBooleanDimension", DataType.BOOLEAN, false));
-    schema.addField(new DimensionFieldSpec("NewAddedMVTimestampDimension", DataType.TIMESTAMP, false));
-    schema.addField(new DimensionFieldSpec("NewAddedMVStringDimension", DataType.STRING, false));
+    schema.addField(new DimensionFieldSpec("NewAddedMVIntDimension", DataType.INT, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedMVLongDimension", DataType.LONG, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedMVFloatDimension", DataType.FLOAT, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedMVDoubleDimension", DataType.DOUBLE, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedMVBooleanDimension", DataType.BOOLEAN, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedMVTimestampDimension", DataType.TIMESTAMP, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedMVStringDimension", DataType.STRING, false, false));
     // NOTE: MV JSON and BYTES are not supported
-    schema.addField(new DimensionFieldSpec("NewAddedSVJSONDimension", DataType.JSON, true));
-    schema.addField(new DimensionFieldSpec("NewAddedSVBytesDimension", DataType.BYTES, true));
+    schema.addField(new DimensionFieldSpec("NewAddedSVJSONDimension", DataType.JSON, true, false));
+    schema.addField(new DimensionFieldSpec("NewAddedSVBytesDimension", DataType.BYTES, true, false));
     schema.addField(new DateTimeFieldSpec("NewAddedDerivedHoursSinceEpoch", DataType.INT, "EPOCH|HOURS", "1:DAYS"));
     schema.addField(new DateTimeFieldSpec("NewAddedDerivedTimestamp", DataType.TIMESTAMP, "TIMESTAMP", "1:DAYS"));
-    schema.addField(new DimensionFieldSpec("NewAddedDerivedSVBooleanDimension", DataType.BOOLEAN, true));
-    schema.addField(new DimensionFieldSpec("NewAddedDerivedMVStringDimension", DataType.STRING, false));
-    schema.addField(new DimensionFieldSpec("NewAddedDerivedDivAirportSeqIDs", DataType.INT, false));
-    schema.addField(new DimensionFieldSpec("NewAddedDerivedDivAirportSeqIDsString", DataType.STRING, false));
+    schema.addField(new DimensionFieldSpec("NewAddedDerivedSVBooleanDimension", DataType.BOOLEAN, true, false));
+    schema.addField(new DimensionFieldSpec("NewAddedDerivedMVStringDimension", DataType.STRING, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedDerivedDivAirportSeqIDs", DataType.INT, false, false));
+    schema.addField(new DimensionFieldSpec("NewAddedDerivedDivAirportSeqIDsString", DataType.STRING, false, false));
     addSchema(schema);
 
     TableConfig tableConfig = getOfflineTableConfig();

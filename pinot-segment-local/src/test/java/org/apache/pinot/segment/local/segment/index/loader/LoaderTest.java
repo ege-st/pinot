@@ -235,8 +235,8 @@ public class LoaderTest {
   public void testDefaultEmptyValueStringColumn()
       throws Exception {
     Schema schema = constructV1Segment();
-    schema.addField(new DimensionFieldSpec("SVString", FieldSpec.DataType.STRING, true, ""));
-    schema.addField(new DimensionFieldSpec("MVString", FieldSpec.DataType.STRING, false, ""));
+    schema.addField(new DimensionFieldSpec("SVString", FieldSpec.DataType.STRING, true, false, ""));
+    schema.addField(new DimensionFieldSpec("MVString", FieldSpec.DataType.STRING, false, false, ""));
 
     IndexSegment indexSegment = ImmutableSegmentLoader.load(_indexDir, _v1IndexLoadingConfig, schema);
     Assert.assertEquals(indexSegment.getDataSource("SVString").getDictionary().get(0), "");

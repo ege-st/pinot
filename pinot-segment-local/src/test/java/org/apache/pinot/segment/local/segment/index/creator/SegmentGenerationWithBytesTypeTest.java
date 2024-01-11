@@ -104,10 +104,10 @@ public class SegmentGenerationWithBytesTypeTest {
       throws Exception {
 
     _schema = new Schema();
-    _schema.addField(new DimensionFieldSpec(FIXED_BYTE_SORTED_COLUMN, FieldSpec.DataType.BYTES, true));
-    _schema.addField(new DimensionFieldSpec(FIXED_BYTES_UNSORTED_COLUMN, FieldSpec.DataType.BYTES, true));
-    _schema.addField(new DimensionFieldSpec(FIXED_BYTES_NO_DICT_COLUMN, FieldSpec.DataType.BYTES, true));
-    _schema.addField(new DimensionFieldSpec(VARIABLE_BYTES_COLUMN, FieldSpec.DataType.BYTES, true));
+    _schema.addField(new DimensionFieldSpec(FIXED_BYTE_SORTED_COLUMN, FieldSpec.DataType.BYTES, true, false));
+    _schema.addField(new DimensionFieldSpec(FIXED_BYTES_UNSORTED_COLUMN, FieldSpec.DataType.BYTES, true, false));
+    _schema.addField(new DimensionFieldSpec(FIXED_BYTES_NO_DICT_COLUMN, FieldSpec.DataType.BYTES, true, false));
+    _schema.addField(new DimensionFieldSpec(VARIABLE_BYTES_COLUMN, FieldSpec.DataType.BYTES, true, false));
 
     _tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName("test").build();
 

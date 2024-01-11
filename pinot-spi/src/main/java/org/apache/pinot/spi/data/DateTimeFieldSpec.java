@@ -72,7 +72,7 @@ public final class DateTimeFieldSpec extends FieldSpec {
    */
   public DateTimeFieldSpec(String name, DataType dataType, String format, String granularity,
       @Nullable Object sampleValue) {
-    super(name, dataType, true);
+    super(name, dataType, true, false);
 
     _format = format;
     _granularity = granularity;

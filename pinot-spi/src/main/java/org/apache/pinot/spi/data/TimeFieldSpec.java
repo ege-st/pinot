@@ -44,12 +44,12 @@ public final class TimeFieldSpec extends FieldSpec {
   }
 
   public TimeFieldSpec(TimeGranularitySpec incomingGranularitySpec) {
-    super(incomingGranularitySpec.getName(), incomingGranularitySpec.getDataType(), true);
+    super(incomingGranularitySpec.getName(), incomingGranularitySpec.getDataType(), true, false);
     _incomingGranularitySpec = incomingGranularitySpec;
   }
 
   public TimeFieldSpec(TimeGranularitySpec incomingGranularitySpec, TimeGranularitySpec outgoingGranularitySpec) {
-    super(outgoingGranularitySpec.getName(), outgoingGranularitySpec.getDataType(), true);
+    super(outgoingGranularitySpec.getName(), outgoingGranularitySpec.getDataType(), true, false);
     _incomingGranularitySpec = incomingGranularitySpec;
     _outgoingGranularitySpec = outgoingGranularitySpec;
   }

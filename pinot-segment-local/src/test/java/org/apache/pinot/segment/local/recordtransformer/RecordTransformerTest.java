@@ -69,7 +69,7 @@ public class RecordTransformerTest {
 
   static {
     SCHEMA.getFieldSpecFor("svStringWithLengthLimit").setMaxLength(2);
-    SCHEMA.addField(new DimensionFieldSpec("$virtual", DataType.STRING, true, Object.class));
+    SCHEMA.addField(new DimensionFieldSpec("$virtual", DataType.STRING, true, false, Object.class));
   }
 
   // Transform multiple times should return the same result

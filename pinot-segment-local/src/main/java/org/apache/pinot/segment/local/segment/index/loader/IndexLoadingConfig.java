@@ -334,7 +334,7 @@ public class IndexLoadingConfig {
     }
     Schema schema = new Schema();
     for (String column : getAllKnownColumns()) {
-      schema.addField(new DimensionFieldSpec(column, FieldSpec.DataType.STRING, true));
+      schema.addField(new DimensionFieldSpec(column, FieldSpec.DataType.STRING, true, false));
     }
     return schema;
   }

@@ -55,7 +55,7 @@ public class IngestionUtilsTest {
 
     // from groovy function
     schema = new Schema();
-    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("d1", FieldSpec.DataType.STRING, true);
+    DimensionFieldSpec dimensionFieldSpec = new DimensionFieldSpec("d1", FieldSpec.DataType.STRING, true, false);
     dimensionFieldSpec.setTransformFunction("Groovy({function}, argument1, argument2)");
     schema.addField(dimensionFieldSpec);
     List<String> extract = new ArrayList<>(IngestionUtils.getFieldsForRecordExtractor(null, schema));
@@ -64,7 +64,7 @@ public class IngestionUtilsTest {
 
     // groovy function, no arguments
     schema = new Schema();
-    dimensionFieldSpec = new DimensionFieldSpec("d1", FieldSpec.DataType.STRING, true);
+    dimensionFieldSpec = new DimensionFieldSpec("d1", FieldSpec.DataType.STRING, true, false);
     dimensionFieldSpec.setTransformFunction("Groovy({function})");
     schema.addField(dimensionFieldSpec);
     extract = new ArrayList<>(IngestionUtils.getFieldsForRecordExtractor(null, schema));
@@ -73,7 +73,7 @@ public class IngestionUtilsTest {
 
     // Map implementation for Avro - map__KEYS indicates map is source column
     schema = new Schema();
-    dimensionFieldSpec = new DimensionFieldSpec("map__KEYS", FieldSpec.DataType.INT, false);
+    dimensionFieldSpec = new DimensionFieldSpec("map__KEYS", FieldSpec.DataType.INT, false, false);
     schema.addField(dimensionFieldSpec);
     extract = new ArrayList<>(IngestionUtils.getFieldsForRecordExtractor(null, schema));
     Assert.assertEquals(extract.size(), 2);
@@ -81,7 +81,7 @@ public class IngestionUtilsTest {
 
     // Map implementation for Avro - map__VALUES indicates map is source column
     schema = new Schema();
-    dimensionFieldSpec = new DimensionFieldSpec("map__VALUES", FieldSpec.DataType.LONG, false);
+    dimensionFieldSpec = new DimensionFieldSpec("map__VALUES", FieldSpec.DataType.LONG, false, false);
     schema.addField(dimensionFieldSpec);
     extract = new ArrayList<>(IngestionUtils.getFieldsForRecordExtractor(null, schema));
     Assert.assertEquals(extract.size(), 2);
@@ -105,7 +105,7 @@ public class IngestionUtilsTest {
 
     // inbuilt functions
     schema = new Schema();
-    dimensionFieldSpec = new DimensionFieldSpec("hoursSinceEpoch", FieldSpec.DataType.LONG, true);
+    dimensionFieldSpec = new DimensionFieldSpec("hoursSinceEpoch", FieldSpec.DataType.LONG, true, false);
     dimensionFieldSpec.setTransformFunction("toEpochHours(\"timestamp\")");
     schema.addField(dimensionFieldSpec);
     extract = new ArrayList<>(IngestionUtils.getFieldsForRecordExtractor(null, schema));
@@ -114,7 +114,7 @@ public class IngestionUtilsTest {
 
     // inbuilt functions with literal
     schema = new Schema();
-    dimensionFieldSpec = new DimensionFieldSpec("tenMinutesSinceEpoch", FieldSpec.DataType.LONG, true);
+    dimensionFieldSpec = new DimensionFieldSpec("tenMinutesSinceEpoch", FieldSpec.DataType.LONG, true, false);
     dimensionFieldSpec.setTransformFunction("toEpochMinutesBucket(\"timestamp\", 10)");
     schema.addField(dimensionFieldSpec);
     extract = new ArrayList<>(IngestionUtils.getFieldsForRecordExtractor(null, schema));
@@ -143,7 +143,7 @@ public class IngestionUtilsTest {
     Assert.assertEquals(fields.size(), 1);
     Assert.assertTrue(fields.containsAll(Sets.newHashSet("x")));
 
-    schema.addField(new DimensionFieldSpec("y", FieldSpec.DataType.STRING, true));
+    schema.addField(new DimensionFieldSpec("y", FieldSpec.DataType.STRING, true, false));
     fields = IngestionUtils.getFieldsForRecordExtractor(ingestionConfig, schema);
     Assert.assertEquals(fields.size(), 2);
     Assert.assertTrue(fields.containsAll(Sets.newHashSet("x", "y")));
@@ -242,9 +242,9 @@ public class IngestionUtilsTest {
     Schema schema = new Schema();
 
     ingestionConfig.setComplexTypeConfig(complexTypeConfig);
-    schema.addField(new DimensionFieldSpec("a_b__c_d", FieldSpec.DataType.STRING, true));
-    schema.addField(new DimensionFieldSpec("f_d", FieldSpec.DataType.STRING, false));
-    schema.addField(new DimensionFieldSpec("ab__cd", FieldSpec.DataType.STRING, true));
+    schema.addField(new DimensionFieldSpec("a_b__c_d", FieldSpec.DataType.STRING, true, false));
+    schema.addField(new DimensionFieldSpec("f_d", FieldSpec.DataType.STRING, false, false));
+    schema.addField(new DimensionFieldSpec("ab__cd", FieldSpec.DataType.STRING, true, false));
     Set<String> fields = IngestionUtils.getFieldsForRecordExtractor(ingestionConfig, schema);
     Assert.assertEquals(fields.size(), 3);
     Assert.assertTrue(fields.containsAll(Sets.newHashSet("a_b", "f_d", "ab")));

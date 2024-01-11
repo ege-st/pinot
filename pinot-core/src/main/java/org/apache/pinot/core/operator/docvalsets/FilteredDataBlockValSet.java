@@ -91,6 +91,12 @@ public class FilteredDataBlockValSet implements BlockValSet {
     return true;
   }
 
+  @Override
+  public boolean isMapValue() {
+    // TODO(ERICH): Should this return false by default?
+    throw new UnsupportedOperationException();
+  }
+
   @Nullable
   @Override
   public Dictionary getDictionary() {

@@ -457,7 +457,7 @@ public class TableConfigUtilsTest {
       // expected
     }
 
-    schema.addField(new DimensionFieldSpec("d1", FieldSpec.DataType.DOUBLE, true));
+    schema.addField(new DimensionFieldSpec("d1", FieldSpec.DataType.DOUBLE, true, false));
     tableConfig.getIndexingConfig().setAggregateMetrics(true);
     try {
       TableConfigUtils.validateIngestionConfig(tableConfig, schema);
