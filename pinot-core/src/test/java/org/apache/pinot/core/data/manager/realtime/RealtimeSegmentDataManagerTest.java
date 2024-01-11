@@ -930,7 +930,7 @@ public class RealtimeSegmentDataManagerTest {
 
     // Create schema with a map value column
     var schema = new Schema();
-    var mapField = new DimensionFieldSpec("my_map", FieldSpec.DataType.INT, true);
+    var mapField = new DimensionFieldSpec("my_map", FieldSpec.DataType.INT, true, false);
     mapField.setMapValueField(true);
     schema.addField(mapField);
 
