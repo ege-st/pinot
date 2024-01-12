@@ -73,7 +73,7 @@ public class RowBasedBlockValueFetcher {
           throw new IllegalStateException("Unsupported value type: " + storedType + " for single-value column");
       }
     } else if(blockValSet.isMapValue()) {
-      // TGODO
+      // TODO (ERICH)
       throw new UnsupportedOperationException();
     }else {
       switch (storedType) {
