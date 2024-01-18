@@ -74,7 +74,6 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
   private final FixedByteSVMutableForwardIndex _docIds;
   private final FixedByteSVMutableForwardIndex _keys;
   private final FixedByteSVMutableForwardIndex _values;
-  //private final HashMap<String, Integer> _keyIds = new HashMap<>();
   private final StringOffHeapMutableDictionary _keysDict;
   private int _nextKeyId = 0;
   private AtomicInteger _nextEntryId = new AtomicInteger(0);
@@ -188,6 +187,7 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
     var keyId = _keysDict.indexOf(key);
 
     if(keyId > -1) {
+      // TODO(ERICH) Use chunk size to locate which chunk to search within.
       var maxEntryId = _nextEntryId.get();
 
       // Find where docId first occurs in the buffer
@@ -225,6 +225,11 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
 
   @Override
   public Map<String, Integer> getIntMap(int docId) {
+    // TODO: pass the Out array as aa parameter for this rather than return a Map and return the length of the dictionary
+    //   Will need to track teh size of the largest dictionary.  Or use a default max value (if we exceed the map assume\
+    //   then drop the keys and log/generate an error)
+
+
     // Find the first occurrence of the document id
     // Find where docId first occurs in the buffer
     // Check the set of keys for that doc for the given key
