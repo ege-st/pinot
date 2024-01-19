@@ -56,6 +56,7 @@ import org.apache.pinot.segment.local.realtime.impl.invertedindex.RealtimeLucene
 import org.apache.pinot.segment.local.realtime.impl.nullvalue.MutableNullValueVector;
 import org.apache.pinot.segment.local.segment.index.datasource.ImmutableDataSource;
 import org.apache.pinot.segment.local.segment.index.datasource.MutableDataSource;
+import org.apache.pinot.segment.local.segment.index.datasource.MutableMapDataSource;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.local.segment.readers.PinotSegmentColumnReader;
 import org.apache.pinot.segment.local.segment.readers.PinotSegmentRecordReader;
@@ -912,6 +913,16 @@ public class MutableSegmentImpl implements MutableSegment {
   }
 
   @Override
+  public DataSource getDataSource(String column, String key) {
+    IndexContainer indexContainer = _indexContainerMap.get(column);
+    if (indexContainer != null ) {
+      return indexContainer.toDataSource(key);
+    } else {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
   public List<StarTreeV2> getStarTrees() {
     return null;
   }
@@ -1334,6 +1345,15 @@ public class MutableSegmentImpl implements MutableSegment {
       return new MutableDataSource(_fieldSpec, _numDocsIndexed, _valuesInfo._numValues,
           _valuesInfo._maxNumValuesPerMVEntry, _dictionary == null ? -1 : _dictionary.length(), _partitionFunction,
           _partitions, _minValue, _maxValue, _mutableIndexes, _dictionary, _nullValueVector,
+          _valuesInfo._varByteMVMaxRowLengthInBytes);
+    }
+
+    DataSource toDataSource(String key) {
+      assert !_fieldSpec.isSingleValueField() && _fieldSpec.isMapValueField();
+
+      return new MutableMapDataSource(_fieldSpec, key, _numDocsIndexed, _valuesInfo._numValues,
+          _valuesInfo._maxNumValuesPerMVEntry, _dictionary == null ? -1 : _dictionary.length(), _partitionFunction,
+          _partitions, _minValue, _maxValue, _mutableIndexes,
           _valuesInfo._varByteMVMaxRowLengthInBytes);
     }
 

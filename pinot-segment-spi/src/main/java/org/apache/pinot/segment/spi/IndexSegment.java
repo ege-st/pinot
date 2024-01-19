@@ -68,6 +68,16 @@ public interface IndexSegment {
   DataSource getDataSource(String columnName);
 
   /**
+   * REturns the {@link DataSource} for a map column
+   * @param columnName
+   * @param key
+   * @return
+   */
+  default DataSource getDataSource(String columnName, String key) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * Returns a list of star-trees (V2), or null if there is no star-tree (V2) in the segment.
    */
   List<StarTreeV2> getStarTrees();
