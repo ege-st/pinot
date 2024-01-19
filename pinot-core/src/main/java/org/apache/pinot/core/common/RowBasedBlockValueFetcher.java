@@ -74,7 +74,20 @@ public class RowBasedBlockValueFetcher {
       }
     } else if(blockValSet.isMapValue()) {
       // TODO (ERICH)
-      throw new UnsupportedOperationException();
+      switch (storedType) {
+        case INT:
+          return new IntSingleValueFetcher(blockValSet.getIntValuesMap(""));
+        /*case LONG:
+          return new LongMultiValueFetcher(blockValSet.getLongValuesMV());
+        case FLOAT:
+          return new FloatMultiValueFetcher(blockValSet.getFloatValuesMV());
+        case DOUBLE:
+          return new DoubleMultiValueFetcher(blockValSet.getDoubleValuesMV());
+        case STRING:
+          return new StringMultiValueFetcher(blockValSet.getStringValuesMV());*/
+        default:
+          throw new IllegalStateException("Unsupported value type: " + storedType + " for multi-value column");
+      }
     }else {
       switch (storedType) {
         case INT:

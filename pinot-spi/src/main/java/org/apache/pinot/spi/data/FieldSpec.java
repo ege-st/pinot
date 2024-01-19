@@ -356,6 +356,9 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
     if (!_isSingleValueField) {
       jsonObject.put("singleValueField", false);
     }
+    if (_isMapValueField) {
+      jsonObject.put("mapValueField", true);
+    }
     if (_maxLength != DEFAULT_MAX_LENGTH) {
       jsonObject.put("maxLength", _maxLength);
     }

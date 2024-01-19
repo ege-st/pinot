@@ -21,12 +21,14 @@ package org.apache.pinot.core.operator.transform.function;
 import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Map;
-import org.apache.pinot.common.function.scalar.MapFunctions;
 import org.apache.pinot.core.operator.ColumnContext;
 import org.apache.pinot.core.operator.blocks.ValueBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 
 
+/**
+ * Evaluates myMap['foo']
+ */
 public class MapItemTransformFunctions {
 
   public static class MapItemFunction extends BaseTransformFunction {
@@ -45,6 +47,9 @@ public class MapItemTransformFunctions {
       if (arguments.size() != 2) {
         throw new IllegalArgumentException("Exactly 1 argument is required for Vector transform function");
       }
+
+      // Check if the second operand (the key) is a string literal, if it is then we can directly construct the
+      // MapDataSource which will pre-compute the Key ID.
 
       _mapValue = arguments.get(0);
       Preconditions.checkArgument(!_mapValue.getResultMetadata().isSingleValue() && _mapValue.getResultMetadata().isMapValue(),
@@ -71,20 +76,23 @@ public class MapItemTransformFunctions {
       initIntValuesSV(length);
       // TODO: do I need a transformToIntValuesMap method?
 
-      // Evaluate the expression that will resolve to the Map value
-      Map<String, Integer>[] maps = _mapValue.transformToIntValuesMap(valueBlock);
-
-      // Evalulate the expression that will resolve to the key used to look up a map
+      // Evaluate the expression that will resolve to the key used to look up a map
       String[] keys = _keyValue.transformToStringValuesSV(valueBlock);
 
       // Check that both blocks have the same length
-      assert maps.length == keys.length;
-      assert maps.length == length;
+      //assert maps.length == keys.length;
+      //assert maps.length == length;
+      /*if (valueBlock instanceof ProjectionBlock) {
+        ((ProjectionBlock)valueBlock).
+        ((PushDownTransformFunction) _jsonFieldTransformFunction).transformToIntValuesSV((ProjectionBlock) valueBlock,
+            _jsonPathEvaluator, _intValuesSV);
+        return _intValuesSV;
+      }*/
 
       for (int i = 0; i < length; i++) {
         // Resolve teh expression that looks up a key in a map and resolves to the
         // value bound to that key or to Null.
-        _intValuesSV[i] = MapFunctions.mapElementForKey(maps[i], keys[i]);
+        //_intValuesSV[i] = MapFunctions.mapElementForKey(maps[i], keys[i]);
       }
       throw new UnsupportedOperationException();
     }

@@ -1349,7 +1349,9 @@ public class MutableSegmentImpl implements MutableSegment {
     }
 
     DataSource toDataSource(String key) {
-      assert !_fieldSpec.isSingleValueField() && _fieldSpec.isMapValueField();
+      if (_fieldSpec.isSingleValueField() || !_fieldSpec.isMapValueField()) {
+        throw new UnsupportedOperationException("Cannot apply the item map operation to a column which is not a map type");
+      }
 
       return new MutableMapDataSource(_fieldSpec, key, _numDocsIndexed, _valuesInfo._numValues,
           _valuesInfo._maxNumValuesPerMVEntry, _dictionary == null ? -1 : _dictionary.length(), _partitionFunction,

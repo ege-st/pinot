@@ -24,7 +24,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.pinot.common.request.Expression;
 import org.apache.pinot.common.request.context.ExpressionContext;
+import org.apache.pinot.common.request.context.FunctionContext;
 import org.apache.pinot.common.utils.HashUtil;
 import org.apache.pinot.core.operator.BaseProjectOperator;
 import org.apache.pinot.core.operator.DocIdSetOperator;
@@ -64,15 +68,30 @@ public class ProjectPlanNode implements PlanNode {
   @Override
   public BaseProjectOperator<?> run() {
     Set<String> projectionColumns = new HashSet<>();
+    Set<ImmutablePair<String, String>> mapItemColumns = new HashSet<>();
+
     boolean hasNonIdentifierExpression = false;
     for (ExpressionContext expression : _expressions) {
-      expression.getColumns(projectionColumns);
-      if (expression.getType() != ExpressionContext.Type.IDENTIFIER) {
-        hasNonIdentifierExpression = true;
+      if (expression.getType() == ExpressionContext.Type.FUNCTION
+          && expression.getFunction().getFunctionName().equals("item")) {
+        // This is an item operation on a map column
+        String columnOp = expression.getFunction().getArguments().get(0).toString();
+        String key = expression.getFunction().getArguments().get(1).toString();
+        mapItemColumns.add(new ImmutablePair<>(columnOp, key));
+      } else {
+        expression.getColumns(projectionColumns);
+        if (expression.getType() != ExpressionContext.Type.IDENTIFIER) {
+          hasNonIdentifierExpression = true;
+        }
       }
     }
     Map<String, DataSource> dataSourceMap = new HashMap<>(HashUtil.getHashMapCapacity(projectionColumns.size()));
+
+    // TODO(ERICH): if the expression type is an item operator with map column then create a Map DataSource and pass the key
     projectionColumns.forEach(column -> dataSourceMap.put(column, _indexSegment.getDataSource(column)));
+    mapItemColumns.forEach(operands ->
+        dataSourceMap.put(operands.left, _indexSegment.getDataSource(operands.left, operands.right)));
+
     // NOTE: Skip creating DocIdSetOperator when maxDocsPerCall is 0 (for selection query with LIMIT 0)
     DocIdSetOperator docIdSetOperator =
         _maxDocsPerCall > 0 ? new DocIdSetPlanNode(_indexSegment, _queryContext, _maxDocsPerCall, _filterOperator).run()

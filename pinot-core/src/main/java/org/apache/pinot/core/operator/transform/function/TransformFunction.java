@@ -171,11 +171,4 @@ public interface TransformFunction {
    */
   @Nullable
   RoaringBitmap getNullBitmap(ValueBlock block);
-
-  /**
-   * Transforms the data from the given value block to a block of Maps from Strings to Integers.
-   */
-  default Map<String, Integer>[] transformToIntValuesMap(ValueBlock valueBlock) {
-    throw new UnsupportedOperationException();
-  }
 }

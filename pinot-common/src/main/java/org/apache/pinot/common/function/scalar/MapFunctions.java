@@ -32,20 +32,6 @@ public class MapFunctions {
   }
 
   @ScalarFunction
-  public static int[] arrayReverseInt(int[] values) {
-    int[] clone = values.clone();
-    ArrayUtils.reverse(clone);
-    return clone;
-  }
-
-  @ScalarFunction
-  public static String[] arrayReverseString(String[] values) {
-    String[] clone = values.clone();
-    ArrayUtils.reverse(clone);
-    return clone;
-  }
-
-  @ScalarFunction
   public static int mapElementForKey(@Nullable Map<String, Integer> map, String key) {
     if(map != null) {
       return map.get(key);
