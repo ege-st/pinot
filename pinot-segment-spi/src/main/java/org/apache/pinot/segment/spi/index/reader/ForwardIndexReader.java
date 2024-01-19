@@ -51,6 +51,7 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
 
   // TODO(ERICH): there is risk that code that checks isSingleValue will incorrectly flag a Map value as an Array value
   default boolean isMapValue() { return false; }
+  default String getKey() { return null; }
 
   /**
    * Returns the data type of the values in the forward index. Returns {@link DataType#INT} for dictionary-encoded
@@ -819,7 +820,6 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
   }
 
   /**
-<<<<<<< Updated upstream
    * Returns the entire map.
    *
    * @param docId
@@ -854,8 +854,6 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
 
 
   /**
-=======
->>>>>>> Stashed changes
    * Reads the LONG type multi-value at the given document id into the passed in value buffer (the buffer size must be
    * enough to hold all the values for the multi-value entry) and returns the number of values within the multi-value
    * entry.

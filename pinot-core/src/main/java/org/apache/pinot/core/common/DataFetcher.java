@@ -71,9 +71,15 @@ public class DataFetcher {
       ForwardIndexReader<?> forwardIndexReader = dataSource.getForwardIndex();
       Preconditions.checkState(forwardIndexReader != null,
           "Forward index disabled for column: %s, cannot create DataFetcher!", column);
-      ColumnValueReader columnValueReader =
-          new ColumnValueReader(forwardIndexReader, dataSource.getDictionary());
-      _columnValueReaderMap.put(column, columnValueReader);
+
+      if (forwardIndexReader.isMapValue()) {
+        ColumnValueReader columnValueReader = new ColumnValueReader(forwardIndexReader, forwardIndexReader.getKey(), dataSource.getDictionary());
+        _columnValueReaderMap.put(column, columnValueReader);
+      } else {
+        ColumnValueReader columnValueReader =
+            new ColumnValueReader(forwardIndexReader, dataSource.getDictionary());
+        _columnValueReaderMap.put(column, columnValueReader);
+      }
       if (!dataSourceMetadata.isSingleValue()) {
         maxNumValuesPerMVEntry = Math.max(maxNumValuesPerMVEntry, dataSourceMetadata.getMaxNumValuesPerMVEntry());
       }
@@ -463,6 +469,7 @@ public class DataFetcher {
     final Dictionary _dictionary;
     final DataType _storedType;
     final boolean _singleValue;
+    final String _key;
 
     boolean _readerContextCreated;
     ForwardIndexReaderContext _readerContext;
@@ -472,6 +479,15 @@ public class DataFetcher {
       _dictionary = dictionary;
       _storedType = reader.getStoredType();
       _singleValue = reader.isSingleValue();
+      _key = null;
+    }
+
+    ColumnValueReader(ForwardIndexReader reader, String key, @Nullable Dictionary dictionary) {
+      _reader = reader;
+      _dictionary = dictionary;
+      _storedType = reader.getStoredType();
+      _singleValue = reader.isSingleValue();
+      _key = key;
     }
 
     private ForwardIndexReaderContext getReaderContext() {
@@ -486,6 +502,16 @@ public class DataFetcher {
     void readDictIds(int[] docIds, int length, int[] dictIdBuffer) {
       Tracing.activeRecording().setInputDataType(_storedType, _singleValue);
       _reader.readDictIds(docIds, length, dictIdBuffer, getReaderContext());
+    }
+
+    void readIntMapValues(int[] docIds, int length, int[] valueBuffer) {
+      Tracing.activeRecording().setInputDataType(_storedType, _singleValue);
+      ForwardIndexReaderContext readerContext = getReaderContext();
+      if (_dictionary != null) {
+        throw new UnsupportedOperationException();
+      } else {
+        _reader.readValuesMap(_key, docIds, length, valueBuffer, readerContext);
+      }
     }
 
     void readIntValues(int[] docIds, int length, int[] valueBuffer) {

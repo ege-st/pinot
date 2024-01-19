@@ -28,6 +28,7 @@ import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.segment.spi.index.column.ColumnIndexContainer;
 import org.apache.pinot.segment.spi.index.mutable.MutableDictionary;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
+import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
 import org.apache.pinot.segment.spi.partition.PartitionFunction;
 import org.apache.pinot.spi.data.FieldSpec;
 
@@ -37,7 +38,6 @@ import org.apache.pinot.spi.data.FieldSpec;
  */
 @SuppressWarnings("rawtypes")
 public class MutableMapDataSource extends BaseDataSource {
-
   public MutableMapDataSource(FieldSpec fieldSpec, String key, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
       @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions, @Nullable Comparable minValue,
       @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes,
@@ -47,6 +47,12 @@ public class MutableMapDataSource extends BaseDataSource {
         new ColumnIndexContainer.FromMap.Builder()
             .withAll(mutableIndexes)
             .build());
+  }
+
+  @Override
+  public ForwardIndexReader<?> getForwardIndex() {
+    // I want this function to pass the key to use to the forward index.
+    return getIndex(StandardIndexes.forward());
   }
 
   private static class MutableMapDataSourceMetadata implements DataSourceMetadata {
