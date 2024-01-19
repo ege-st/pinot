@@ -21,6 +21,7 @@ package org.apache.pinot.segment.local.segment.index.datasource;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteKeyMajorMapMutableForwardIndex;
 import org.apache.pinot.segment.spi.datasource.DataSourceMetadata;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
@@ -36,6 +37,8 @@ import org.apache.pinot.spi.data.FieldSpec;
  */
 @SuppressWarnings("rawtypes")
 public class MutableMapDataSource extends BaseDataSource {
+  String _key;
+
   public MutableMapDataSource(FieldSpec fieldSpec, String key, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
       @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions, @Nullable Comparable minValue,
       @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes,
@@ -45,12 +48,13 @@ public class MutableMapDataSource extends BaseDataSource {
         new ColumnIndexContainer.FromMap.Builder()
             .withAll(mutableIndexes)
             .build());
+    _key = key;
   }
 
   @Override
   public ForwardIndexReader<?> getForwardIndex() {
     // I want this function to pass the key to use to the forward index.
-    return getIndex(StandardIndexes.forward());
+    return new FixedByteKeyMajorMapMutableForwardIndex.IndexReader(getIndex(StandardIndexes.forward()), _key);
   }
 
   private static class MutableMapDataSourceMetadata implements DataSourceMetadata {

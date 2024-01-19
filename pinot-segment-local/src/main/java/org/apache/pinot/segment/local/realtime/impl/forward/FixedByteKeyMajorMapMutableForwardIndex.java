@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
+import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
+import org.apache.pinot.segment.spi.index.reader.ForwardIndexReaderContext;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
@@ -210,6 +212,42 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
       throws IOException {
     for (var keyIndex : _keyIndexes.values()) {
       keyIndex.close();
+    }
+  }
+
+  public static class IndexReader implements ForwardIndexReader<ForwardIndexReaderContext> {
+    final ForwardIndexReader<ForwardIndexReaderContext> _fwdIndex;
+    final String _key;
+
+    public IndexReader(ForwardIndexReader mapIndex, String key) {
+      _fwdIndex = mapIndex;
+      _key = key;
+    }
+
+    @Override
+    public boolean isDictionaryEncoded() {
+      return false;
+    }
+
+    @Override
+    public boolean isSingleValue() {
+      return true;
+    }
+
+    @Override
+    public DataType getStoredType() {
+      return _fwdIndex.getStoredType();
+    }
+
+    @Override
+    public int getInt(int docId, ForwardIndexReaderContext context) {
+      return _fwdIndex.getIntMapKeyValue(docId, _key);
+    }
+
+    @Override
+    public void close()
+        throws IOException {
+
     }
   }
 }
