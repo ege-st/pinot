@@ -44,7 +44,8 @@ public class IdentifierTransformFunction implements TransformFunction, PushDownT
     _columnName = columnName;
     _dictionary = columnContext.getDictionary();
     _resultMetadata =
-        new TransformResultMetadata(columnContext.getDataType(), columnContext.isSingleValue(), _dictionary != null);
+        new TransformResultMetadata(columnContext.getDataType(), columnContext.isSingleValue(),
+             _dictionary != null);
   }
 
   public String getColumnName() {
@@ -85,6 +86,11 @@ public class IdentifierTransformFunction implements TransformFunction, PushDownT
   @Override
   public int[] transformToIntValuesSV(ValueBlock valueBlock) {
     return valueBlock.getBlockValueSet(_columnName).getIntValuesSV();
+  }
+
+  @Override
+  public int[] transformToIntValuesSV(ValueBlock valueBlock, String[] keys) {
+    return valueBlock.getBlockValueSet(_columnName).getIntValuesMap(keys[0]);
   }
 
   @Override

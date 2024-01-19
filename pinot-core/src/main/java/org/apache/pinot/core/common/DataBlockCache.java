@@ -482,6 +482,10 @@ public class DataBlockCache {
     _dataFetcher.fetchStringValues(column, evaluator, _docIds, _length, buffer);
   }
 
+  public void fillValues(String column, String key, int[] buffer) {
+    _dataFetcher.fetchIntValues(column, key, _docIds, _length, buffer);
+  }
+
   /**
    * Get the bytes values for a multi-valued column.
    *

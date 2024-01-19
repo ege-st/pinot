@@ -27,11 +27,20 @@ import org.apache.pinot.spi.data.FieldSpec.DataType;
 public class TransformResultMetadata {
   private final DataType _dataType;
   private final boolean _isSingleValue;
+  private final boolean _isMapValue;
   private final boolean _hasDictionary;
 
   public TransformResultMetadata(DataType dataType, boolean isSingleValue, boolean hasDictionary) {
     _dataType = dataType;
     _isSingleValue = isSingleValue;
+    _isMapValue = false;
+    _hasDictionary = hasDictionary;
+  }
+
+  public TransformResultMetadata(DataType dataType, boolean isSingleValue, boolean isMapValue, boolean hasDictionary) {
+    _dataType = dataType;
+    _isSingleValue = isSingleValue;
+    _isMapValue = isMapValue;
     _hasDictionary = hasDictionary;
   }
 
@@ -44,7 +53,7 @@ public class TransformResultMetadata {
   }
 
   public boolean isMapValue() {
-    throw new UnsupportedOperationException();
+    return _isMapValue;
   }
 
   public boolean hasDictionary() {

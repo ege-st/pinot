@@ -80,9 +80,10 @@ public class ProjectPlanNode implements PlanNode {
         mapItemColumns.add(new ImmutablePair<>(columnOp, key));
       } else {
         expression.getColumns(projectionColumns);
-        if (expression.getType() != ExpressionContext.Type.IDENTIFIER) {
-          hasNonIdentifierExpression = true;
-        }
+      }
+
+      if (expression.getType() != ExpressionContext.Type.IDENTIFIER) {
+        hasNonIdentifierExpression = true;
       }
     }
     Map<String, DataSource> dataSourceMap = new HashMap<>(HashUtil.getHashMapCapacity(projectionColumns.size()));

@@ -22,7 +22,9 @@ import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Map;
 import org.apache.pinot.core.operator.ColumnContext;
+import org.apache.pinot.core.operator.blocks.ProjectionBlock;
 import org.apache.pinot.core.operator.blocks.ValueBlock;
+import org.apache.pinot.core.operator.docvalsets.ProjectionBlockValSet;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 
 
@@ -52,12 +54,12 @@ public class MapItemTransformFunctions {
       // MapDataSource which will pre-compute the Key ID.
 
       _mapValue = arguments.get(0);
-      Preconditions.checkArgument(!_mapValue.getResultMetadata().isSingleValue() && _mapValue.getResultMetadata().isMapValue(),
-          "Argument must be multi-valued float vector for vector distance transform function: %s", getName());
+      //Preconditions.checkArgument(!_mapValue.getResultMetadata().isSingleValue() && _mapValue.getResultMetadata().isMapValue(),
+          //"Argument must be multi-valued float vector for vector distance transform function: %s", getName());
 
       _keyValue = arguments.get(1);
-      Preconditions.checkArgument(_keyValue.getResultMetadata().isSingleValue() && !_mapValue.getResultMetadata().isMapValue(),
-          "Argument must be a single valued String for map item transform function: %s", getName());
+      //Preconditions.checkArgument(_keyValue.getResultMetadata().isSingleValue() && !_mapValue.getResultMetadata().isMapValue(),
+          //"Argument must be a single valued String for map item transform function: %s", getName());
     }
 
     @Override
@@ -88,13 +90,7 @@ public class MapItemTransformFunctions {
             _jsonPathEvaluator, _intValuesSV);
         return _intValuesSV;
       }*/
-
-      for (int i = 0; i < length; i++) {
-        // Resolve teh expression that looks up a key in a map and resolves to the
-        // value bound to that key or to Null.
-        //_intValuesSV[i] = MapFunctions.mapElementForKey(maps[i], keys[i]);
-      }
-      throw new UnsupportedOperationException();
+      return _mapValue.transformToIntValuesSV(valueBlock, keys);
     }
   }
 }

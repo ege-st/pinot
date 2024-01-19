@@ -707,7 +707,8 @@ public class DataFetcher {
     void readIntValuesMap(String key, int[] docIds, int length, int[] valuesBuffer) {
       var readerContext = getReaderContext();
       if(_dictionary != null) {
-        throw new UnsupportedOperationException("Have not added dictionary encoding support to maps yet");
+        //throw new UnsupportedOperationException("Have not added dictionary encoding support to maps yet");
+        _reader.readValuesMap(key, docIds, length, valuesBuffer, readerContext);
       } else {
         _reader.readValuesMap(key, docIds, length, valuesBuffer, readerContext);
       }

@@ -245,6 +245,11 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
     }
 
     @Override
+    public int getIntMapKeyValue(int docId, String key) {
+      return _fwdIndex.getIntMapKeyValue(docId, key);
+    }
+
+    @Override
     public void close()
         throws IOException {
 

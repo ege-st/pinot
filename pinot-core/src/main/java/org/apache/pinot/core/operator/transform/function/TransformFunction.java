@@ -98,6 +98,10 @@ public interface TransformFunction {
    */
   int[] transformToIntValuesSV(ValueBlock valueBlock);
 
+  default int[] transformToIntValuesSV(ValueBlock valueBlock, String[] keys) {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * Transforms the data from the given value block to single-valued long values.
    */

@@ -182,4 +182,8 @@ public class ProjectionBlock implements ValueBlock {
   public void fillValues(String column, TransformEvaluator evaluator, String[][] buffer) {
     _dataBlockCache.fillValues(column, evaluator, buffer);
   }
+
+  public void fillValues(String column, String key, int[] buffer) {
+    _dataBlockCache.fillValues(column, key, buffer);
+  }
 }
