@@ -744,7 +744,7 @@ public class MutableSegmentImpl implements MutableSegment {
             // TODO(ERICH): this loop should be moved into the map index.  It will simplify code (and maybe reduce dynamic
             //   dispatch function calls, not sure how JVM optimizes this kind of call)
             //for(Map.Entry<String, Object> mapEntry: kv.entrySet()) {
-            for(int idx = 0; idx < 3; idx += 2) {
+            for(int idx = 0; idx < 3; idx += 1) {
               indexEntry.getValue().add(String.format("%d", idx), idx, -1, docId);
             }
           } catch (Exception e) {
