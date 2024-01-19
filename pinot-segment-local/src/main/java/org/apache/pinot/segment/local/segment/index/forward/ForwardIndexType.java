@@ -318,6 +318,16 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
             V1Constants.Indexes.UNSORTED_SV_FORWARD_INDEX_FILE_EXTENSION);
         return new FixedByteSVMutableForwardIndex(true, FieldSpec.DataType.INT, context.getCapacity(),
             context.getMemoryManager(), allocationContext);
+      } else if (isMapValue) {
+        assert storedType.isFixedWidth();
+
+        String allocationContext =
+            IndexUtil.buildAllocationContext(context.getSegmentName(), context.getFieldSpec().getName(),
+                V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+        int initialCapacity = Math.min(context.getCapacity(),
+            NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
+        return new FixedByteKeyMajorMapMutableForwardIndex(
+            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext);
       } else {
         String allocationContext = IndexUtil.buildAllocationContext(segmentName, column,
             V1Constants.Indexes.UNSORTED_MV_FORWARD_INDEX_FILE_EXTENSION);

@@ -739,12 +739,13 @@ public class MutableSegmentImpl implements MutableSegment {
         for (Map.Entry<IndexType, MutableIndex> indexEntry : indexContainer._mutableIndexes.entrySet()) {
           try {
             // TODO(ERICH - map): get key and value and put here
-            var kv = (java.util.Map<String, Object>) value;  // TODO(ERICH: map) is passing as a tuple the best way to pass KV?
+            //var kv = (List<Object>) value;  // TODO(ERICH: map) is passing as a tuple the best way to pass KV?
 
             // TODO(ERICH): this loop should be moved into the map index.  It will simplify code (and maybe reduce dynamic
             //   dispatch function calls, not sure how JVM optimizes this kind of call)
-            for(Map.Entry<String, Object> mapEntry: kv.entrySet()) {
-              indexEntry.getValue().add(mapEntry.getKey(), mapEntry.getValue(), -1, docId);
+            //for(Map.Entry<String, Object> mapEntry: kv.entrySet()) {
+            for(int idx = 0; idx < 3; idx += 2) {
+              indexEntry.getValue().add(String.format("%d", idx), idx, -1, docId);
             }
           } catch (Exception e) {
             recordIndexingError(indexEntry.getKey(), e);
