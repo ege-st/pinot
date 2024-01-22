@@ -919,7 +919,7 @@ public class MutableSegmentImpl implements MutableSegment {
     if (indexContainer != null ) {
       return indexContainer.toDataSource(key);
     } else {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("Virtual columns not supported for map type");
     }
   }
 
