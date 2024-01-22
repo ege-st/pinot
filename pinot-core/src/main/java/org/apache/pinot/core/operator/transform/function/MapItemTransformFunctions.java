@@ -81,15 +81,6 @@ public class MapItemTransformFunctions {
       // Evaluate the expression that will resolve to the key used to look up a map
       String[] keys = _keyValue.transformToStringValuesSV(valueBlock);
 
-      // Check that both blocks have the same length
-      //assert maps.length == keys.length;
-      //assert maps.length == length;
-      /*if (valueBlock instanceof ProjectionBlock) {
-        ((ProjectionBlock)valueBlock).
-        ((PushDownTransformFunction) _jsonFieldTransformFunction).transformToIntValuesSV((ProjectionBlock) valueBlock,
-            _jsonPathEvaluator, _intValuesSV);
-        return _intValuesSV;
-      }*/
       return _mapValue.transformToIntValuesSV(valueBlock, keys);
     }
   }
