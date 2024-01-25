@@ -520,6 +520,8 @@ public interface ForwardIndexReader<T extends ForwardIndexReaderContext> extends
   }
 
   default void readValuesMap(String key, int[] docIds, int length, int[] values, T context) {
+    // TODO: Don't add the key here.  The signature should be: readValuesMap(int[] docIds, int length, PinotMapArray values, T context)
+    //      by doing this I do not add the new concept of key to forward index.  The operator will specify the actual key to use.
     switch (getStoredType()) {
       case INT:
         for (int i = 0; i < length; i++) {

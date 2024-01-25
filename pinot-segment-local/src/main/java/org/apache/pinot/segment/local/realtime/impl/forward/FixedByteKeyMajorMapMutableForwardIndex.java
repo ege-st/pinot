@@ -22,6 +22,8 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReaderContext;
@@ -68,7 +70,7 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
   // TODO(ERICH): how does thread-safety work around this? Is there only one thread that can write and many threads
   //   that can read?
-  private final HashMap<String, FixedByteSVMutableForwardIndex> _keyIndexes = new HashMap<>();
+  private final ConcurrentMap<String, FixedByteSVMutableForwardIndex> _keyIndexes = new ConcurrentHashMap<>();  // Change to ConcurrentMap
 
   // For each key buffer, this records how many rows have been written to that buffer. This is needed because
   // we need to be able to scan a key buffer for a particular doc id.
@@ -158,19 +160,17 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
     //  - What happens when there are docs that have no value for this key? How will their null values get added in?
 
     // Get the buffer for the given key
+    // TODO: get rid of vars :(
     var keyIndex = getOrCreateKeyIndex(key);
     keyIndex.setInt(docId, value);
   }
 
   private FixedByteSVMutableForwardIndex getOrCreateKeyIndex(String key) {
-    var keyIndex = _keyIndexes.get(key);
-    if(keyIndex == null) {
-      // If there is no fwd index for the given key then create one
-      keyIndex = new FixedByteSVMutableForwardIndex(false, _storedType, _storedType.size(),
-          _numRowsPerChunk, _memoryManager, _allocationContext);
-      _keyIndexes.put(key, keyIndex);
-    }
-    return keyIndex;
+    return _keyIndexes.computeIfAbsent(
+        key, k -> new FixedByteSVMutableForwardIndex(false,
+            _storedType, _storedType.size(),
+            _numRowsPerChunk, _memoryManager, _allocationContext)
+    );
   }
 
   /**
@@ -182,6 +182,8 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
    */
   @Override
   public int getIntMapKeyValue(int docId, String key) {
+    // Replace this with the method that returns a PinotMapArray
+    //    The index access/getters and null bit map etc. get methods are on PinotMapArray
     var keyIndex = _keyIndexes.get(key);
     if(keyIndex != null) {
       return keyIndex.getInt(docId);
@@ -189,6 +191,29 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
       // TODO(ERICH): if the key does not exist we should return the Null code
       //   Have this handled at the segment builder where the null vector will be kept?
       //   I think that will have to be the case because it will depend on if this a metric map or a dimensional map.
+      // TODO(ERICH): comment from Gonzalo.  Usually the null handling. Then we have a null bit map where we can ask
+      //   if we have a null or not.  I may not be able to do that trick here.  What we would like to have here is a
+      //   method that returns an array of ints.  Have a method that gets the bitmap of nulls for a key.
+      //
+      // Look for getbitmapnull getnullbitmap or something like that.
+      //  Question from Gonzalo: how will we store on disk and how much time will it take to implement.
+      //   Suggestion: do not change the fwd index api to get values for keys.  Do this: there is a concept of map and
+      //     what we provide from the forward index is just a simple method that:
+      //          Map fwd reader is have a method:  getIntAsMap -> Array[PinotMaps] and this Array[PinotMap] is what
+      //            we'll use in our operators.  This will be the easiest way to project the values.
+      //
+      //          PinotMap: getValueOfKey(String) -> [T]
+      //
+      //          Instead returning [PinotMap]   return PinotMapArray
+      //          PinotMapArray: get<T>ValuesOfKey(String) -> [T]
+      //                         get<T>NullBitMap(String) -> Bitmap
+      //
+      //          select col['foo'] ==>
+      //        This design should make implementing the fwd index trivial
+      //
+      //        Add inverted indexes in a similar way to what we have above.  When we instantiate the pinot map array
+      //          may have two constructors one for fwd and one that accepts a map of fwd indexes and a map of inverted
+      //          indexes
       return FieldSpec.DEFAULT_METRIC_NULL_VALUE_OF_INT;
     }
   }
