@@ -19,11 +19,9 @@
 package org.apache.pinot.segment.spi.index.mutable;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.spi.index.reader.InvertedMapIndexReader;
-import org.apache.pinot.segment.spi.index.reader.JsonIndexReader;
 
 
 /**
