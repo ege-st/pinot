@@ -21,10 +21,7 @@ package org.apache.pinot.core.operator.transform.function;
 import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Map;
-import org.apache.pinot.common.request.Literal;
-import org.apache.pinot.core.common.BlockValSet;
 import org.apache.pinot.core.operator.ColumnContext;
-import org.apache.pinot.core.operator.blocks.MapBlock;
 import org.apache.pinot.core.operator.blocks.ValueBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 
@@ -32,7 +29,7 @@ import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 /**
  * Evaluates myMap['foo']
  */
-public class MapItemTransformFunctions {
+public class MapItemTransformFunction {
 
   public static class MapItemFunction extends BaseTransformFunction {
     public static final String FUNCTION_NAME = "item";

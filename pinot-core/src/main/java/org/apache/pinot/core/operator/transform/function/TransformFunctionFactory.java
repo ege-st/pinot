@@ -240,7 +240,7 @@ public class TransformFunctionFactory {
     typeToImplementation.put(TransformFunctionType.VECTOR_NORM, VectorNormTransformFunction.class);
 
     // Map functions
-    typeToImplementation.put(TransformFunctionType.ITEM, MapItemTransformFunctions.MapItemFunction.class);
+    typeToImplementation.put(TransformFunctionType.ITEM, MapItemTransformFunction.MapItemFunction.class);
 
     Map<String, Class<? extends TransformFunction>> registry
         = new HashMap<>(HashUtil.getHashMapCapacity(typeToImplementation.size()));
