@@ -30,9 +30,8 @@ import org.apache.pinot.core.operator.transform.TransformResultMetadata;
  * Evaluates myMap['foo']
  */
 public class MapItemTransformFunction {
-
   public static class MapItemFunction extends BaseTransformFunction {
-    public static final String FUNCTION_NAME = "item";
+    public static final String FUNCTION_NAME = "map_item";
     String _column;
     String _key;
     TransformFunction _mapValue;
