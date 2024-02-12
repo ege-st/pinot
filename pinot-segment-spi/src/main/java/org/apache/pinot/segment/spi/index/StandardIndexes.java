@@ -74,6 +74,7 @@ public class StandardIndexes {
   public static final String FST_ID = "fst_index";
   public static final String INVERTED_ID = "inverted_index";
   public static final String JSON_ID = "json_index";
+  public static final String MAP_ID = "map_index";
   public static final String RANGE_ID = "range_index";
   public static final String TEXT_ID = "text_index";
   public static final String H3_ID = "h3_index";
