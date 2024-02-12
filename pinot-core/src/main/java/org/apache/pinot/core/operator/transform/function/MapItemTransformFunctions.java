@@ -18,9 +18,13 @@
  */
 package org.apache.pinot.core.operator.transform.function;
 
+import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Map;
+import org.apache.pinot.common.request.Literal;
+import org.apache.pinot.core.common.BlockValSet;
 import org.apache.pinot.core.operator.ColumnContext;
+import org.apache.pinot.core.operator.blocks.MapBlock;
 import org.apache.pinot.core.operator.blocks.ValueBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 
@@ -32,16 +36,14 @@ public class MapItemTransformFunctions {
 
   public static class MapItemFunction extends BaseTransformFunction {
     public static final String FUNCTION_NAME = "item";
+    String _column;
+    String _key;
     TransformFunction _mapValue;
     TransformFunction _keyValue;
 
     @Override
     public void init(List<TransformFunction> arguments, Map<String, ColumnContext> columnContextMap) {
       super.init(arguments, columnContextMap);
-      // TODO:
-      //   - First operand is the map value expression
-      //   - Second operand is the key
-
       // Should be exactly 2 arguments (map value expression and key expression
       if (arguments.size() != 2) {
         throw new IllegalArgumentException("Exactly 1 argument is required for Vector transform function");
@@ -51,12 +53,18 @@ public class MapItemTransformFunctions {
       // MapDataSource which will pre-compute the Key ID.
 
       _mapValue = arguments.get(0);
-      //Preconditions.checkArgument(!_mapValue.getResultMetadata().isSingleValue() && _mapValue.getResultMetadata().isMapValue(),
-          //"Argument must be multi-valued float vector for vector distance transform function: %s", getName());
+      Preconditions.checkArgument(_mapValue instanceof IdentifierTransformFunction, "Map Item: Left operand"
+          + "must be an identifier");
+      _column = ((IdentifierTransformFunction) _mapValue).getColumnName();
+      if (_column == null ) {
+        throw new IllegalArgumentException("Map Item: left operand resolved to a null column name");
+      }
 
-      _keyValue = arguments.get(1);
-      //Preconditions.checkArgument(_keyValue.getResultMetadata().isSingleValue() && !_mapValue.getResultMetadata().isMapValue(),
-          //"Argument must be a single valued String for map item transform function: %s", getName());
+      Preconditions.checkArgument(_keyValue instanceof LiteralTransformFunction, "Map Item: Left operand"
+          + "must be a literal");
+      _key = ((LiteralTransformFunction) arguments.get(1)).getStringLiteral();
+      Preconditions.checkArgument(_key != null, "Map Item: Left operand"
+          + "must be a string literal");
     }
 
     @Override
@@ -73,12 +81,7 @@ public class MapItemTransformFunctions {
     public int[] transformToIntValuesSV(ValueBlock valueBlock) {
       int length = valueBlock.getNumDocs();
       initIntValuesSV(length);
-      // TODO: do I need a transformToIntValuesMap method?
-
-      // Evaluate the expression that will resolve to the key used to look up a map
-      String[] keys = _keyValue.transformToStringValuesSV(valueBlock);
-
-      return _mapValue.transformToIntValuesSV(valueBlock, keys);
+      return valueBlock.getMap(_column).getBlockValueSet(_key).getIntValuesSV();
     }
   }
 }
