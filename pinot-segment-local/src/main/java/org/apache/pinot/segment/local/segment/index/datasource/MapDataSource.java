@@ -21,14 +21,11 @@ package org.apache.pinot.segment.local.segment.index.datasource;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteKeyMajorMapMutableForwardIndex;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.datasource.DataSourceMetadata;
 import org.apache.pinot.segment.spi.index.IndexType;
-import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.segment.spi.index.column.ColumnIndexContainer;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
-import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
 import org.apache.pinot.segment.spi.partition.PartitionFunction;
 import org.apache.pinot.spi.data.FieldSpec;
 
@@ -37,9 +34,9 @@ import org.apache.pinot.spi.data.FieldSpec;
  * The {@code MutableDataSource} class is the data source for a map type column in the mutable segment.
  */
 @SuppressWarnings("rawtypes")
-public class MutableMapDataSource extends BaseDataSource {
+public class MapDataSource extends BaseDataSource {
 
-  public MutableMapDataSource(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
+  public MapDataSource(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
       @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions, @Nullable Comparable minValue,
       @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes,
       int maxRowLengthInBytes) {

@@ -49,4 +49,13 @@ public interface ValueBlock extends Block {
    * Returns the values for a given column (identifier).
    */
   BlockValSet getBlockValueSet(String column);
+
+  /**
+   * Returns a ValueBlock representing the values contained within a specific map column.
+   *
+   * @param column the name of a Map column
+   * @return ValueBlock representing the Key/Value Pairs stored in the map for each document in this
+   *  ValueBlock.
+   */
+  MapBlock getMap(String column);
 }

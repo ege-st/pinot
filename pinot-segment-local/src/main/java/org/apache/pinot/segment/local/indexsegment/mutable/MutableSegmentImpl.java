@@ -56,7 +56,7 @@ import org.apache.pinot.segment.local.realtime.impl.invertedindex.RealtimeLucene
 import org.apache.pinot.segment.local.realtime.impl.nullvalue.MutableNullValueVector;
 import org.apache.pinot.segment.local.segment.index.datasource.ImmutableDataSource;
 import org.apache.pinot.segment.local.segment.index.datasource.MutableDataSource;
-import org.apache.pinot.segment.local.segment.index.datasource.MutableMapDataSource;
+import org.apache.pinot.segment.local.segment.index.datasource.MapDataSource;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.local.segment.readers.PinotSegmentColumnReader;
 import org.apache.pinot.segment.local.segment.readers.PinotSegmentRecordReader;
@@ -1354,7 +1354,7 @@ public class MutableSegmentImpl implements MutableSegment {
         throw new UnsupportedOperationException("Cannot apply the item map operation to a column which is not a map type");
       }
 
-      return new MutableMapDataSource(_fieldSpec, _numDocsIndexed, _valuesInfo._numValues,
+      return new MapDataSource(_fieldSpec, _numDocsIndexed, _valuesInfo._numValues,
           _valuesInfo._maxNumValuesPerMVEntry, _dictionary == null ? -1 : _dictionary.length(), _partitionFunction,
           _partitions, _minValue, _maxValue, _mutableIndexes,
           _valuesInfo._varByteMVMaxRowLengthInBytes);
