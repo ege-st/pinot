@@ -69,7 +69,7 @@ public class ProjectionBlock implements ValueBlock {
     if (ds instanceof MapDataSource) {
       return new MapBlock((MapDataSource) ds, _dataBlockCache);
     } else {
-      throw new UnsupportedOperationException("Attempting to get a Map Index from a Non-Map column");
+      throw new UnsupportedOperationException("Attempting to get a Map Block from a Non-Map column");
     }
   }
 

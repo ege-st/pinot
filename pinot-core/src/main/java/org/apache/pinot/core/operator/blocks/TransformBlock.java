@@ -62,4 +62,9 @@ public class TransformBlock implements ValueBlock {
   public BlockValSet getBlockValueSet(String column) {
     return _sourceBlock.getBlockValueSet(column);
   }
+
+  @Override
+  public MapBlock getMap(String column) {
+    throw new UnsupportedOperationException("Attempting to get a MapBlock from a TransformBlock");
+  }
 }
