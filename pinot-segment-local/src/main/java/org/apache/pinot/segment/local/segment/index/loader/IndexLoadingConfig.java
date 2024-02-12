@@ -53,6 +53,7 @@ import org.apache.pinot.spi.config.table.FieldConfig.CompressionCodec;
 import org.apache.pinot.spi.config.table.IndexConfig;
 import org.apache.pinot.spi.config.table.IndexingConfig;
 import org.apache.pinot.spi.config.table.JsonIndexConfig;
+import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.config.table.StarTreeIndexConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
@@ -540,6 +541,10 @@ public class IndexLoadingConfig {
 
   public Map<String, JsonIndexConfig> getJsonIndexConfigs() {
     return unmodifiable(_jsonIndexConfigs);
+  }
+
+  public Map<String, MapIndexConfig> getMapIndexConfigs() {
+    throw new UnsupportedOperationException();
   }
 
   public Map<String, H3IndexConfig> getH3IndexConfigs() {

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteKeyMajorMapMutableForwardIndex;
+import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.datasource.DataSourceMetadata;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
@@ -37,24 +38,20 @@ import org.apache.pinot.spi.data.FieldSpec;
  */
 @SuppressWarnings("rawtypes")
 public class MutableMapDataSource extends BaseDataSource {
-  String _key;
 
-  public MutableMapDataSource(FieldSpec fieldSpec, String key, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
+  public MutableMapDataSource(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
       @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions, @Nullable Comparable minValue,
       @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes,
       int maxRowLengthInBytes) {
-    super(new MutableMapDataSourceMetadata(fieldSpec, key, numDocs, numValues, maxNumValuesPerMVEntry, cardinality,
+    super(new MutableMapDataSourceMetadata(fieldSpec, numDocs, numValues, maxNumValuesPerMVEntry, cardinality,
             partitionFunction, partitions, minValue, maxValue, maxRowLengthInBytes),
         new ColumnIndexContainer.FromMap.Builder()
             .withAll(mutableIndexes)
             .build());
-    _key = key;
   }
 
-  @Override
-  public ForwardIndexReader<?> getForwardIndex() {
-    // I want this function to pass the key to use to the forward index.
-    return new FixedByteKeyMajorMapMutableForwardIndex.IndexReader(getIndex(StandardIndexes.forward()), _key);
+  public DataSource getKey(String key) {
+    throw new UnsupportedOperationException();
   }
 
   private static class MutableMapDataSourceMetadata implements DataSourceMetadata {
@@ -68,9 +65,8 @@ public class MutableMapDataSource extends BaseDataSource {
     final Comparable _minValue;
     final Comparable _maxValue;
     final int _maxRowLengthInBytes;
-    final String _key;
 
-    MutableMapDataSourceMetadata(FieldSpec fieldSpec, String key, int numDocs, int numValues, int maxNumValuesPerMVEntry,
+    MutableMapDataSourceMetadata(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry,
         int cardinality, @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions,
         @Nullable Comparable minValue, @Nullable Comparable maxValue, int maxRowLengthInBytes) {
       _fieldSpec = fieldSpec;
@@ -88,7 +84,6 @@ public class MutableMapDataSource extends BaseDataSource {
       _maxValue = maxValue;
       _cardinality = cardinality;
       _maxRowLengthInBytes = maxRowLengthInBytes;
-      _key = key;
     }
 
     @Override
