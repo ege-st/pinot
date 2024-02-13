@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.pinot.segment.local.realtime.impl.forward;
+package org.apache.pinot.segment.local.realtime.impl.map;
 
 import com.google.common.base.Preconditions;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSVMutableForwardIndex;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReaderContext;
@@ -64,8 +65,8 @@ import org.slf4j.LoggerFactory;
  * 7. Add new getter/setter methods ot the MutableForwardIndex interface and implement them here (look at the FixedByteMV...Index)
  * 8. If the MutableFwdIdx interface has anything for aggregateMetrics, then mark it as unsupported in this class (for the PoC)
  */
-public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIndex {
-  private static final Logger LOGGER = LoggerFactory.getLogger(FixedByteKeyMajorMapMutableForwardIndex.class);
+public class MutableMapForwardIndex implements MutableForwardIndex {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MutableMapForwardIndex.class);
 
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
   // TODO(ERICH): how does thread-safety work around this? Is there only one thread that can write and many threads
@@ -87,7 +88,7 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
    * @param memoryManager Memory manager to be used for allocating memory.
    * @param allocationContext Allocation allocationContext.
    */
-  public FixedByteKeyMajorMapMutableForwardIndex(DataType storedType, int fixedLength,
+  public MutableMapForwardIndex(DataType storedType, int fixedLength,
       int numRowsPerChunk, PinotDataBufferMemoryManager memoryManager, String allocationContext) {
     assert storedType.isFixedWidth();  // TODO(ERICH): see what would trigger this path. For POC should only allow int as the value
 
@@ -104,7 +105,7 @@ public class FixedByteKeyMajorMapMutableForwardIndex implements MutableForwardIn
     _allocationContext = allocationContext;
   }
 
-  public FixedByteKeyMajorMapMutableForwardIndex(DataType valueType, int numRowsPerChunk,
+  public MutableMapForwardIndex(DataType valueType, int numRowsPerChunk,
       PinotDataBufferMemoryManager memoryManager, String allocationContext) {
     this(valueType, -1, numRowsPerChunk, memoryManager, allocationContext);
   }

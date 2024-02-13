@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteKeyMajorMapMutableForwardIndex;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteMVMutableForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSVMutableForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.VarByteSVMutableForwardIndex;
@@ -298,7 +298,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
                 V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
         int initialCapacity = Math.min(context.getCapacity(),
             NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
-        return new FixedByteKeyMajorMapMutableForwardIndex(
+        return new MutableMapForwardIndex(
             storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext);
       } else {
         // TODO: Add support for variable width (bytes, string, big decimal) MV RAW column types
@@ -326,7 +326,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
                 V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
         int initialCapacity = Math.min(context.getCapacity(),
             NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
-        return new FixedByteKeyMajorMapMutableForwardIndex(
+        return new MutableMapForwardIndex(
             storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext);
       } else {
         String allocationContext = IndexUtil.buildAllocationContext(segmentName, column,

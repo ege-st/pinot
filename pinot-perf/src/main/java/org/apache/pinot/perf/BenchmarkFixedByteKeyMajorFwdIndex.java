@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.pinot.segment.local.io.writer.impl.MmapMemoryManager;
 import org.apache.pinot.segment.local.io.writer.impl.MmapMemoryManagerTest;
-import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteKeyMajorMapMutableForwardIndex;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteMapMutableForwardIndexKeyMajorTest;
 import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.index.IndexUtil;
@@ -37,7 +37,7 @@ public class BenchmarkFixedByteKeyMajorFwdIndex {
   private static final int NROWS = 1000;
   private static final int MAX_N_VALUES = 1000;
   private PinotDataBufferMemoryManager _memoryManager;
-  private FixedByteKeyMajorMapMutableForwardIndex _index;
+  private MutableMapForwardIndex _index;
   private String _tmpDir;
 
   @Setup
@@ -52,7 +52,7 @@ public class BenchmarkFixedByteKeyMajorFwdIndex {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    _index = new FixedByteKeyMajorMapMutableForwardIndex(
+    _index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,

@@ -1,6 +1,7 @@
 package org.apache.pinot.segment.local.realtime.impl.forward;
 
 import org.apache.pinot.segment.local.io.writer.impl.DirectMemoryManager;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.index.IndexUtil;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
@@ -32,7 +33,7 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteKeyMajorMapMutableForwardIndex(
+    var index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -50,7 +51,7 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteKeyMajorMapMutableForwardIndex(
+    var index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -73,7 +74,7 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteKeyMajorMapMutableForwardIndex(
+    var index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -94,7 +95,7 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteKeyMajorMapMutableForwardIndex(
+    var index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -121,7 +122,7 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteKeyMajorMapMutableForwardIndex(
+    var index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
@@ -174,7 +175,7 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
-    var index = new FixedByteKeyMajorMapMutableForwardIndex(
+    var index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
