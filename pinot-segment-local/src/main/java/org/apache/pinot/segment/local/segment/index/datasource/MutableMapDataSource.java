@@ -58,6 +58,8 @@ public class MutableMapDataSource extends BaseDataSource {
     MapIndexReader mpi = getMapIndex();
     assert mpi != null;
     MutableIndex keyReader = (MutableIndex) mpi.getKeyReader(key);
+
+    // TODO: Delete if MutableDataSource works
     //ColumnIndexContainer cic = new ColumnIndexContainer.FromMap.Builder()
         //.with(StandardIndexes.forward(), keyReader).build();
     //ColumnMetadataImpl cmd = createColumnMetadata(md);
@@ -66,7 +68,7 @@ public class MutableMapDataSource extends BaseDataSource {
         keyFS,
         md._numDocs,
         md._numValues,
-        md._maxNumValuesPerMVEntry
+        md._maxNumValuesPerMVEntry,
         md._cardinality,
         md._partitionFunction,
         md._partitions,
