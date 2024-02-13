@@ -18,13 +18,9 @@
  */
 package org.apache.pinot.segment.spi.index.mutable;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.pinot.segment.spi.index.IndexReader;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
-import org.apache.pinot.segment.spi.index.reader.JsonIndexReader;
 import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 
 
@@ -48,7 +44,7 @@ public interface MutableMapIndex extends MapIndexReader, MutableIndex {
    * <i>key</i> were a forward index.
    */
   @Override
-  default MutableIndex getKeyReader(String key) {
+  default ForwardIndexReader<?> getKeyReader(String key) {
     throw new UnsupportedOperationException();
   }
 }

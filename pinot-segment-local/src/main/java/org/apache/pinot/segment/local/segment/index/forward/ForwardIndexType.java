@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteMVMutableForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSVMutableForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.VarByteSVMutableForwardIndex;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.local.segment.index.loader.ConfigurableFromIndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.ForwardIndexHandler;
 import org.apache.pinot.segment.local.segment.index.loader.IndexLoadingConfig;
@@ -299,7 +299,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
         int initialCapacity = Math.min(context.getCapacity(),
             NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
         return new MutableMapForwardIndex(
-            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext);
+            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext, Set.of());
       } else {
         // TODO: Add support for variable width (bytes, string, big decimal) MV RAW column types
         assert storedType.isFixedWidth();
@@ -327,7 +327,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
         int initialCapacity = Math.min(context.getCapacity(),
             NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
         return new MutableMapForwardIndex(
-            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext);
+            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext, Set.of());
       } else {
         String allocationContext = IndexUtil.buildAllocationContext(segmentName, column,
             V1Constants.Indexes.UNSORTED_MV_FORWARD_INDEX_FILE_EXTENSION);

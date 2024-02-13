@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSVMutableForwardIndex;
@@ -89,7 +90,8 @@ public class MutableMapForwardIndex implements MutableForwardIndex {
    * @param allocationContext Allocation allocationContext.
    */
   public MutableMapForwardIndex(DataType storedType, int fixedLength,
-      int numRowsPerChunk, PinotDataBufferMemoryManager memoryManager, String allocationContext) {
+      int numRowsPerChunk, PinotDataBufferMemoryManager memoryManager, String allocationContext,
+      Set<String> denseKeys) {
     assert storedType.isFixedWidth();  // TODO(ERICH): see what would trigger this path. For POC should only allow int as the value
 
     _storedType = storedType;
@@ -103,11 +105,16 @@ public class MutableMapForwardIndex implements MutableForwardIndex {
     _numRowsPerChunk = numRowsPerChunk;
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
+
+    // Construct a forward index for each dense key
+    for(String key : denseKeys) {
+      getOrCreateKeyIndex(key);
+    }
   }
 
   public MutableMapForwardIndex(DataType valueType, int numRowsPerChunk,
-      PinotDataBufferMemoryManager memoryManager, String allocationContext) {
-    this(valueType, -1, numRowsPerChunk, memoryManager, allocationContext);
+      PinotDataBufferMemoryManager memoryManager, String allocationContext, Set<String> denseKeys) {
+    this(valueType, -1, numRowsPerChunk, memoryManager, allocationContext, denseKeys);
   }
 
   @Override

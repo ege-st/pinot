@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.pinot.segment.spi.V1Constants.Indexes;
 import org.apache.pinot.segment.spi.index.ForwardIndexConfig;
-import org.apache.pinot.segment.spi.index.creator.ForwardIndexCreator;
 import org.apache.pinot.segment.spi.index.creator.MapIndexCreator;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 

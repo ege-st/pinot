@@ -18,10 +18,7 @@
  */
 package org.apache.pinot.segment.spi.index.reader;
 
-import java.util.Map;
 import org.apache.pinot.segment.spi.index.IndexReader;
-import org.roaringbitmap.RoaringBitmap;
-import org.roaringbitmap.buffer.MutableRoaringBitmap;
 
 
 /**

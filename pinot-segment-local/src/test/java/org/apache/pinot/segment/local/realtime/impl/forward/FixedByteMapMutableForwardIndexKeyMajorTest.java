@@ -1,5 +1,8 @@
 package org.apache.pinot.segment.local.realtime.impl.forward;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.pinot.segment.local.io.writer.impl.DirectMemoryManager;
 import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.spi.V1Constants;
@@ -38,7 +41,8 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
         FieldSpec.DataType.INT.size(),
         NROWS,
         _memoryManager,
-        allocationContext
+        allocationContext,
+        Set.of("k1")
     );
 
     index.setIntMapKeyValue(0, "k1", 15);
@@ -56,7 +60,8 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
         FieldSpec.DataType.INT.size(),
         NROWS,
         _memoryManager,
-        allocationContext
+        allocationContext,
+        Set.of("k1")
     );
 
     for(int id = 0; id < 100; id++ ){
@@ -79,7 +84,8 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
         FieldSpec.DataType.INT.size(),
         NROWS,
         _memoryManager,
-        allocationContext
+        allocationContext,
+        Set.of("k1")
     );
 
     index.setIntMapKeyValue(0, "k1", 15);
@@ -95,12 +101,14 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
             V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+    Set<String> denseKeys = IntStream.range(0, 100).mapToObj(id -> String.format("%d", id)).collect(Collectors.toSet());
     var index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
         NROWS,
         _memoryManager,
-        allocationContext
+        allocationContext,
+        denseKeys
     );
 
     for(int id = 0; id < 100; id++ ){
@@ -127,7 +135,8 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
         FieldSpec.DataType.INT.size(),
         NROWS,
         _memoryManager,
-        allocationContext
+        allocationContext,
+        Set.of("k1", "k2", "k3")
     );
 
     index.setIntMapKeyValue(0, "k1", 10);
@@ -180,7 +189,8 @@ public class FixedByteMapMutableForwardIndexKeyMajorTest {
         FieldSpec.DataType.INT.size(),
         NROWS,
         _memoryManager,
-        allocationContext
+        allocationContext,
+        Set.of("k5")
     );
 
     // Fill up the buffer

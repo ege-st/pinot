@@ -1,12 +1,13 @@
 package org.apache.pinot.perf;
 
 import java.io.File;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.pinot.segment.local.io.writer.impl.MmapMemoryManager;
 import org.apache.pinot.segment.local.io.writer.impl.MmapMemoryManagerTest;
-import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteMapMutableForwardIndexKeyMajorTest;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.index.IndexUtil;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
@@ -57,7 +58,8 @@ public class BenchmarkFixedByteKeyMajorFwdIndex {
         FieldSpec.DataType.INT.size(),
         NROWS,
         _memoryManager,
-        allocationContext
+        allocationContext,
+        Set.of("k1")
     );
   }
 
