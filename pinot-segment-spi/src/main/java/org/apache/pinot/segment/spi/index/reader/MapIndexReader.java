@@ -36,5 +36,5 @@ public interface MapIndexReader extends IndexReader {
    * @return an IndexReader that allows you to interact with the value each document has bound to <i>key</i> just as if
    * <i>key</i> were a forward index.
    */
-  IndexReader getKeyReader(String key);
+  ForwardIndexReader<?> getKeyReader(String key);
 }

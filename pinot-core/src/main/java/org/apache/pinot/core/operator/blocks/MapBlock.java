@@ -22,7 +22,7 @@ import org.apache.pinot.common.request.context.ExpressionContext;
 import org.apache.pinot.core.common.BlockValSet;
 import org.apache.pinot.core.common.DataBlockCache;
 import org.apache.pinot.core.operator.docvalsets.ProjectionBlockValSet;
-import org.apache.pinot.segment.local.segment.index.datasource.MapDataSource;
+import org.apache.pinot.segment.local.segment.index.datasource.MutableMapDataSource;
 
 
 /**
@@ -30,10 +30,10 @@ import org.apache.pinot.segment.local.segment.index.datasource.MapDataSource;
  * It provides DocIdSetBlock for a given column.
  */
 public class MapBlock implements ValueBlock {
-  private final MapDataSource _dataSourceMap;
+  private final MutableMapDataSource _dataSourceMap;
   private final DataBlockCache _dataBlockCache;
 
-  public MapBlock(MapDataSource ds, DataBlockCache dataBlockCache) {
+  public MapBlock(MutableMapDataSource ds, DataBlockCache dataBlockCache) {
     _dataSourceMap = ds;
     _dataBlockCache = dataBlockCache;
   }

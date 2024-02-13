@@ -24,7 +24,7 @@ import org.apache.pinot.common.request.context.ExpressionContext;
 import org.apache.pinot.core.common.BlockValSet;
 import org.apache.pinot.core.common.DataBlockCache;
 import org.apache.pinot.core.operator.docvalsets.ProjectionBlockValSet;
-import org.apache.pinot.segment.local.segment.index.datasource.MapDataSource;
+import org.apache.pinot.segment.local.segment.index.datasource.MutableMapDataSource;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.evaluator.TransformEvaluator;
 
@@ -66,8 +66,8 @@ public class ProjectionBlock implements ValueBlock {
   @Override
   public MapBlock getMap(String column) {
     DataSource ds = _dataSourceMap.get(column);
-    if (ds instanceof MapDataSource) {
-      return new MapBlock((MapDataSource) ds, _dataBlockCache);
+    if (ds instanceof MutableMapDataSource) {
+      return new MapBlock((MutableMapDataSource) ds, _dataBlockCache);
     } else {
       throw new UnsupportedOperationException("Attempting to get a Map Block from a Non-Map column");
     }

@@ -48,7 +48,7 @@ public interface MutableMapIndex extends MapIndexReader, MutableIndex {
    * <i>key</i> were a forward index.
    */
   @Override
-  default IndexReader getKeyReader(String key) {
+  default MutableIndex getKeyReader(String key) {
     throw new UnsupportedOperationException();
   }
 }

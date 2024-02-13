@@ -18,14 +18,20 @@
  */
 package org.apache.pinot.segment.local.segment.index.datasource;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.datasource.DataSourceMetadata;
 import org.apache.pinot.segment.spi.index.IndexType;
+import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.segment.spi.index.column.ColumnIndexContainer;
+import org.apache.pinot.segment.spi.index.metadata.ColumnMetadataImpl;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
+import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
+import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 import org.apache.pinot.segment.spi.partition.PartitionFunction;
 import org.apache.pinot.spi.data.FieldSpec;
 
@@ -34,9 +40,9 @@ import org.apache.pinot.spi.data.FieldSpec;
  * The {@code MutableDataSource} class is the data source for a map type column in the mutable segment.
  */
 @SuppressWarnings("rawtypes")
-public class MapDataSource extends BaseDataSource {
+public class MutableMapDataSource extends BaseDataSource {
 
-  public MapDataSource(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
+  public MutableMapDataSource(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
       @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions, @Nullable Comparable minValue,
       @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes,
       int maxRowLengthInBytes) {
@@ -48,7 +54,61 @@ public class MapDataSource extends BaseDataSource {
   }
 
   public DataSource getKey(String key) {
+    MutableMapDataSourceMetadata md = (MutableMapDataSourceMetadata) getDataSourceMetadata();
+    MapIndexReader mpi = getMapIndex();
+    assert mpi != null;
+    MutableIndex keyReader = (MutableIndex) mpi.getKeyReader(key);
+    //ColumnIndexContainer cic = new ColumnIndexContainer.FromMap.Builder()
+        //.with(StandardIndexes.forward(), keyReader).build();
+    //ColumnMetadataImpl cmd = createColumnMetadata(md);
+    FieldSpec keyFS = createKeyFieldSpec();
+    return new MutableDataSource(
+        keyFS,
+        md._numDocs,
+        md._numValues,
+        md._maxNumValuesPerMVEntry
+        md._cardinality,
+        md._partitionFunction,
+        md._partitions,
+        md._minValue,
+        md._maxValue,
+        Map.of(StandardIndexes.forward(), keyReader),
+        null,
+        null,
+        md._maxRowLengthInBytes
+    );
+  }
+
+  private ColumnMetadataImpl createColumnMetadata(MutableMapDataSourceMetadata md) {
+    // TODO: Delete this if mutable data source works
+    FieldSpec keyFS = createKeyFieldSpec();
+    return ColumnMetadataImpl.builder()
+        .setHasDictionary(false)
+        .setCardinality(md._cardinality)
+        .setMaxNumberOfMultiValues(md._maxNumValuesPerMVEntry)
+        .setColumnMaxLength(md._maxRowLengthInBytes)
+        .setFieldSpec(keyFS)
+        .setMaxValue(md._maxValue)
+        .setMinValue(md._minValue)
+        .setTotalDocs(md._numDocs)
+        .setPartitionFunction(md._partitionFunction)
+        .setPartitions(md._partitions)
+        .build();
+  }
+
+  private FieldSpec createKeyFieldSpec() {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the abstraction around the Map index construction which provides the
+   * API needed to perform Map value operations.
+   *
+   * @return MapIndexReader or <i>null</i> if this is not a map data source.
+   */
+  @Nullable
+  private MapIndexReader getMapIndex() {
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   private static class MutableMapDataSourceMetadata implements DataSourceMetadata {
@@ -62,6 +122,7 @@ public class MapDataSource extends BaseDataSource {
     final Comparable _minValue;
     final Comparable _maxValue;
     final int _maxRowLengthInBytes;
+    final Set<String> _denseKeys;
 
     MutableMapDataSourceMetadata(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry,
         int cardinality, @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions,
@@ -81,6 +142,7 @@ public class MapDataSource extends BaseDataSource {
       _maxValue = maxValue;
       _cardinality = cardinality;
       _maxRowLengthInBytes = maxRowLengthInBytes;
+      _denseKeys = new HashSet<>();
     }
 
     @Override
