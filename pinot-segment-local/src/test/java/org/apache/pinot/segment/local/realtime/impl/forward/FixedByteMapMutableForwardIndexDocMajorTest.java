@@ -31,7 +31,7 @@ public class FixedByteMapMutableForwardIndexDocMajorTest {
   public void testSetKeyValue() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.MAP_SV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseDocMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -49,7 +49,7 @@ public class FixedByteMapMutableForwardIndexDocMajorTest {
   public void testManyValuesOneKey() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.MAP_SV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseDocMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -72,7 +72,7 @@ public class FixedByteMapMutableForwardIndexDocMajorTest {
   public void testGetKeyNotPresent() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.MAP_SV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseDocMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -93,7 +93,7 @@ public class FixedByteMapMutableForwardIndexDocMajorTest {
   public void testManyKeys() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.MAP_SV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseDocMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -120,7 +120,7 @@ public class FixedByteMapMutableForwardIndexDocMajorTest {
   public void testDocHasKeysButGetKeyItDoesNotHave() {
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.MAP_SV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseDocMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
@@ -173,7 +173,7 @@ public class FixedByteMapMutableForwardIndexDocMajorTest {
 
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.MAP_SV_FORWARD_INDEX_FILE_EXTENSION);
     var index = new FixedByteSparseDocMajorMapMutableForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),

@@ -52,7 +52,7 @@ public class BenchmarkFixedByteKeyMajorFwdIndex {
     _memoryManager = new MmapMemoryManager(_tmpDir, FixedByteMapMutableForwardIndexKeyMajorTest.class.getName());
     String allocationContext =
         IndexUtil.buildAllocationContext("testSegment", "testMapCol",
-            V1Constants.Indexes.RAW_MAPSV_FORWARD_INDEX_FILE_EXTENSION);
+            V1Constants.Indexes.MAP_SV_FORWARD_INDEX_FILE_EXTENSION);
     _index = new MutableMapForwardIndex(
         FieldSpec.DataType.INT,
         FieldSpec.DataType.INT.size(),
