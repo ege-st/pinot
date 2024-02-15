@@ -37,6 +37,7 @@ import org.apache.pinot.segment.spi.creator.IndexCreationContext;
 import org.apache.pinot.segment.spi.index.AbstractIndexType;
 import org.apache.pinot.segment.spi.index.ColumnConfigDeserializer;
 import org.apache.pinot.segment.spi.index.FieldIndexConfigs;
+import org.apache.pinot.segment.spi.index.IndexConfigDeserializer;
 import org.apache.pinot.segment.spi.index.IndexHandler;
 import org.apache.pinot.segment.spi.index.IndexReaderConstraintException;
 import org.apache.pinot.segment.spi.index.IndexReaderFactory;
@@ -87,8 +88,24 @@ public class MapInvertedIndexType extends AbstractIndexType<MapInvertedIndexConf
 
   @Override
   public ColumnConfigDeserializer<MapInvertedIndexConfig> createDeserializer() {
-    // reads tableConfig.indexingConfig.jsonIndexConfigs
-    throw new UnsupportedOperationException();
+    /*ColumnConfigDeserializer<IndexConfig> fromInvertedCols = IndexConfigDeserializer.fromCollection(
+        tableConfig -> tableConfig.getIndexingConfig().getMapInvertedIndexColumns(),
+        (accum, column) -> accum.put(column, IndexConfig.ENABLED));
+    return IndexConfigDeserializer.fromIndexes(getPrettyName(), getIndexConfigClass())
+        .withExclusiveAlternative(IndexConfigDeserializer.ifIndexingConfig(fromInvertedCols));*/
+
+    //
+    ColumnConfigDeserializer<MapInvertedIndexConfig> fromMapInvertedIndexConf =
+        IndexConfigDeserializer.fromMap(tableConfig -> tableConfig.getIndexingConfig().getMapInvertedIndexConfigs());
+
+    //
+    ColumnConfigDeserializer<MapInvertedIndexConfig> fromMapInvertedIndexCols =
+        IndexConfigDeserializer.fromCollection(
+            tableConfig -> tableConfig.getIndexingConfig().getMapInvertedIndexColumns(),
+            (accum, column) -> accum.put(column, new MapInvertedIndexConfig()));
+    return IndexConfigDeserializer.fromIndexes(getPrettyName(), getIndexConfigClass())
+        .withExclusiveAlternative(
+            IndexConfigDeserializer.ifIndexingConfig(fromMapInvertedIndexCols.withExclusiveAlternative(fromMapInvertedIndexConf)));
   }
 
   @Override
@@ -168,8 +185,6 @@ public class MapInvertedIndexType extends AbstractIndexType<MapInvertedIndexConf
 
   @Override
   protected void handleIndexSpecificCleanup(TableConfig tableConfig) {
-    tableConfig.getIndexingConfig().setJsonIndexColumns(null);
-    tableConfig.getIndexingConfig().setJsonIndexConfigs(null);
   }
 
   @Nullable

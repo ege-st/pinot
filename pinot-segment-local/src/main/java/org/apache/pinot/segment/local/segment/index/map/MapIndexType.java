@@ -165,8 +165,8 @@ public class MapIndexType extends AbstractIndexType<MapIndexConfig, MapIndexRead
 
   @Override
   protected void handleIndexSpecificCleanup(TableConfig tableConfig) {
-    tableConfig.getIndexingConfig().setJsonIndexColumns(null);
-    tableConfig.getIndexingConfig().setJsonIndexConfigs(null);
+    tableConfig.getIndexingConfig().setMapInvertedIndexColumns(null);
+    tableConfig.getIndexingConfig().setMapInvertedIndexConfigs(null);
   }
 
   @Nullable
