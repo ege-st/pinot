@@ -55,7 +55,6 @@ import static org.testng.Assert.assertNull;
  * Unit test for {@link JsonIndexCreator} and {@link JsonIndexReader}.
  */
 public class MutableMapInvertedIndexTest {
-
   @BeforeMethod
   public void setUp()
       throws IOException {
