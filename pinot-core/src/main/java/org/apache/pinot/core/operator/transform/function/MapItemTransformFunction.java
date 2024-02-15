@@ -56,10 +56,11 @@ public class MapItemTransformFunction {
         throw new IllegalArgumentException("Map Item: left operand resolved to a null column name");
       }
 
-      Preconditions.checkArgument(_keyValue instanceof LiteralTransformFunction, "Map Item: Left operand"
+      _keyValue = arguments.get(1);
+      Preconditions.checkArgument(_keyValue instanceof LiteralTransformFunction, "Map Item: Right operand"
           + "must be a literal");
       _key = ((LiteralTransformFunction) arguments.get(1)).getStringLiteral();
-      Preconditions.checkArgument(_key != null, "Map Item: Left operand"
+      Preconditions.checkArgument(_key != null, "Map Item: Right operand"
           + "must be a string literal");
     }
 
@@ -77,7 +78,9 @@ public class MapItemTransformFunction {
     public int[] transformToIntValuesSV(ValueBlock valueBlock) {
       int length = valueBlock.getNumDocs();
       initIntValuesSV(length);
-      return valueBlock.getMap(_column).getBlockValueSet(_key).getIntValuesSV();
+      var mapCol = valueBlock.getMap(_column);
+      var mapBlock = mapCol.getBlockValueSet(_key);
+      return mapBlock.getIntValuesSV();
     }
   }
 }

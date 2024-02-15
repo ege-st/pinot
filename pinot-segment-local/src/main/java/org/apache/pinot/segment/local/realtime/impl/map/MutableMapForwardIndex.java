@@ -29,6 +29,7 @@ import org.apache.pinot.segment.local.realtime.impl.forward.FixedByteSVMutableFo
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReaderContext;
+import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
@@ -66,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * 7. Add new getter/setter methods ot the MutableForwardIndex interface and implement them here (look at the FixedByteMV...Index)
  * 8. If the MutableFwdIdx interface has anything for aggregateMetrics, then mark it as unsupported in this class (for the PoC)
  */
-public class MutableMapForwardIndex implements MutableForwardIndex {
+public class MutableMapForwardIndex implements MapIndexReader, MutableForwardIndex {
   private static final Logger LOGGER = LoggerFactory.getLogger(MutableMapForwardIndex.class);
 
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
@@ -246,6 +247,15 @@ public class MutableMapForwardIndex implements MutableForwardIndex {
     for (var keyIndex : _keyIndexes.values()) {
       keyIndex.close();
     }
+  }
+
+  public ConcurrentMap<String, FixedByteSVMutableForwardIndex> getKeyIndexes() {
+    return _keyIndexes;
+  }
+
+  @Override
+  public ForwardIndexReader<ForwardIndexReaderContext> getKeyReader(String key) {
+    return _keyIndexes.get(key);
   }
 
   public static class IndexReader implements ForwardIndexReader<ForwardIndexReaderContext> {

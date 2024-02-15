@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.datasource.DataSourceMetadata;
 import org.apache.pinot.segment.spi.index.IndexType;
@@ -61,7 +62,7 @@ public class MutableMapDataSource extends BaseDataSource {
     //ColumnIndexContainer cic = new ColumnIndexContainer.FromMap.Builder()
         //.with(StandardIndexes.forward(), keyReader).build();
     //ColumnMetadataImpl cmd = createColumnMetadata(md);
-    FieldSpec keyFS = createKeyFieldSpec();
+    FieldSpec keyFS = createKeyFieldSpec(md);
     return new MutableDataSource(
         keyFS,
         md._numDocs,
@@ -81,7 +82,7 @@ public class MutableMapDataSource extends BaseDataSource {
 
   private ColumnMetadataImpl createColumnMetadata(MutableMapDataSourceMetadata md) {
     // TODO: Delete this if mutable data source works
-    FieldSpec keyFS = createKeyFieldSpec();
+    FieldSpec keyFS = createKeyFieldSpec(md);
     return ColumnMetadataImpl.builder()
         .setHasDictionary(false)
         .setCardinality(md._cardinality)
@@ -96,8 +97,8 @@ public class MutableMapDataSource extends BaseDataSource {
         .build();
   }
 
-  private FieldSpec createKeyFieldSpec() {
-    throw new UnsupportedOperationException();
+  private FieldSpec createKeyFieldSpec(MutableMapDataSourceMetadata md) {
+    return md._fieldSpec;
   }
 
   /**
@@ -108,7 +109,8 @@ public class MutableMapDataSource extends BaseDataSource {
    */
   @Nullable
   private MapIndexReader getMapIndex() {
-    throw new UnsupportedOperationException("Not yet implemented");
+    MutableMapForwardIndex mmfi = (MutableMapForwardIndex) this.getForwardIndex();
+    return mmfi;
   }
 
   private static class MutableMapDataSourceMetadata implements DataSourceMetadata {

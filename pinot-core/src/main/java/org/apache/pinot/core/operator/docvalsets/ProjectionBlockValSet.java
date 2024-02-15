@@ -42,6 +42,7 @@ import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 public class ProjectionBlockValSet implements BlockValSet {
   private final DataBlockCache _dataBlockCache;
   private final String _column;
+  private final String _key;
   private final DataSource _dataSource;
 
   private boolean _nullBitmapSet;
@@ -56,6 +57,7 @@ public class ProjectionBlockValSet implements BlockValSet {
     _dataBlockCache = dataBlockCache;
     _column = column;
     _dataSource = dataSource;
+    _key = null;
   }
 
   @Nullable

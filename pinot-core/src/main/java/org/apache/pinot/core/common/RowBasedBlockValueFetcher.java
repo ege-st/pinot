@@ -75,9 +75,9 @@ public class RowBasedBlockValueFetcher {
     } else if(blockValSet.isMapValue()) {
       // TODO (ERICH)
       switch (storedType) {
-        case INT:
+        /*case INT:
           return new IntSingleValueFetcher(blockValSet.getIntValuesMap(""));
-        /*case LONG:
+        case LONG:
           return new LongMultiValueFetcher(blockValSet.getLongValuesMV());
         case FLOAT:
           return new FloatMultiValueFetcher(blockValSet.getFloatValuesMV());
@@ -86,7 +86,7 @@ public class RowBasedBlockValueFetcher {
         case STRING:
           return new StringMultiValueFetcher(blockValSet.getStringValuesMV());*/
         default:
-          throw new IllegalStateException("Unsupported value type: " + storedType + " for multi-value column");
+          throw new IllegalStateException("Unsupported value type: " + storedType + " for map column");
       }
     }else {
       switch (storedType) {
