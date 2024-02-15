@@ -55,20 +55,15 @@ import static org.testng.Assert.assertNull;
  * Unit test for {@link JsonIndexCreator} and {@link JsonIndexReader}.
  */
 public class MutableMapInvertedIndexTest {
-  private static final File INDEX_DIR = new File(FileUtils.getTempDirectory(), "MapInvertedIndexTest");
-  private static final String ON_HEAP_COLUMN_NAME = "onHeap";
-  private static final String OFF_HEAP_COLUMN_NAME = "offHeap";
 
   @BeforeMethod
   public void setUp()
       throws IOException {
-    FileUtils.forceMkdir(INDEX_DIR);
   }
 
   @AfterMethod
   public void tearDown()
       throws IOException {
-    FileUtils.deleteDirectory(INDEX_DIR);
   }
 
   @Test
