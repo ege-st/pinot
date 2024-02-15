@@ -8,17 +8,20 @@ import javax.annotation.Nullable;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
 import org.apache.pinot.segment.spi.index.mutable.ThreadSafeMutableRoaringBitmap;
 import org.apache.pinot.segment.spi.index.reader.InvertedIndexReader;
+import org.apache.pinot.spi.config.table.MapInvertedIndexConfig;
 import org.roaringbitmap.buffer.MutableRoaringBitmap;
 
 
 public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoaringBitmap>, MutableIndex {
+  private final MapInvertedIndexConfig _config;
   private final HashMap<String, ThreadSafeMutableRoaringBitmap> _kvBitmaps = new HashMap<>();
   private final HashMap<String, ThreadSafeMutableRoaringBitmap> _keyBitmaps = new HashMap<>();
   private final HashMap<String, ThreadSafeMutableRoaringBitmap> _valueBitmaps = new HashMap<>();
   private final ReentrantReadWriteLock.ReadLock _readLock;
   private final ReentrantReadWriteLock.WriteLock _writeLock;
 
-  public MutableMapInvertedIndex() {
+  public MutableMapInvertedIndex(MapInvertedIndexConfig config) {
+    _config = config;
     ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     _readLock = readWriteLock.readLock();
     _writeLock = readWriteLock.writeLock();
@@ -78,6 +81,7 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
   @Override
   public void add(@Nonnull Object map, int dictId, int docId) {
     HashMap<String, Object> kvs = (HashMap<String, Object>) map;
+    boolean fail = false;
 
     try {
       _writeLock.lock();
@@ -92,6 +96,12 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
 
         String tuple = key + value;
         _kvBitmaps.computeIfAbsent(tuple, _kv -> new ThreadSafeMutableRoaringBitmap()).add(docId);
+
+        if (_keyBitmaps.size() > _config.getMaxEntries()
+            || _valueBitmaps.size() > _config.getMaxEntries()
+            || _kvBitmaps.size() > _config.getMaxEntries()) {
+          throw new RuntimeException("Map Inverted Index has exceeded the maximum number of entries");
+        }
       }
     } finally {
       _writeLock.unlock();
