@@ -54,6 +54,7 @@ import org.apache.pinot.spi.config.table.IndexConfig;
 import org.apache.pinot.spi.config.table.IndexingConfig;
 import org.apache.pinot.spi.config.table.JsonIndexConfig;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
+import org.apache.pinot.spi.config.table.MapInvertedIndexConfig;
 import org.apache.pinot.spi.config.table.StarTreeIndexConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
@@ -544,6 +545,10 @@ public class IndexLoadingConfig {
   }
 
   public Map<String, MapIndexConfig> getMapIndexConfigs() {
+    throw new UnsupportedOperationException();
+  }
+
+  public Map<String, MapInvertedIndexConfig> getMapInvertedIndexConfigs() {
     throw new UnsupportedOperationException();
   }
 
