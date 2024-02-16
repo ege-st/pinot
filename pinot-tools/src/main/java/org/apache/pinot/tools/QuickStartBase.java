@@ -70,18 +70,18 @@ public abstract class QuickStartBase {
   private static final String NEW_LINE = "\n";
 
   protected static final String[] DEFAULT_OFFLINE_TABLE_DIRECTORIES = new String[]{
-      "examples/batch/airlineStats",
+      /*"examples/batch/airlineStats",
       "examples/minions/batch/baseballStats",
       "examples/batch/dimBaseballTeams",
       "examples/batch/starbucksStores",
       "examples/batch/githubEvents",
       "examples/batch/githubComplexTypeEvents",
       "examples/batch/billing",
-      "examples/batch/fineFoodReviews",
+      "examples/batch/fineFoodReviews",*/
   };
 
   protected static final Map<String, String> DEFAULT_STREAM_TABLE_DIRECTORIES = ImmutableMap.<String, String>builder()
-      .put("airlineStats", "examples/stream/airlineStats")
+      /*.put("airlineStats", "examples/stream/airlineStats")
       .put("githubEvents", "examples/stream/githubEvents")
       .put("meetupRsvp", "examples/stream/meetupRsvp")
       .put("meetupRsvpJson", "examples/stream/meetupRsvpJson")
@@ -89,7 +89,7 @@ public abstract class QuickStartBase {
       .put("upsertMeetupRsvp", "examples/stream/upsertMeetupRsvp")
       .put("upsertJsonMeetupRsvp", "examples/stream/upsertJsonMeetupRsvp")
       .put("upsertPartialMeetupRsvp", "examples/stream/upsertPartialMeetupRsvp")
-      .put("fineFoodReviews", "examples/stream/fineFoodReviews")
+      .put("fineFoodReviews", "examples/stream/fineFoodReviews")*/
       .build();
 
   protected File _dataDir = FileUtils.getTempDirectory();

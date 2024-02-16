@@ -73,7 +73,7 @@ public class DataTypeTransformer implements RecordTransformer {
 
         PinotDataType dest = entry.getValue();
         if (dest != PinotDataType.JSON) {
-          value = standardize(column, value, dest.isSingleValue());
+          value = standardize(column, value, dest.isSingleValue(), dest.isMapValue());
         }
 
         // NOTE: The standardized value could be null for empty Collection/Map/Object[].
@@ -88,6 +88,9 @@ public class DataTypeTransformer implements RecordTransformer {
           // Multi-value column
           Object[] values = (Object[]) value;
           source = PinotDataType.getMultiValueType(values[0].getClass());
+        } else if (dest.isMapValue()) {
+          Map map = (Map) value;
+          source = PinotDataType.getMapValueType(Integer.class);
         } else {
           // Single-value column
           source = PinotDataType.getSingleValueType(value.getClass());
@@ -119,6 +122,11 @@ public class DataTypeTransformer implements RecordTransformer {
     }
     return record;
   }
+  @VisibleForTesting
+  @Nullable
+  static Object standardize(String column, @Nullable Object value, boolean isSingleValue) {
+    return standardize(column, value, isSingleValue, false);
+  }
 
   /**
    * Standardize the value into supported types.
@@ -130,16 +138,23 @@ public class DataTypeTransformer implements RecordTransformer {
    */
   @VisibleForTesting
   @Nullable
-  static Object standardize(String column, @Nullable Object value, boolean isSingleValue) {
+  static Object standardize(String column, @Nullable Object value, boolean isSingleValue, boolean isMapValue) {
     if (value == null) {
       return null;
     }
     if (value instanceof Collection) {
       return standardizeCollection(column, (Collection) value, isSingleValue);
     }
+
     if (value instanceof Map) {
-      return standardizeCollection(column, ((Map) value).values(), isSingleValue);
+      if (isMapValue) {
+        //return standardizeCollection(column, (Map) value, isSingleValue);
+        return value;
+      } else {
+        return standardizeCollection(column, ((Map) value).values(), isSingleValue);
+      }
     }
+
     if (value instanceof Object[]) {
       Object[] values = (Object[]) value;
       int numValues = values.length;

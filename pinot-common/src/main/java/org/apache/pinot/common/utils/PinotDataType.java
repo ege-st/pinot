@@ -23,6 +23,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
 import org.apache.pinot.spi.data.FieldSpec;
@@ -926,7 +928,22 @@ public enum PinotDataType {
 
   COLLECTION,
 
-  OBJECT_ARRAY;
+  OBJECT_ARRAY,
+
+  INTEGER_MAP {
+    @Override
+    public HashMap<String, Integer> convert(Object value, PinotDataType sourceType) {
+      return sourceType.toIntegerMap(value);
+    }
+  },
+
+  STRING_MAP {
+    @Override
+    public HashMap<String, String> convert(Object value, PinotDataType sourceType) {
+      return sourceType.toStringMap(value);
+    }
+  },
+  ;
 
   /**
    * NOTE: override toInt(), toLong(), toFloat(), toDouble(), toBoolean(), toTimestamp(), toString(), and
@@ -1185,6 +1202,44 @@ public enum PinotDataType {
     }
   }
 
+  public HashMap<String, String> toStringMap(Object value) {
+    if (!(value instanceof Map)) {
+      throw new UnsupportedOperationException();
+    }
+    if (isSingleValue()) {
+      throw new UnsupportedOperationException();
+    } else {
+      HashMap<String, String> output = new HashMap<>();
+      Map<String, Object> m = (Map<String, Object>) value;
+      PinotDataType singleValueType = getSingleValueType();
+
+      for (Map.Entry<String, Object> entry : m.entrySet()) {
+        String strVal = singleValueType.toString(entry.getValue());
+        output.put(entry.getKey(), strVal);
+      }
+      return output;
+    }
+  }
+
+  public HashMap<String, Integer> toIntegerMap(Object value) {
+    if (!(value instanceof Map)) {
+      throw new UnsupportedOperationException();
+    }
+    if (isSingleValue()) {
+      throw new UnsupportedOperationException();
+    } else {
+      HashMap<String, Integer> output = new HashMap<>();
+      Map<String, Object> m = (Map<String, Object>) value;
+      PinotDataType singleValueType = getSingleValueType();
+
+      for (Map.Entry<String, Object> entry : m.entrySet()) {
+        Integer intVal = singleValueType.toInt(entry.getValue());
+        output.put(entry.getKey(), intVal);
+      }
+      return output;
+    }
+  }
+
   public byte[][] toBytesArray(Object value) {
     if (value instanceof byte[][]) {
       return (byte[][]) value;
@@ -1282,6 +1337,10 @@ public enum PinotDataType {
     return this.ordinal() <= OBJECT.ordinal();
   }
 
+  public boolean isMapValue() {
+    return this.ordinal() >= INTEGER_MAP.ordinal();
+  }
+
   public PinotDataType getSingleValueType() {
     switch (this) {
       case BYTE_ARRAY:
@@ -1292,6 +1351,7 @@ public enum PinotDataType {
         return SHORT;
       case PRIMITIVE_INT_ARRAY:
       case INTEGER_ARRAY:
+      case INTEGER_MAP:
         return INTEGER;
       case PRIMITIVE_LONG_ARRAY:
       case LONG_ARRAY:
@@ -1303,6 +1363,7 @@ public enum PinotDataType {
       case DOUBLE_ARRAY:
         return DOUBLE;
       case STRING_ARRAY:
+      case STRING_MAP:
         return STRING;
       case BYTES_ARRAY:
         return BYTES;
@@ -1395,6 +1456,16 @@ public enum PinotDataType {
     return OBJECT_ARRAY;
   }
 
+  public static PinotDataType getMapValueType(Class<?> cls) {
+    if (cls == Integer.class) {
+      return INTEGER_MAP;
+    }
+    if (cls == String.class) {
+      return STRING_MAP;
+    }
+    throw new UnsupportedOperationException(cls.toString());
+  }
+
   private static int anyToInt(Object val) {
     return getSingleValueType(val.getClass()).toInt(val);
   }
@@ -1419,7 +1490,7 @@ public enum PinotDataType {
     DataType dataType = fieldSpec.getDataType();
     switch (dataType) {
       case INT:
-        return fieldSpec.isSingleValueField() ? INTEGER : INTEGER_ARRAY;
+        return fieldSpec.isSingleValueField() ? INTEGER : (fieldSpec.isMapValueField() ? INTEGER_MAP: INTEGER_ARRAY);
       case LONG:
         return fieldSpec.isSingleValueField() ? LONG : LONG_ARRAY;
       case FLOAT:
@@ -1441,7 +1512,7 @@ public enum PinotDataType {
         }
         throw new IllegalStateException("There is no multi-value type for JSON");
       case STRING:
-        return fieldSpec.isSingleValueField() ? STRING : STRING_ARRAY;
+        return fieldSpec.isSingleValueField() ? STRING : (fieldSpec.isMapValueField() ?  STRING_MAP: STRING_ARRAY);
       case BYTES:
         return fieldSpec.isSingleValueField() ? BYTES : BYTES_ARRAY;
       default:

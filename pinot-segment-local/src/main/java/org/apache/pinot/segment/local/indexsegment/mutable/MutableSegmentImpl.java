@@ -610,6 +610,12 @@ public class MutableSegmentImpl implements MutableSegment {
       } else {
         if (indexContainer._fieldSpec.isSingleValueField()) {
           indexContainer._dictId = dictionary.index(value);
+        } else if (indexContainer._fieldSpec.isMapValueField()) {
+          Map map = (Map<Object, Object>) value;
+
+          // Use dictionary encoding on the values, the keys will be encoded within the Map column
+          dictionary.index(map.values().toArray());
+          //dictionary.index(map.keySet().toArray());
         } else {
           indexContainer._dictIds = dictionary.index((Object[]) value);
         }
@@ -739,11 +745,7 @@ public class MutableSegmentImpl implements MutableSegment {
         for (Map.Entry<IndexType, MutableIndex> indexEntry : indexContainer._mutableIndexes.entrySet()) {
           try {
             // TODO(ERICH - map): get key and value and put here
-            //var kv = (Map<String, Object>) value;  // TODO(ERICH: map) is passing as a tuple the best way to pass KV?
-            HashMap<String, Object> kv = new HashMap<>();
-            kv.put("foo", "1");
-            kv.put("bar", "2");
-            kv.put("fizz", "2");
+            var kv = (Map<String, Object>) value;  // TODO(ERICH: map) is passing as a tuple the best way to pass KV?
 
             // TODO(ERICH): this loop should be moved into the map index.  It will simplify code (and maybe reduce dynamic
             //   dispatch function calls, not sure how JVM optimizes this kind of call)
