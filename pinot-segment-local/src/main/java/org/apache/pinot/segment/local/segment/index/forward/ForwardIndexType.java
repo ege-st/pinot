@@ -327,7 +327,7 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
         int initialCapacity = Math.min(context.getCapacity(),
             NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
         return new MutableMapForwardIndex(
-            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext, Set.of());
+            FieldSpec.DataType.INT, FieldSpec.DataType.INT.size(), initialCapacity, context.getMemoryManager(), allocationContext, Set.of());
       } else {
         String allocationContext = IndexUtil.buildAllocationContext(segmentName, column,
             V1Constants.Indexes.UNSORTED_MV_FORWARD_INDEX_FILE_EXTENSION);

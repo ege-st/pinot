@@ -109,6 +109,34 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
   }
 
   @Override
+  public void add(@Nonnull Map<String, Object> input, int[] dictIds, int docId) {
+    try {
+      String[] keys = input.keySet().toArray(new String[0]);
+
+      _writeLock.lock();
+      for (int i = 0; i < keys.length; i++) {
+        // Iterate over the map
+        // Add the key, the value, and the Key+Value to their respective roaring bitmaps
+        _keyBitmaps.computeIfAbsent(keys[i], _k -> new ThreadSafeMutableRoaringBitmap()).add(docId);
+
+        String value = "" + dictIds[i];
+        _valueBitmaps.computeIfAbsent(value, _v -> new ThreadSafeMutableRoaringBitmap()).add(docId);
+
+        String tuple = keys[i] + value;
+        _kvBitmaps.computeIfAbsent(tuple, _kv -> new ThreadSafeMutableRoaringBitmap()).add(docId);
+
+        if (_keyBitmaps.size() > _config.getMaxEntries()
+            || _valueBitmaps.size() > _config.getMaxEntries()
+            || _kvBitmaps.size() > _config.getMaxEntries()) {
+          throw new RuntimeException("Map Inverted Index has exceeded the maximum number of entries");
+        }
+      }
+    } finally {
+      _writeLock.unlock();
+    }
+  }
+
+  @Override
   public void add(@Nonnull Object[] values, @Nullable int[] dictIds, int docId) {
     throw new UnsupportedOperationException();
   }

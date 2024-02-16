@@ -90,7 +90,19 @@ public class DataTypeTransformer implements RecordTransformer {
           source = PinotDataType.getMultiValueType(values[0].getClass());
         } else if (dest.isMapValue()) {
           Map map = (Map) value;
-          source = PinotDataType.getMapValueType(Integer.class);
+
+          // TODO: THIS SHOULD USE THE Value
+          switch(dest) {
+            case INTEGER_MAP:
+              source = PinotDataType.getMapValueType(Integer.class);
+              break;
+            case STRING_MAP:
+              source = PinotDataType.getMapValueType(String.class);
+              break;
+            default:
+              throw new UnsupportedOperationException();
+          }
+
         } else {
           // Single-value column
           source = PinotDataType.getSingleValueType(value.getClass());

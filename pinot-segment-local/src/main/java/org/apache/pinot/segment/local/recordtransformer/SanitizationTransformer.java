@@ -68,6 +68,12 @@ public class SanitizationTransformer implements RecordTransformer {
         if (sanitizedValue != stringValue) {
           record.putValue(stringColumn, sanitizedValue);
         }
+      } else if (value instanceof Map) {
+        Map<String, Object> map = (Map<String, Object>) value;
+        Object[] values = map.values().toArray();
+        for (int i = 0; i < values.length; i++) {
+          values[i] = StringUtil.sanitizeStringValue(values[i].toString(), maxLength);
+        }
       } else {
         // Multi-valued column
         Object[] values = (Object[]) value;
