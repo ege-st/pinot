@@ -174,6 +174,13 @@ public class MutableMapForwardIndex implements MapIndexReader, MutableForwardInd
     keyIndex.setInt(docId, value);
   }
 
+  @Override
+  public void setDictIdMapValue(int docId, String[] keys, int[] dictIds) {
+    for(int i = 0; i < keys.length; i++ ) {
+      setIntMapKeyValue(docId, keys[i], dictIds[i]);
+    }
+  }
+
   private FixedByteSVMutableForwardIndex getOrCreateKeyIndex(String key) {
     return _keyIndexes.computeIfAbsent(
         key, k -> new FixedByteSVMutableForwardIndex(false,

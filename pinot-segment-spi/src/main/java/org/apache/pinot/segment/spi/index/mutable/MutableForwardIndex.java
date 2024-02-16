@@ -184,6 +184,43 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
     }
   }
 
+  @Override
+  default void add(@Nonnull Map<String, Object> value, int[] dictIds, int docId) {
+    if(dictIds != null) {
+      setDictIdMapValue(docId, value.keySet().toArray(new String[0]), dictIds);
+    } else {
+      switch (getStoredType()) {
+        case INT:
+          for( Map.Entry<String, Object> entry : value.entrySet()) {
+            setIntMapKeyValue(docId, entry.getKey(), (int) entry.getValue());
+          }
+          break;
+        case LONG:
+          throw new UnsupportedOperationException();
+        case FLOAT:
+          throw new UnsupportedOperationException();
+        case DOUBLE:
+          throw new UnsupportedOperationException();
+        case BIG_DECIMAL:
+          // If the Big Decimal is already serialized as byte[], use it directly.
+          // This is only possible when the Big Decimal is generated from a realtime pre-aggregation
+          // where SumPrecisionValueAggregator uses BigDecimalUtils.serializeWithSize() to serialize the value
+          // instead of the normal BigDecimalUtils.serialize().
+          // setBigDecimal() underlying calls BigDecimalUtils.serialize() which is not the intention
+          // when the Big Decimal is already serialized.
+          throw new UnsupportedOperationException();
+        case STRING:
+          throw new UnsupportedOperationException();
+        case BYTES:
+          throw new UnsupportedOperationException();
+        case JSON:
+          throw new UnsupportedOperationException();
+        default:
+          throw new IllegalStateException();
+      }
+    }
+  }
+
   /**
    * Returns the length (size in bytes) of the shortest elements inside the forward index.
    *
@@ -708,6 +745,10 @@ public interface MutableForwardIndex extends ForwardIndexReader<ForwardIndexRead
    * @param value the value that is associated with the key
    */
   default void setIntMapKeyValue(int docId, String key, int value){
+    throw new UnsupportedOperationException();
+  }
+
+  default void setDictIdMapValue(int docId, String[] keys, int[] dictIds) {
     throw new UnsupportedOperationException();
   }
 

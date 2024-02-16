@@ -614,7 +614,7 @@ public class MutableSegmentImpl implements MutableSegment {
           Map map = (Map<Object, Object>) value;
 
           // Use dictionary encoding on the values, the keys will be encoded within the Map column
-          dictionary.index(map.values().toArray());
+          indexContainer._dictIds = dictionary.index(map.values().toArray());
           //dictionary.index(map.keySet().toArray());
         } else {
           indexContainer._dictIds = dictionary.index((Object[]) value);
@@ -742,6 +742,7 @@ public class MutableSegmentImpl implements MutableSegment {
         }
       } else if (fieldSpec.isMapValueField()) {
         // Map column using the dense column type
+        int[] dictIds = indexContainer._dictIds;
         for (Map.Entry<IndexType, MutableIndex> indexEntry : indexContainer._mutableIndexes.entrySet()) {
           try {
             // TODO(ERICH - map): get key and value and put here
@@ -753,7 +754,7 @@ public class MutableSegmentImpl implements MutableSegment {
             for(int idx = 0; idx < 3; idx += 1) {
               //indexEntry.getValue().add(String.format("%d", idx), idx, -1, docId);
             }
-            indexEntry.getValue().add(kv, -1, docId);
+            indexEntry.getValue().add(kv, dictIds, docId);
           } catch (Exception e) {
             recordIndexingError(indexEntry.getKey(), e);
           }
@@ -1328,7 +1329,8 @@ public class MutableSegmentImpl implements MutableSegment {
      */
     int _dictId = Integer.MIN_VALUE;
     /**
-     * The dictionary ids for the latest multi-value record.
+     * The dictionary ids for the latest multi-value record.  For a Map value the Dictionary is used to encode
+     * the values in the Map (not the Keys).
      * It is set on {@link #updateDictionary(GenericRow)} and read in {@link #addNewRow(int, GenericRow)}
      */
     int[] _dictIds;

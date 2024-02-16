@@ -19,6 +19,7 @@
 
 package org.apache.pinot.segment.spi.index.mutable;
 
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.spi.index.IndexReader;
@@ -59,6 +60,17 @@ public interface MutableIndex extends IndexReader {
    * @param docId The document id of the given row. A non-negative value.
    */
   void add(@Nonnull Object[] values, @Nullable int[] dictIds, int docId);
+
+  /**
+   * Adds the given map value cell to an index.  The dictionary ids are for encoding the Values (not the Keys).
+   *
+   * @param value
+   * @param dictIds
+   * @param docId
+   */
+  default void add(@Nonnull Map<String, Object> value, @Nullable int[] dictIds, int docId) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Adds the given key value pair to the index for the given Document.

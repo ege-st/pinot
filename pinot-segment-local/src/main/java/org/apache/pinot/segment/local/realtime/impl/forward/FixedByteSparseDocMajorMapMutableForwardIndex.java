@@ -183,6 +183,13 @@ public class FixedByteSparseDocMajorMapMutableForwardIndex implements MutableFor
   }
 
   @Override
+  public void setDictIdMapValue(int docId, String[] keys, int[] dictIds) {
+    for(int i = 0; i < keys.length; i++ ) {
+      setIntMapKeyValue(docId, keys[i], dictIds[i]);
+    }
+  }
+
+  @Override
   public int getIntMapKeyValue(int docId, String key) {
     var keyId = _keysDict.indexOf(key);
 
