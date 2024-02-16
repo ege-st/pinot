@@ -1352,10 +1352,18 @@ public class MutableSegmentImpl implements MutableSegment {
     }
 
     DataSource toDataSource() {
-      return new MutableDataSource(_fieldSpec, _numDocsIndexed, _valuesInfo._numValues,
-          _valuesInfo._maxNumValuesPerMVEntry, _dictionary == null ? -1 : _dictionary.length(), _partitionFunction,
-          _partitions, _minValue, _maxValue, _mutableIndexes, _dictionary, _nullValueVector,
-          _valuesInfo._varByteMVMaxRowLengthInBytes);
+      if (_fieldSpec.isSingleValueField() || !_fieldSpec.isMapValueField()) {
+        return new MutableDataSource(_fieldSpec, _numDocsIndexed, _valuesInfo._numValues,
+            _valuesInfo._maxNumValuesPerMVEntry, _dictionary == null ? -1 : _dictionary.length(), _partitionFunction,
+            _partitions, _minValue, _maxValue, _mutableIndexes, _dictionary, _nullValueVector,
+            _valuesInfo._varByteMVMaxRowLengthInBytes);
+      } else {
+        return new MutableMapDataSource(_fieldSpec, _numDocsIndexed, _valuesInfo._numValues,
+            _valuesInfo._maxNumValuesPerMVEntry, _dictionary == null ? -1 : _dictionary.length(), _partitionFunction,
+            _partitions, _minValue, _maxValue, _mutableIndexes, _dictionary,
+            _valuesInfo._varByteMVMaxRowLengthInBytes);
+      }
+
     }
 
     DataSource toDataSource(String key) {
