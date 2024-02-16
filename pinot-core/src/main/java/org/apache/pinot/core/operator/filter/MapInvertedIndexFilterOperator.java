@@ -20,10 +20,14 @@ package org.apache.pinot.core.operator.filter;
 
 import java.util.Collections;
 import java.util.List;
+import org.apache.pinot.common.request.context.predicate.EqPredicate;
 import org.apache.pinot.common.request.context.predicate.JsonMatchPredicate;
+import org.apache.pinot.common.request.context.predicate.Predicate;
 import org.apache.pinot.core.common.BlockDocIdSet;
 import org.apache.pinot.core.common.Operator;
 import org.apache.pinot.core.operator.docidsets.BitmapDocIdSet;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapInvertedIndex;
+import org.apache.pinot.segment.spi.index.reader.Dictionary;
 import org.apache.pinot.segment.spi.index.reader.JsonIndexReader;
 import org.apache.pinot.spi.trace.FilterType;
 import org.apache.pinot.spi.trace.InvocationRecording;
@@ -34,22 +38,35 @@ import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
 /**
  * Filter operator for JSON_MATCH. E.g. SELECT ... WHERE JSON_MATCH(column_name, filter_string)
  */
-public class JsonMatchFilterOperator extends BaseFilterOperator {
+public class MapInvertedIndexFilterOperator extends BaseFilterOperator {
   private static final String EXPLAIN_NAME = "FILTER_JSON_INDEX";
 
-  private final JsonIndexReader _jsonIndex;
-  private final JsonMatchPredicate _predicate;
+  private final MutableMapInvertedIndex _mii;
+  private final String _key;
+  private final String _value;
+  private final Dictionary _dictionary;
 
-  public JsonMatchFilterOperator(JsonIndexReader jsonIndex, JsonMatchPredicate predicate,
+  public MapInvertedIndexFilterOperator( MutableMapInvertedIndex mii, String key, Predicate predicate, Dictionary dictionary,
       int numDocs) {
     super(numDocs, false);
-    _jsonIndex = jsonIndex;
-    _predicate = predicate;
+    _mii = mii;
+    _key = key;
+    _dictionary = dictionary;
+    if (predicate instanceof EqPredicate) {
+      final String value = ((EqPredicate) predicate).getValue();
+      if (_dictionary != null) {
+        _value = String.valueOf(_dictionary.indexOf(value));
+      } else {
+        _value = value;
+      }
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   @Override
   protected BlockDocIdSet getTrues() {
-    ImmutableRoaringBitmap bitmap = _jsonIndex.getMatchingDocIds(_predicate.getValue());
+    ImmutableRoaringBitmap bitmap = _mii.getDocIdsWithKeyValue(_key, _value);
     record(bitmap);
     return new BitmapDocIdSet(bitmap, _numDocs);
   }
@@ -61,7 +78,7 @@ public class JsonMatchFilterOperator extends BaseFilterOperator {
 
   @Override
   public int getNumMatchingDocs() {
-    return _jsonIndex.getMatchingDocIds(_predicate.getValue()).getCardinality();
+    return _mii.getDocIdsWithKeyValue(_key, _value).getCardinality();
   }
 
   @Override
@@ -71,7 +88,7 @@ public class JsonMatchFilterOperator extends BaseFilterOperator {
 
   @Override
   public BitmapCollection getBitmaps() {
-    return new BitmapCollection(_numDocs, false, _jsonIndex.getMatchingDocIds(_predicate.getValue()));
+    return new BitmapCollection(_numDocs, false, _mii.getDocIdsWithKeyValue(_key, _value));
   }
 
   @Override
@@ -82,17 +99,14 @@ public class JsonMatchFilterOperator extends BaseFilterOperator {
   @Override
   public String toExplainString() {
     StringBuilder stringBuilder = new StringBuilder(EXPLAIN_NAME).append("(indexLookUp:json_index");
-    stringBuilder.append(",operator:").append(_predicate.getType());
-    stringBuilder.append(",predicate:").append(_predicate.toString());
+    stringBuilder.append(",operator:").append("EQ");
+    stringBuilder.append(",predicate:").append("STRING");
     return stringBuilder.append(')').toString();
   }
 
   private void record(ImmutableRoaringBitmap bitmap) {
     InvocationRecording recording = Tracing.activeRecording();
     if (recording.isEnabled()) {
-      recording.setColumnName(_predicate.getLhs().getIdentifier());
-      recording.setFilter(FilterType.INDEX, _predicate.getType().name());
-      recording.setNumDocsMatchingAfterFilter(bitmap.getCardinality());
     }
   }
 }

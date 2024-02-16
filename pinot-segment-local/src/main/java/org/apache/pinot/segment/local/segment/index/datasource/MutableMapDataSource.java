@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.local.realtime.impl.map.MutableMapForwardIndex;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapInvertedIndex;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.datasource.DataSourceMetadata;
 import org.apache.pinot.segment.spi.index.IndexType;
@@ -31,9 +32,11 @@ import org.apache.pinot.segment.spi.index.column.ColumnIndexContainer;
 import org.apache.pinot.segment.spi.index.metadata.ColumnMetadataImpl;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
 import org.apache.pinot.segment.spi.index.reader.Dictionary;
+import org.apache.pinot.segment.spi.index.reader.InvertedIndexReader;
 import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 import org.apache.pinot.segment.spi.partition.PartitionFunction;
 import org.apache.pinot.spi.data.FieldSpec;
+import org.roaringbitmap.buffer.MutableRoaringBitmap;
 
 
 /**
@@ -42,6 +45,8 @@ import org.apache.pinot.spi.data.FieldSpec;
 @SuppressWarnings("rawtypes")
 public class MutableMapDataSource extends BaseDataSource {
   Dictionary _dictionary;
+  MutableMapInvertedIndex _mii = null;
+
   public MutableMapDataSource(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
       @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions, @Nullable Comparable minValue,
       @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes, Dictionary dictionary,
@@ -52,11 +57,30 @@ public class MutableMapDataSource extends BaseDataSource {
             .withAll(mutableIndexes)
             .build());
     _dictionary = dictionary;
+    _mii = (MutableMapInvertedIndex) mutableIndexes.get(StandardIndexes.map_inverted());
   }
   @Nullable
   @Override
   public Dictionary getDictionary() {
     return _dictionary;
+  }
+
+  public MutableMapInvertedIndex getMapInvertedIndex() {
+    return _mii;
+  }
+
+  public InvertedIndexReader<MutableRoaringBitmap> getKeyInvertedIndex(String key) {
+    InvertedIndexReader idx = getInvertedIndex();
+    if (idx instanceof MutableMapInvertedIndex) {
+      MutableMapInvertedIndex mii = (MutableMapInvertedIndex) idx;
+      return mii.getKeyReader(key);
+    } else {
+      if (idx != null) {
+        throw new UnsupportedOperationException("Expected MutableMapInverted Index but found: " + idx.getClass().getName());
+      } else {
+        throw new NullPointerException();
+      }
+    }
   }
 
   public DataSource getKey(String key) {
@@ -132,6 +156,7 @@ public class MutableMapDataSource extends BaseDataSource {
     final Comparable _maxValue;
     final int _maxRowLengthInBytes;
     final Set<String> _denseKeys;
+
 
     MutableMapDataSourceMetadata(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry,
         int cardinality, @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions,

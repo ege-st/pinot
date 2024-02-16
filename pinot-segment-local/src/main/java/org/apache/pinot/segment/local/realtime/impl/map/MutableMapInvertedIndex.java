@@ -1,5 +1,6 @@
 package org.apache.pinot.segment.local.realtime.impl.map;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -25,6 +26,10 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
     ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     _readLock = readWriteLock.readLock();
     _writeLock = readWriteLock.writeLock();
+  }
+
+  public MutableMapInvertedIndexReader getKeyReader(String key) {
+    return new MutableMapInvertedIndexReader(this, key);
   }
 
   public MutableRoaringBitmap getDocIdsWithKey(String key) {
@@ -144,5 +149,26 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
   @Override
   public MutableRoaringBitmap getDocIds(int dictId) {
     return null;
+  }
+
+  public class MutableMapInvertedIndexReader implements InvertedIndexReader<MutableRoaringBitmap> {
+    final String _key;
+    final MutableMapInvertedIndex _mii;
+
+    MutableMapInvertedIndexReader (MutableMapInvertedIndex mii, String key) {
+      _key = key;
+      _mii = mii;
+    }
+
+    @Override
+    public MutableRoaringBitmap getDocIds(int dictId) {
+      return _mii.getDocIdsWithKeyValue(_key, String.valueOf(dictId));
+    }
+
+    @Override
+    public void close()
+        throws IOException {
+
+    }
   }
 }

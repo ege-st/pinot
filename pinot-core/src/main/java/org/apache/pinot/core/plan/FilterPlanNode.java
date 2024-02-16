@@ -42,6 +42,7 @@ import org.apache.pinot.core.operator.filter.FilterOperatorUtils;
 import org.apache.pinot.core.operator.filter.H3InclusionIndexFilterOperator;
 import org.apache.pinot.core.operator.filter.H3IndexFilterOperator;
 import org.apache.pinot.core.operator.filter.JsonMatchFilterOperator;
+import org.apache.pinot.core.operator.filter.MapInvertedIndexFilterOperator;
 import org.apache.pinot.core.operator.filter.MatchAllFilterOperator;
 import org.apache.pinot.core.operator.filter.TextContainsFilterOperator;
 import org.apache.pinot.core.operator.filter.TextMatchFilterOperator;
@@ -51,6 +52,8 @@ import org.apache.pinot.core.operator.filter.predicate.PredicateEvaluator;
 import org.apache.pinot.core.operator.filter.predicate.PredicateEvaluatorProvider;
 import org.apache.pinot.core.query.request.context.QueryContext;
 import org.apache.pinot.segment.local.realtime.impl.invertedindex.NativeMutableTextIndex;
+import org.apache.pinot.segment.local.realtime.impl.map.MutableMapInvertedIndex;
+import org.apache.pinot.segment.local.segment.index.datasource.MutableMapDataSource;
 import org.apache.pinot.segment.local.segment.index.readers.text.NativeTextIndexReader;
 import org.apache.pinot.segment.spi.IndexSegment;
 import org.apache.pinot.segment.spi.datasource.DataSource;
@@ -237,6 +240,24 @@ public class FilterPlanNode implements PlanNode {
         Predicate predicate = filter.getPredicate();
         ExpressionContext lhs = predicate.getLhs();
         if (lhs.getType() == ExpressionContext.Type.FUNCTION) {
+          if(lhs.getFunction().getFunctionName().equalsIgnoreCase("item")) {
+            // Get the column from the LHS of the ITEM function
+            String column = lhs.getFunction().getArguments().get(0).getIdentifier();
+
+            // Check if the column has an inverted index, if it does then
+            MutableMapDataSource dataSource = (MutableMapDataSource) _indexSegment.getDataSource(column);
+            if (dataSource.getMapInvertedIndex() != null) {
+              // If it does then get the inverted index for the key and create an InvertedIndexFilterNode
+              MutableMapInvertedIndex mii = dataSource.getMapInvertedIndex();
+              return new MapInvertedIndexFilterOperator(mii,
+                  lhs.getFunction().getArguments().get(1).getLiteral().getStringValue(),
+                  predicate,
+                  dataSource.getDictionary(),
+                  numDocs);
+            }
+            // Otherwise use the default FUNCTION evaluation path
+          }
+
           if (canApplyH3IndexForDistanceCheck(predicate, lhs.getFunction())) {
             return new H3IndexFilterOperator(_indexSegment, _queryContext, predicate, numDocs);
           } else if (canApplyH3IndexForInclusionCheck(predicate, lhs.getFunction())) {
