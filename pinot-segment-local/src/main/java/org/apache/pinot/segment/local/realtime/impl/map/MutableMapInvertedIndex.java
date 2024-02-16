@@ -17,7 +17,6 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
   private final MapInvertedIndexConfig _config;
   private final HashMap<String, ThreadSafeMutableRoaringBitmap> _kvBitmaps = new HashMap<>();
   private final HashMap<String, ThreadSafeMutableRoaringBitmap> _keyBitmaps = new HashMap<>();
-  private final HashMap<String, ThreadSafeMutableRoaringBitmap> _valueBitmaps = new HashMap<>();
   private final ReentrantReadWriteLock.ReadLock _readLock;
   private final ReentrantReadWriteLock.WriteLock _writeLock;
 
@@ -51,17 +50,7 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
   }
 
   public MutableRoaringBitmap getDocIdsWithValue(String value) {
-    ThreadSafeMutableRoaringBitmap bitmap;
-    try {
-      _readLock.lock();
-      bitmap = _valueBitmaps.get(value);
-      if (bitmap == null) {
-        return new MutableRoaringBitmap();
-      }
-    } finally {
-      _readLock.unlock();
-    }
-    return bitmap.getMutableRoaringBitmap();
+      throw new UnsupportedOperationException();
   }
 
   public MutableRoaringBitmap getDocIdsWithKeyValue(String key, String value) {
@@ -97,13 +86,10 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
         _keyBitmaps.computeIfAbsent(key, _k -> new ThreadSafeMutableRoaringBitmap()).add(docId);
 
         String value = kv.getValue().toString();
-        _valueBitmaps.computeIfAbsent(value, _v -> new ThreadSafeMutableRoaringBitmap()).add(docId);
-
         String tuple = key + value;
         _kvBitmaps.computeIfAbsent(tuple, _kv -> new ThreadSafeMutableRoaringBitmap()).add(docId);
 
         if (_keyBitmaps.size() > _config.getMaxEntries()
-            || _valueBitmaps.size() > _config.getMaxEntries()
             || _kvBitmaps.size() > _config.getMaxEntries()) {
           throw new RuntimeException("Map Inverted Index has exceeded the maximum number of entries");
         }
@@ -125,13 +111,10 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
         _keyBitmaps.computeIfAbsent(keys[i], _k -> new ThreadSafeMutableRoaringBitmap()).add(docId);
 
         String value = "" + dictIds[i];
-        _valueBitmaps.computeIfAbsent(value, _v -> new ThreadSafeMutableRoaringBitmap()).add(docId);
-
         String tuple = keys[i] + value;
         _kvBitmaps.computeIfAbsent(tuple, _kv -> new ThreadSafeMutableRoaringBitmap()).add(docId);
 
         if (_keyBitmaps.size() > _config.getMaxEntries()
-            || _valueBitmaps.size() > _config.getMaxEntries()
             || _kvBitmaps.size() > _config.getMaxEntries()) {
           throw new RuntimeException("Map Inverted Index has exceeded the maximum number of entries");
         }
