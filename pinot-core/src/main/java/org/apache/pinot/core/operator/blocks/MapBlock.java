@@ -30,11 +30,13 @@ import org.apache.pinot.segment.local.segment.index.datasource.MutableMapDataSou
  * It provides DocIdSetBlock for a given column.
  */
 public class MapBlock implements ValueBlock {
-  private final MutableMapDataSource _dataSourceMap;
+  private final MutableMapDataSource _mapDataSource;
   private final DataBlockCache _dataBlockCache;
+  private final String _columnName;
 
-  public MapBlock(MutableMapDataSource ds, DataBlockCache dataBlockCache) {
-    _dataSourceMap = ds;
+  public MapBlock(String column, MutableMapDataSource ds, DataBlockCache dataBlockCache) {
+    _columnName = column;
+    _mapDataSource = ds;
     _dataBlockCache = dataBlockCache;
   }
 
@@ -57,7 +59,7 @@ public class MapBlock implements ValueBlock {
 
   @Override
   public BlockValSet getBlockValueSet(String key) {
-    return new ProjectionBlockValSet(_dataBlockCache, key, _dataSourceMap.getKey(key));
+    return new ProjectionBlockValSet(_dataBlockCache, _columnName + "."  + key, _mapDataSource.getKey(key));
   }
 
   @Override

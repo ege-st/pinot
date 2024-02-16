@@ -24,6 +24,8 @@ import java.util.Map;
 import org.apache.pinot.core.operator.ColumnContext;
 import org.apache.pinot.core.operator.blocks.ValueBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
+import org.apache.pinot.segment.spi.index.reader.Dictionary;
+import org.apache.pinot.spi.data.FieldSpec;
 
 
 /**
@@ -36,6 +38,8 @@ public class MapItemTransformFunction {
     String _key;
     TransformFunction _mapValue;
     TransformFunction _keyValue;
+    Dictionary _dictionary;
+    private TransformResultMetadata _resultMetadata;
 
     @Override
     public void init(List<TransformFunction> arguments, Map<String, ColumnContext> columnContextMap) {
@@ -62,6 +66,11 @@ public class MapItemTransformFunction {
       _key = ((LiteralTransformFunction) arguments.get(1)).getStringLiteral();
       Preconditions.checkArgument(_key != null, "Map Item: Right operand"
           + "must be a string literal");
+
+      _dictionary = columnContextMap.get(_column).getDictionary();
+      _resultMetadata =
+          new TransformResultMetadata(columnContextMap.get(_column).getDataType(), columnContextMap.get(_column).isSingleValue(),
+              _dictionary != null);
     }
 
     @Override
@@ -71,7 +80,17 @@ public class MapItemTransformFunction {
 
     @Override
     public TransformResultMetadata getResultMetadata() {
-      return INT_SV_NO_DICTIONARY_METADATA;
+      return new TransformResultMetadata(_resultMetadata.getDataType().getStoredType(), true, _resultMetadata.hasDictionary());
+    }
+
+    @Override
+    public Dictionary getDictionary() {
+      return _dictionary;
+    }
+
+    @Override
+    public int[] transformToDictIdsSV(ValueBlock valueBlock) {
+      return transformToIntValuesSV(valueBlock);
     }
 
     @Override
@@ -79,8 +98,9 @@ public class MapItemTransformFunction {
       int length = valueBlock.getNumDocs();
       initIntValuesSV(length);
       var mapCol = valueBlock.getMap(_column);
-      var mapBlock = mapCol.getBlockValueSet(_key);
-      return mapBlock.getIntValuesSV();
+      return valueBlock.getBlockValueSet(_column).getIntValuesMap(_key);
+      //var mapBlock = mapCol.getBlockValueSet(_key);
+      //return mapBlock.getIntValuesSV();
     }
   }
 }

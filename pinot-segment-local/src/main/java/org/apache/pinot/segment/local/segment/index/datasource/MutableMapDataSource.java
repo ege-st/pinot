@@ -30,6 +30,7 @@ import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.segment.spi.index.column.ColumnIndexContainer;
 import org.apache.pinot.segment.spi.index.metadata.ColumnMetadataImpl;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
+import org.apache.pinot.segment.spi.index.reader.Dictionary;
 import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 import org.apache.pinot.segment.spi.partition.PartitionFunction;
 import org.apache.pinot.spi.data.FieldSpec;
@@ -40,16 +41,22 @@ import org.apache.pinot.spi.data.FieldSpec;
  */
 @SuppressWarnings("rawtypes")
 public class MutableMapDataSource extends BaseDataSource {
-
+  Dictionary _dictionary;
   public MutableMapDataSource(FieldSpec fieldSpec, int numDocs, int numValues, int maxNumValuesPerMVEntry, int cardinality,
       @Nullable PartitionFunction partitionFunction, @Nullable Set<Integer> partitions, @Nullable Comparable minValue,
-      @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes,
+      @Nullable Comparable maxValue, Map<IndexType, MutableIndex> mutableIndexes, Dictionary dictionary,
       int maxRowLengthInBytes) {
     super(new MutableMapDataSourceMetadata(fieldSpec, numDocs, numValues, maxNumValuesPerMVEntry, cardinality,
             partitionFunction, partitions, minValue, maxValue, maxRowLengthInBytes),
         new ColumnIndexContainer.FromMap.Builder()
             .withAll(mutableIndexes)
             .build());
+    _dictionary = dictionary;
+  }
+  @Nullable
+  @Override
+  public Dictionary getDictionary() {
+    return _dictionary;
   }
 
   public DataSource getKey(String key) {

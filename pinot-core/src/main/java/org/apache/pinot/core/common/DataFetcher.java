@@ -113,7 +113,8 @@ public class DataFetcher {
    * @param outValues Buffer for output
    */
   public void fetchIntValues(String column, int[] inDocIds, int length, int[] outValues) {
-    _columnValueReaderMap.get(column).readIntValues(inDocIds, length, outValues);
+    ColumnValueReader cvr = _columnValueReaderMap.get(column);
+    cvr.readIntValues(inDocIds, length, outValues);
   }
 
   /**
@@ -707,7 +708,7 @@ public class DataFetcher {
     void readIntValuesMap(String key, int[] docIds, int length, int[] valuesBuffer) {
       var readerContext = getReaderContext();
       if(_dictionary != null) {
-        throw new UnsupportedOperationException("Have not added dictionary encoding support to maps yet");
+        _reader.readValuesMap(key, docIds, length, valuesBuffer, readerContext);
       } else {
         _reader.readValuesMap(key, docIds, length, valuesBuffer, readerContext);
       }

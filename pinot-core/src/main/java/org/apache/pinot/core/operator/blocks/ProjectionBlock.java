@@ -67,7 +67,7 @@ public class ProjectionBlock implements ValueBlock {
   public MapBlock getMap(String column) {
     DataSource ds = _dataSourceMap.get(column);
     if (ds instanceof MutableMapDataSource) {
-      return new MapBlock((MutableMapDataSource) ds, _dataBlockCache);
+      return new MapBlock(column, (MutableMapDataSource) ds, _dataBlockCache);
     } else {
       throw new UnsupportedOperationException("Attempting to get a Map Block from a Non-Map column");
     }
