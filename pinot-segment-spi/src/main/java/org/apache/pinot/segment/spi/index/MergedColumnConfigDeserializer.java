@@ -50,8 +50,11 @@ public class MergedColumnConfigDeserializer<C> implements ColumnConfigDeserializ
       for (Map.Entry<String, C> entry : partialResult.entrySet()) {
         String column = entry.getKey();
         if (result.containsKey(column)) {
+          // The column appears multiple times in the partialResult set, so we need to merge the configurations and
+          // resolve any conflicts.
           _onConflict.merge(result, column, entry.getValue());
         } else {
+          // The column appears for the first time, so add it's configuration to the result set
           result.put(column, entry.getValue());
         }
       }

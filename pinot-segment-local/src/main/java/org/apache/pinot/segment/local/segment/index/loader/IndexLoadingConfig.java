@@ -86,6 +86,7 @@ public class IndexLoadingConfig {
   private Set<String> _fstIndexColumns = new HashSet<>();
   private FSTType _fstIndexType = FSTType.LUCENE;
   private Map<String, JsonIndexConfig> _jsonIndexConfigs = new HashMap<>();
+  private Map<String, MapInvertedIndexConfig> _mapInvertedIndexConfigs = new HashMap<>();
   private Map<String, H3IndexConfig> _h3IndexConfigs = new HashMap<>();
   private Map<String, VectorIndexConfig> _vectorIndexConfigs = new HashMap<>();
   private Set<String> _noDictionaryColumns = new HashSet<>(); // TODO: replace this by _noDictionaryConfig.
@@ -183,6 +184,11 @@ public class IndexLoadingConfig {
           _jsonIndexConfigs.put(jsonIndexColumn, new JsonIndexConfig());
         }
       }
+    }
+
+    Map<String, MapInvertedIndexConfig> mapInvertedIndexConfig = indexingConfig.getMapInvertedIndexConfigs();
+    if (mapInvertedIndexConfig != null) {
+      _mapInvertedIndexConfigs = mapInvertedIndexConfig;
     }
 
     List<String> rangeIndexColumns = indexingConfig.getRangeIndexColumns();
@@ -549,7 +555,7 @@ public class IndexLoadingConfig {
   }
 
   public Map<String, MapInvertedIndexConfig> getMapInvertedIndexConfigs() {
-    throw new UnsupportedOperationException();
+    return unmodifiable(_mapInvertedIndexConfigs);
   }
 
   public Map<String, H3IndexConfig> getH3IndexConfigs() {
