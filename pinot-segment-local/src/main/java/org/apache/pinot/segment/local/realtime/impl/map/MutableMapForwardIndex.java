@@ -68,6 +68,8 @@ import org.slf4j.LoggerFactory;
  * 8. If the MutableFwdIdx interface has anything for aggregateMetrics, then mark it as unsupported in this class (for the PoC)
  */
 public class MutableMapForwardIndex implements MapIndexReader, MutableForwardIndex {
+  // TODO: Have this implement both the Inverted and Forward Index Interface.  Have this manage the key and
+  //   value dictionary.
   private static final Logger LOGGER = LoggerFactory.getLogger(MutableMapForwardIndex.class);
 
   // For single writer multiple readers setup, use ArrayList for writer and CopyOnWriteArrayList for reader
@@ -82,6 +84,7 @@ public class MutableMapForwardIndex implements MapIndexReader, MutableForwardInd
   private final int _numRowsPerChunk;
   private final PinotDataBufferMemoryManager _memoryManager;
   private final String _allocationContext;
+  private final Set<String> _keys;
 
   /**
    * @param storedType Data type of the values
@@ -106,9 +109,10 @@ public class MutableMapForwardIndex implements MapIndexReader, MutableForwardInd
     _numRowsPerChunk = numRowsPerChunk;
     _memoryManager = memoryManager;
     _allocationContext = allocationContext;
+    _keys = denseKeys;
 
     // Construct a forward index for each dense key
-    for(String key : denseKeys) {
+    for(String key : _keys) {
       getOrCreateKeyIndex(key);
     }
   }

@@ -69,6 +69,8 @@ public interface MutableIndex extends IndexReader {
    * @param docId
    */
   default void add(@Nonnull Map<String, Object> value, @Nullable int[] dictIds, int docId) {
+    // TODO: Think of this as raw encoded, just pass in the string and let the index figure it out
+    //   Have the forward and inverted indexes create their own dictionaries rather than the Mutable Segment
     throw new UnsupportedOperationException();
   }
 

@@ -299,7 +299,8 @@ public class ForwardIndexType extends AbstractIndexType<ForwardIndexConfig, Forw
         int initialCapacity = Math.min(context.getCapacity(),
             NODICT_VARIABLE_WIDTH_ESTIMATED_NUMBER_OF_VALUES_DEFAULT);
         return new MutableMapForwardIndex(
-            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext, Set.of());
+            storedType, storedType.size(), initialCapacity, context.getMemoryManager(), allocationContext,
+            Set.of("a", "b", "c", "d", "foo", "bar", "hello"));
       } else {
         // TODO: Add support for variable width (bytes, string, big decimal) MV RAW column types
         assert storedType.isFixedWidth();

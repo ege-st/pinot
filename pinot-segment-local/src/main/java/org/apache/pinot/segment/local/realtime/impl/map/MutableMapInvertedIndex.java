@@ -14,6 +14,7 @@ import org.roaringbitmap.buffer.MutableRoaringBitmap;
 
 
 public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoaringBitmap>, MutableIndex {
+  // TODO: Delimiter
   private final MapInvertedIndexConfig _config;
   private final HashMap<String, ThreadSafeMutableRoaringBitmap> _kvBitmaps = new HashMap<>();
   private final HashMap<String, ThreadSafeMutableRoaringBitmap> _keyBitmaps = new HashMap<>();
@@ -74,33 +75,11 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
 
   @Override
   public void add(@Nonnull Object map, int dictId, int docId) {
-    HashMap<String, Object> kvs = (HashMap<String, Object>) map;
-    boolean fail = false;
-
-    try {
-      _writeLock.lock();
-      for (Map.Entry<String, Object> kv : kvs.entrySet()) {
-        // Iterate over the map
-        // Add the key, the value, and the Key+Value to their respective roaring bitmaps
-        String key = kv.getKey();
-        _keyBitmaps.computeIfAbsent(key, _k -> new ThreadSafeMutableRoaringBitmap()).add(docId);
-
-        String value = kv.getValue().toString();
-        String tuple = key + value;
-        _kvBitmaps.computeIfAbsent(tuple, _kv -> new ThreadSafeMutableRoaringBitmap()).add(docId);
-
-        if (_keyBitmaps.size() > _config.getMaxEntries()
-            || _kvBitmaps.size() > _config.getMaxEntries()) {
-          throw new RuntimeException("Map Inverted Index has exceeded the maximum number of entries");
-        }
-      }
-    } finally {
-      _writeLock.unlock();
-    }
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public void add(@Nonnull Map<String, Object> input, int[] dictIds, int docId) {
+  public void add(@Nonnull Map<String, Object> input, int[] valuesDictIds, int docId) {
     try {
       String[] keys = input.keySet().toArray(new String[0]);
 
@@ -110,7 +89,7 @@ public class MutableMapInvertedIndex implements InvertedIndexReader<MutableRoari
         // Add the key, the value, and the Key+Value to their respective roaring bitmaps
         _keyBitmaps.computeIfAbsent(keys[i], _k -> new ThreadSafeMutableRoaringBitmap()).add(docId);
 
-        String value = "" + dictIds[i];
+        String value = "" + valuesDictIds[i];
         String tuple = keys[i] + value;
         _kvBitmaps.computeIfAbsent(tuple, _kv -> new ThreadSafeMutableRoaringBitmap()).add(docId);
 
