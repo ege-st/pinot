@@ -59,6 +59,9 @@ public class MapBlock implements ValueBlock {
 
   @Override
   public BlockValSet getBlockValueSet(String key) {
+    // This doesn't work because the Data Block Cache cannot handle a map type
+    // DBC can't handle a map type because it has a strict mapping from a column name to an array of values from that
+    // column.  It can't handle the idea of needing a Column AND Key to get an array of values
     return new ProjectionBlockValSet(_dataBlockCache, _columnName + "."  + key, _mapDataSource.getKey(key));
   }
 

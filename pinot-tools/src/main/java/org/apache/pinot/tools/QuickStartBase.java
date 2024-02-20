@@ -81,9 +81,9 @@ public abstract class QuickStartBase {
   };
 
   protected static final Map<String, String> DEFAULT_STREAM_TABLE_DIRECTORIES = ImmutableMap.<String, String>builder()
-      /*.put("airlineStats", "examples/stream/airlineStats")
+      .put("airlineStats", "examples/stream/airlineStats")
       .put("githubEvents", "examples/stream/githubEvents")
-      .put("meetupRsvp", "examples/stream/meetupRsvp")
+      /*.put("meetupRsvp", "examples/stream/meetupRsvp")
       .put("meetupRsvpJson", "examples/stream/meetupRsvpJson")
       .put("meetupRsvpComplexType", "examples/stream/meetupRsvpComplexType")
       .put("upsertMeetupRsvp", "examples/stream/upsertMeetupRsvp")

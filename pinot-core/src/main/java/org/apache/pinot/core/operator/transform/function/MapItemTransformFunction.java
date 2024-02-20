@@ -97,10 +97,12 @@ public class MapItemTransformFunction {
     public int[] transformToIntValuesSV(ValueBlock valueBlock) {
       int length = valueBlock.getNumDocs();
       initIntValuesSV(length);
+      // Attempt to get a Map Column from the value block
       var mapCol = valueBlock.getMap(_column);
-      return valueBlock.getBlockValueSet(_column).getIntValuesMap(_key);
+      // Get the block of values associated with a key
       //var mapBlock = mapCol.getBlockValueSet(_key);
       //return mapBlock.getIntValuesSV();
+      return valueBlock.getBlockValueSet(_column).getIntValuesMap(_key);
     }
   }
 }
