@@ -16,6 +16,8 @@ import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.segment.spi.index.mutable.MutableForwardIndex;
 import org.apache.pinot.segment.spi.index.mutable.MutableMapIndex;
 import org.apache.pinot.segment.spi.index.mutable.provider.MutableIndexContext;
+import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
+import org.apache.pinot.segment.spi.index.reader.ForwardIndexReaderContext;
 import org.apache.pinot.segment.spi.memory.PinotDataBufferMemoryManager;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
 import org.apache.pinot.spi.data.FieldSpec;
@@ -124,7 +126,7 @@ public class MapDenseColumn implements MutableMapIndex {
   }
 
   MutableForwardIndex createKeyIndex(String key, FieldSpec.DataType type, int docIdOffset) {
-    if (_keyIndexes.size() > _maxKeys) {
+    if (_keyIndexes.size() >= _maxKeys) {
       throw new RuntimeException(String.format("Maximum number of keys exceed: %d", _maxKeys));
     }
 
@@ -170,7 +172,7 @@ public class MapDenseColumn implements MutableMapIndex {
   }
 
   @Override
-  public IndexReader getKeyReader(String key) {
+  public ForwardIndexReader<ForwardIndexReaderContext> getKeyReader(String key) {
     try {
       _readLock.lock();
 
@@ -206,6 +208,10 @@ public class MapDenseColumn implements MutableMapIndex {
       _firstDocId = firstDocId;
     }
 
+    private int getInternalDocId(int docId) {
+      return docId - _firstDocId;
+    }
+
     @Override
     public int getLengthOfShortestElement() {
       return _idx.getLengthOfShortestElement();
@@ -234,13 +240,37 @@ public class MapDenseColumn implements MutableMapIndex {
     @Override
     public void add(@Nonnull Object value, int dictId, int docId) {
       // Account for the docId offset that will happen when new columns are added after the segment has started
-      int adjustedDocId = docId - _firstDocId;
+      int adjustedDocId = getInternalDocId(docId);
       _idx.add(value, dictId, adjustedDocId);
     }
 
     @Override
     public void add(@Nonnull Object[] value, @Nullable int[] dictIds, int docId) {
       throw new UnsupportedOperationException("Multivalues are not yet supported in Maps");
+    }
+
+    @Override
+    public int getInt(int docId) {
+      int adjustedDocId = getInternalDocId(docId);
+      return _idx.getInt(adjustedDocId);
+    }
+
+    @Override
+    public int getInt(int docId, ForwardIndexReaderContext context) {
+      int adjustedDocId = getInternalDocId(docId);
+      return _idx.getInt(adjustedDocId, context);
+    }
+
+    @Override
+    public String getString(int docId) {
+      int adjustedDocId = getInternalDocId(docId);
+      return _idx.getString(adjustedDocId);
+    }
+
+    @Override
+    public String getString(int docId, ForwardIndexReaderContext context) {
+      int adjustedDocId = getInternalDocId(docId);
+      return _idx.getString(adjustedDocId, context);
     }
 
     @Override
