@@ -277,6 +277,18 @@ public class MutableMapDenseColumn implements MutableMapIndex {
     }
 
     @Override
+    public double getDouble(int docId) {
+      int adjustedDocId = getInternalDocId(docId);
+      return _idx.getDouble(adjustedDocId);
+    }
+
+    @Override
+    public double getDouble(int docId, ForwardIndexReaderContext context) {
+      int adjustedDocId = getInternalDocId(docId);
+      return _idx.getDouble(adjustedDocId, context);
+    }
+
+    @Override
     public int getInt(int docId) {
       int adjustedDocId = getInternalDocId(docId);
       return _idx.getInt(adjustedDocId);

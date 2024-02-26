@@ -75,7 +75,8 @@ public class MutableMapDenseColumnTest {
   @Test
   public  void testAddOneKeyStringValue()
       throws IOException {
-    MutableMapDenseColumn mdc = new MutableMapDenseColumn(100, _memoryManager, 1000, false, false, null, "test-segment");
+    MutableMapDenseColumn mdc = new MutableMapDenseColumn(100, _memoryManager, 1000,
+        false, false, null, "test-segment");
     HashMap<String, Object> data = new HashMap<>();
     data.put("a", "hello");
     mdc.add(data, 0);
@@ -91,6 +92,30 @@ public class MutableMapDenseColumnTest {
 
     result = reader.getString(1, ctx);
     Assert.assertEquals(result, "world");
+  }
+
+  @Test
+  public  void testAddOneKeyDoubleValue()
+      throws IOException {
+    MutableMapDenseColumn mdc = new MutableMapDenseColumn(100, _memoryManager, 1000,
+        false, false, null, "test-segment");
+    HashMap<String, Object> data = new HashMap<>();
+    double value1 = 2.0;
+    data.put("a", value1);
+    mdc.add(data, 0);
+
+    data = new HashMap<>();
+    double value2 = 3.0;
+    data.put("a", value2);
+    mdc.add(data, 1);
+
+    ForwardIndexReader reader = mdc.getKeyReader("a");
+    ForwardIndexReaderContext ctx = reader.createContext();
+    double result = reader.getDouble(0, ctx);
+    Assert.assertEquals(result, value1);
+
+    result = reader.getDouble(1, ctx);
+    Assert.assertEquals(result, value2);
   }
 
   @Test
