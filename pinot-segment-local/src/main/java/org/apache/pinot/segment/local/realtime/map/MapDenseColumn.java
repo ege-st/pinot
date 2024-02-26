@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.pinot.common.utils.PinotDataType;
 import org.apache.pinot.segment.spi.index.FieldIndexConfigs;
 import org.apache.pinot.segment.spi.index.ForwardIndexConfig;
@@ -22,6 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * Dynamically typed Dense map column. This structure will allow for a "partially" dynamically typed map value
+ * to be created where different keys may have different types.  The type of the key is determined when the
+ * key is first added to the index.
+ *
+ * Note, that this means that the type of a key can change across segments.
+ */
 public class MapDenseColumn implements MutableMapIndex {
   private static final Logger LOGGER = LoggerFactory.getLogger(MapDenseColumn.class);
   private final ConcurrentHashMap<String, MutableForwardIndex> _keyIndexes;
@@ -86,7 +94,11 @@ public class MapDenseColumn implements MutableMapIndex {
 
   @Override
   public void add(@Nonnull Map<String, Object>[] values, int[] docIds) {
+    assert values.length == docIds.length;
 
+    for(int i = 0; i < values.length; i++) {
+      add(values[i], docIds[i]);
+    }
   }
 
   private MutableForwardIndex getKeyIndex(String key, FieldSpec.DataType type, int docIdOffset) {
@@ -105,7 +117,9 @@ public class MapDenseColumn implements MutableMapIndex {
       }
     } else {
       // If the key does not have an index, then create an index for the given value
-      return createKeyIndex(key, type, docIdOffset);
+      MutableForwardIndex idx = createKeyIndex(key, type, docIdOffset);
+      _keyIndexes.put(key, idx);
+      return idx;
     }
   }
 
@@ -124,8 +138,7 @@ public class MapDenseColumn implements MutableMapIndex {
             .withFixedLengthBytes(-1).build();  // TODO: judging by the MutableSegmentImpl this would be -1 but should double check
     FieldIndexConfigs indexConfig = FieldIndexConfigs.EMPTY;
     MutableForwardIndex idx =  createMutableForwardIndex(StandardIndexes.forward(), context, indexConfig);
-    DenseColumn dc = new DenseColumn(idx, docIdOffset);
-    return idx;
+    return new DenseColumn(idx, docIdOffset);
   }
 
   private MutableForwardIndex createMutableForwardIndex(IndexType<ForwardIndexConfig, ?, ?> indexType, MutableIndexContext context, FieldIndexConfigs indexConfigs) {
@@ -217,8 +230,17 @@ public class MapDenseColumn implements MutableMapIndex {
     public FieldSpec.DataType getStoredType() {
       return _idx.getStoredType();
     }
+
     @Override
-    default void add(@Nonnull Object value, int dictId, int docId) {
+    public void add(@Nonnull Object value, int dictId, int docId) {
+      // Account for the docId offset that will happen when new columns are added after the segment has started
+      int adjustedDocId = docId - _firstDocId;
+      _idx.add(value, dictId, adjustedDocId);
+    }
+
+    @Override
+    public void add(@Nonnull Object[] value, @Nullable int[] dictIds, int docId) {
+      throw new UnsupportedOperationException("Multivalues are not yet supported in Maps");
     }
 
     @Override
