@@ -64,6 +64,8 @@ public class MutableMapDenseColumn implements MutableMapIndex {
   private final String _segmentName;
 
   public MutableMapDenseColumn(int maxKeys, PinotDataBufferMemoryManager memoryManager, int capacity, boolean offHeap, boolean isDictionary, String consumerDir, String segmentName) {
+    LOGGER.info("Creating Mutable Map Dense Column. Max Keys: {}, Capacity: {}, offHeap: {}, isDictionary: {}, consumerDir: {}, Segment name: {}",
+        maxKeys, capacity, offHeap, isDictionary, consumerDir, segmentName);
     _maxKeys = maxKeys;
     _keyIndexes = new ConcurrentHashMap<>();
     _memoryManager = memoryManager;
@@ -214,7 +216,7 @@ public class MutableMapDenseColumn implements MutableMapIndex {
     }
   }
 
-  private class DenseColumn implements MutableForwardIndex {
+  private static class DenseColumn implements MutableForwardIndex {
     // A key may be added to the index after the first document. In which case, when the Forward index for that key
     // is created, the docIds for this index will not begin with 0, but they will be stored in the index with docId
     // 0.  This value will track the offset that will be used to account for this.
@@ -226,6 +228,13 @@ public class MutableMapDenseColumn implements MutableMapIndex {
       _firstDocId = firstDocId;
     }
 
+    /**
+     * Adjusts the Requested Document ID by the ID Offset of this column so that it indexes into the internal
+     * column correctly.
+     *
+     * @param docId
+     * @return
+     */
     private int getInternalDocId(int docId) {
       return docId - _firstDocId;
     }
