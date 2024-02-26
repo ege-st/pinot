@@ -50,8 +50,8 @@ import org.slf4j.LoggerFactory;
  *
  * Note, that this means that the type of a key can change across segments.
  */
-public class MapDenseColumn implements MutableMapIndex {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MapDenseColumn.class);
+public class MutableMapDenseColumn implements MutableMapIndex {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MutableMapDenseColumn.class);
   private final ConcurrentHashMap<String, MutableForwardIndex> _keyIndexes;
   private final int _maxKeys;
   private final ReentrantReadWriteLock.ReadLock _readLock;
@@ -63,7 +63,7 @@ public class MapDenseColumn implements MutableMapIndex {
   private final File _consumerDir;
   private final String _segmentName;
 
-  public MapDenseColumn(int maxKeys, PinotDataBufferMemoryManager memoryManager, int capacity, boolean offHeap, boolean isDictionary, String consumerDir, String segmentName) {
+  public MutableMapDenseColumn(int maxKeys, PinotDataBufferMemoryManager memoryManager, int capacity, boolean offHeap, boolean isDictionary, String consumerDir, String segmentName) {
     _maxKeys = maxKeys;
     _keyIndexes = new ConcurrentHashMap<>();
     _memoryManager = memoryManager;

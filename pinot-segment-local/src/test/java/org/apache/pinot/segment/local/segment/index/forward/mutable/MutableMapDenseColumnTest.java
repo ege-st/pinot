@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.pinot.segment.local.io.writer.impl.DirectMemoryManager;
-import org.apache.pinot.segment.local.realtime.map.MapDenseColumn;
+import org.apache.pinot.segment.local.realtime.map.MutableMapDenseColumn;
 import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReader;
 import org.apache.pinot.segment.spi.index.reader.ForwardIndexReaderContext;
@@ -54,7 +54,7 @@ public class MutableMapDenseColumnTest {
   @Test
   public  void testAddOneKeyIntegerValue()
       throws IOException {
-    MapDenseColumn mdc = new MapDenseColumn(100, _memoryManager, 1000, false, false, null, "test-segment");
+    MutableMapDenseColumn mdc = new MutableMapDenseColumn(100, _memoryManager, 1000, false, false, null, "test-segment");
     HashMap<String, Object> data = new HashMap<>();
     data.put("a", 1);
     mdc.add(data, 0);
@@ -75,7 +75,7 @@ public class MutableMapDenseColumnTest {
   @Test
   public  void testAddOneKeyStringValue()
       throws IOException {
-    MapDenseColumn mdc = new MapDenseColumn(100, _memoryManager, 1000, false, false, null, "test-segment");
+    MutableMapDenseColumn mdc = new MutableMapDenseColumn(100, _memoryManager, 1000, false, false, null, "test-segment");
     HashMap<String, Object> data = new HashMap<>();
     data.put("a", "hello");
     mdc.add(data, 0);
@@ -96,7 +96,7 @@ public class MutableMapDenseColumnTest {
   @Test
   public  void testAddTwoKeyIntegerValue()
       throws IOException {
-    MapDenseColumn mdc = new MapDenseColumn(100, _memoryManager, 1000, false, false, null, "test-segment");
+    MutableMapDenseColumn mdc = new MutableMapDenseColumn(100, _memoryManager, 1000, false, false, null, "test-segment");
     HashMap<String, Object> data = new HashMap<>();
     data.put("a", 1);
     mdc.add(data, 0);
@@ -118,7 +118,7 @@ public class MutableMapDenseColumnTest {
   @Test(expectedExceptions = RuntimeException.class)
   public  void testExceedMaxKeys()
       throws IOException {
-    MapDenseColumn mdc = new MapDenseColumn(5, _memoryManager, 1000, false, false, null, "test-segment");
+    MutableMapDenseColumn mdc = new MutableMapDenseColumn(5, _memoryManager, 1000, false, false, null, "test-segment");
     HashMap<String, Object> data = new HashMap<>();
     data.put("a", 1);
     data.put("b", 1);
