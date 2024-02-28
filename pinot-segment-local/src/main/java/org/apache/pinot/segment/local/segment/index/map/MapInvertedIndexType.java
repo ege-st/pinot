@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.apache.pinot.segment.local.realtime.impl.map.MutableMapInvertedIndex;
-import org.apache.pinot.segment.local.segment.creator.impl.map.MapIndexCreatorImpl;
 import org.apache.pinot.segment.local.segment.creator.impl.map.MapInvertedIndexCreatorImpl;
 import org.apache.pinot.segment.local.segment.index.loader.ConfigurableFromIndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.IndexLoadingConfig;

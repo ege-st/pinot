@@ -18,37 +18,17 @@
  */
 package org.apache.pinot.segment.local.segment.index;
 
-import com.google.common.collect.Lists;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
-import org.apache.pinot.segment.local.realtime.impl.json.MutableJsonIndexImpl;
 import org.apache.pinot.segment.local.realtime.impl.map.MutableMapInvertedIndex;
-import org.apache.pinot.segment.local.segment.creator.impl.inv.json.OffHeapJsonIndexCreator;
-import org.apache.pinot.segment.local.segment.creator.impl.inv.json.OnHeapJsonIndexCreator;
-import org.apache.pinot.segment.local.segment.index.json.JsonIndexType;
-import org.apache.pinot.segment.local.segment.index.readers.json.ImmutableJsonIndexReader;
-import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.index.creator.JsonIndexCreator;
 import org.apache.pinot.segment.spi.index.reader.JsonIndexReader;
-import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
-import org.apache.pinot.spi.config.table.FieldConfig;
-import org.apache.pinot.spi.config.table.JsonIndexConfig;
 import org.apache.pinot.spi.config.table.MapInvertedIndexConfig;
-import org.apache.pinot.spi.utils.JsonUtils;
-import org.roaringbitmap.RoaringBitmap;
-import org.roaringbitmap.buffer.MutableRoaringBitmap;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
 
 
 /**

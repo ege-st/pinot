@@ -20,7 +20,6 @@
 package org.apache.pinot.segment.local.segment.index.map;
 
 import com.google.auto.service.AutoService;
-import org.apache.pinot.segment.local.segment.index.inverted.InvertedIndexType;
 import org.apache.pinot.segment.spi.index.IndexPlugin;
 
 
