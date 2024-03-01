@@ -18,12 +18,10 @@
  */
 package org.apache.pinot.segment.spi.index.creator;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.pinot.segment.spi.index.IndexCreator;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 
@@ -52,16 +50,7 @@ public interface MapIndexCreator extends IndexCreator {
     throw new UnsupportedOperationException("Array of Maps not supported yet");
   }
 
-  default void add(@Nonnull Map<String, Object> mapValue) {
-    // Iterate over each KV pair in this map and add to the underlying index
-    for (Map.Entry<String, Object> entry : mapValue.entrySet()) {
-      String entryKey = entry.getKey();
-      Object entryValue = entry.getValue();
-
-      // Get the type of the entryValue
-      // Call the appropriate put function
-    }
-  }
+  void add(@Nonnull Map<String, Object> mapValue);
 
   /**
    * Returns {@code true} if the forward index for the given key is dictionary-encoded, {@code false} if it is raw.
@@ -82,130 +71,4 @@ public interface MapIndexCreator extends IndexCreator {
    * forward index.
    */
   DataType getValueType(String key);
-
-  /**
-   * SINGLE-VALUE COLUMN RAW INDEX APIs
-   */
-
-  /**
-   * Writes the next INT type single-value into the forward index for the given key.
-   *
-   * @param value Value to write
-   */
-  default void putInt(String key, int value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next LONG type single-value into the forward index for the given key.
-   *
-   * @param value Value to write
-   */
-  default void putLong(String key, long value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next FLOAT type single-value into the forward index for the given key.
-   *
-   * @param value Value to write
-   */
-  default void putFloat(String key, float value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next DOUBLE type single-value into the forward index for the given key.
-   *
-   * @param value Value to write
-   */
-  default void putDouble(String key, double value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next BIG_DECIMAL type single-value into the forward index for the given key.
-   *
-   * @param value Value to write
-   */
-  default void putBigDecimal(String key, BigDecimal value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next STRING type single-value into the forward index for the given key.
-   *
-   * @param value Value to write
-   */
-  default void putString(String key, String value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next BYTES type single-value into the forward index for the given key.
-   *
-   * @param value Value to write
-   */
-  default void putBytes(String key, byte[] value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * MULTI-VALUE COLUMN RAW INDEX APIs
-   * TODO: Not supported yet
-   */
-
-  /**
-   * Writes the next INT type multi-value into the forward index for the given key.
-   *
-   * @param values Values to write
-   */
-  default void putIntMV(String key, int[] values) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next LONG type multi-value into the forward index for the given key
-   *
-   * @param values Values to write
-   */
-  default void putLongMV(String key, long[] values) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next FLOAT type multi-value into the forward index for the given key.
-   *
-   * @param values Values to write
-   */
-  default void putFloatMV(String key, float[] values) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next DOUBLE type multi-value into the forward index for the given key.
-   *
-   * @param values Values to write
-   */
-  default void putDoubleMV(String key, double[] values) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next STRING type multi-value into the forward index for the given key.
-   *
-   * @param values Values to write
-   */
-  default void putStringMV(String key, String[] values) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Writes the next byte[] type multi-value into the forward index for the given key.
-   *
-   * @param values Values to write
-   */
-  default void putBytesMV(String key, byte[][] values) {
-    throw new UnsupportedOperationException();
-  }
 }

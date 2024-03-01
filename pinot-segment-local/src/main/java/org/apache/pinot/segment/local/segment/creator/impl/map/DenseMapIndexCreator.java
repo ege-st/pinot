@@ -22,6 +22,9 @@ import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import org.apache.pinot.common.utils.PinotDataType;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.slf4j.Logger;
@@ -83,6 +86,15 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   }
 
   @Override
+  public void add(@Nonnull Map<String, Object> mapValue) {
+    for (Map.Entry<String, Object> entry : mapValue.entrySet()) {
+      String entryKey = entry.getKey();
+      Object entryVal = entry.getValue();
+      DataType valType = convertToDataType(PinotDataType.getSingleValueType(entryVal.getClass()));
+    }
+  }
+
+  @Override
   public boolean isDictionaryEncoded(String key) {
     return false;
   }
@@ -92,18 +104,32 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
     return null;
   }
 
-  @Override
-  public void putInt(String key, int value) {
-    throw new UnsupportedOperationException("Do stuff");
-  }
-
-  @Override
-  public void putString(String key, String value) {
-    throw new UnsupportedOperationException("Do stuff");
-  }
-
   public void close()
       throws IOException {
 
+  }
+
+  static FieldSpec.DataType convertToDataType(PinotDataType ty) {
+    switch (ty) {
+      case BOOLEAN:
+        return FieldSpec.DataType.BOOLEAN;
+      case SHORT:
+      case INTEGER:
+        return FieldSpec.DataType.INT;
+      case LONG:
+        return FieldSpec.DataType.LONG;
+      case FLOAT:
+        return FieldSpec.DataType.FLOAT;
+      case DOUBLE:
+        return FieldSpec.DataType.DOUBLE;
+      case BIG_DECIMAL:
+        return FieldSpec.DataType.BIG_DECIMAL;
+      case TIMESTAMP:
+        return FieldSpec.DataType.TIMESTAMP;
+      case STRING:
+        return FieldSpec.DataType.STRING;
+      default:
+        throw new UnsupportedOperationException();
+    }
   }
 }
