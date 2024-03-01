@@ -31,9 +31,25 @@ import org.apache.pinot.spi.data.FieldSpec.DataType;
 /**
  * Interface for map index creator.
  */
-public interface MapIndexCreator extends Closeable {
+public interface MapIndexCreator extends IndexCreator {
   default void seal()
       throws IOException {
+  }
+
+  /**
+   *
+   * @param value The nonnull value of the cell. In case the cell was actually null, a default value is received instead
+   * @param dict This is ignored as the MapIndexCreator will manage the construction of dictionaries itself.
+   */
+  @Override
+  default void add(@Nonnull Object value, int dict) {
+    Map<String, Object> mapValue = (Map<String, Object>) value;
+    add(mapValue);
+  }
+
+  @Override
+  default void add(@Nonnull Object[] values, int[] dictIds) {
+    throw new UnsupportedOperationException("Array of Maps not supported yet");
   }
 
   default void add(@Nonnull Map<String, Object> mapValue) {
