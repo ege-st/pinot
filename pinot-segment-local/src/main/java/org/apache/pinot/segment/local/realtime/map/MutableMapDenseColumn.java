@@ -54,8 +54,6 @@ public class MutableMapDenseColumn implements MutableMapIndex {
   private static final Logger LOGGER = LoggerFactory.getLogger(MutableMapDenseColumn.class);
   private final ConcurrentHashMap<String, MutableForwardIndex> _keyIndexes;
   private final int _maxKeys;
-  private final ReentrantReadWriteLock.ReadLock _readLock;
-  private final ReentrantReadWriteLock.WriteLock _writeLock;
   private final boolean _offHeap;
   private final int _capacity;
   private final boolean _isDictionary;
@@ -74,11 +72,6 @@ public class MutableMapDenseColumn implements MutableMapIndex {
     _isDictionary = isDictionary;
     _consumerDir = consumerDir != null ? new File(consumerDir) : null;
     _segmentName = segmentName;
-
-    // RW Lock is used to ensure that value of a map is added to the child indexes atomically.
-    ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    _readLock = readWriteLock.readLock();
-    _writeLock = readWriteLock.writeLock();
   }
 
   /**
@@ -94,23 +87,19 @@ public class MutableMapDenseColumn implements MutableMapIndex {
    * @param docId The document id of the given row. A non-negative value.
    */
   @Override
-  public void add(@Nonnull Map<String, Object> value, int docId) {
+  public void add(Map<String, Object> value, int docId) {
+    assert value != null;
     // Iterate over the KV pairs in the document
-    try {
-      _writeLock.lock();
-      for(Map.Entry<String, Object> entry : value.entrySet()) {
-        String key = entry.getKey();
-        Object val = entry.getValue();
-        FieldSpec.DataType valType = convertToDataType(PinotDataType.getSingleValueType(val.getClass()));
+    for(Map.Entry<String, Object> entry : value.entrySet()) {
+      String key = entry.getKey();
+      Object val = entry.getValue();
+      FieldSpec.DataType valType = convertToDataType(PinotDataType.getSingleValueType(val.getClass()));
 
-        // Get the index for the key
-        MutableForwardIndex keyIndex = getKeyIndex(key, valType, docId);
+      // Get the index for the key
+      MutableForwardIndex keyIndex = getKeyIndex(key, valType, docId);
 
-        // Add the value to the index
-        keyIndex.add(val, -1, docId);
-      }
-    } finally {
-      _writeLock.unlock();
+      // Add the value to the index
+      keyIndex.add(val, -1, docId);
     }
   }
 
@@ -193,26 +182,15 @@ public class MutableMapDenseColumn implements MutableMapIndex {
 
   @Override
   public ForwardIndexReader<ForwardIndexReaderContext> getKeyReader(String key) {
-    try {
-      _readLock.lock();
-
       return _keyIndexes.get(key);
-    } finally {
-      _readLock.unlock();
-    }
   }
 
   @Override
   public void close()
       throws IOException {
     // Iterate over each index and close them
-    try{
-      _writeLock.lock();;
-      for(MutableForwardIndex idx : _keyIndexes.values()) {
-        idx.close();
-      }
-    } finally {
-      _writeLock.unlock();
+    for(MutableForwardIndex idx : _keyIndexes.values()) {
+      idx.close();
     }
   }
 
