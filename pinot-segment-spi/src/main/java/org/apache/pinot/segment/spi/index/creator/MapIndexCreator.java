@@ -40,7 +40,7 @@ public interface MapIndexCreator extends IndexCreator {
    * @param dict This is ignored as the MapIndexCreator will manage the construction of dictionaries itself.
    */
   @Override
-  default void add(@Nonnull Object value, int dict) {
+  default void add(@Nonnull Object value, int dict) throws IOException {
     Map<String, Object> mapValue = (Map<String, Object>) value;
     add(mapValue);
   }
@@ -50,7 +50,7 @@ public interface MapIndexCreator extends IndexCreator {
     throw new UnsupportedOperationException("Array of Maps not supported yet");
   }
 
-  void add(@Nonnull Map<String, Object> mapValue);
+  void add(@Nonnull Map<String, Object> mapValue) throws IOException;
 
   /**
    * Returns {@code true} if the forward index for the given key is dictionary-encoded, {@code false} if it is raw.

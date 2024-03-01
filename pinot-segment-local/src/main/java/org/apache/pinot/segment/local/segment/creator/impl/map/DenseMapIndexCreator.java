@@ -21,10 +21,12 @@ package org.apache.pinot.segment.local.segment.creator.impl.map;
 import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.apache.jute.Index;
 import org.apache.pinot.common.utils.PinotDataType;
+import org.apache.pinot.segment.spi.index.IndexCreator;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.slf4j.Logger;
@@ -41,38 +43,29 @@ import static org.apache.pinot.spi.data.FieldSpec.DataType;
 public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.index.creator.MapIndexCreator {
   private static final Logger LOGGER = LoggerFactory.getLogger(DenseMapIndexCreator.class);
 
-  //This will dump the content of temp buffers and ranges
-  private static final boolean TRACE = false;
 
   public static final int VERSION = 1;
 
 
   //output file which will hold the range index
-  private final File _mapIndexFile;
-
-  //File where the input values will be stored. This is a temp file that will be deleted at the end
-  //pinot data buffer MMapped - maps the content of _tempValueBufferFile
-  private PinotDataBuffer _tempValueBuffer;
-  //a simple wrapper over _tempValueBuffer to make it easy to read/write any Number (INT,LONG, FLOAT, DOUBLE)
-
-  //pinot data buffer MMapped - maps the content of _tempDocIdBufferFile
-  private PinotDataBuffer _docIdValueBuffer;
-  //a simple wrapper over _docIdValueBuffer to make it easy to read/write any INT
+  private final String _mapIndexDir;
 
   private final int _numValues;
   private int _nextDocId;
   private int _nextValueId;
   private final DataType _valueType;
 
+  private final HashMap<String, DenseIndexCreator> _denseKeyCreators;
+
   /**
    *
-   * @param indexDir destination of the range index file
-   * @param fieldSpec fieldspec of the column to generate the range index
-   * @param valueType DataType of the column, INT if dictionary encoded, or INT, FLOAT, LONG, DOUBLE for raw encoded
+   * @param indexDir destination of the map index file
+   * @param fieldSpec fieldspec of the column to generate the map index
+   * @param valueType DataType of the column, must be MAP
    * @param numDocs total number of documents
    * @throws IOException
    */
-  public DenseMapIndexCreator(File indexDir, FieldSpec fieldSpec, DataType valueType, int numDocs)
+  public DenseMapIndexCreator(String indexDir, FieldSpec fieldSpec, DataType valueType, int numDocs)
       throws IOException {
     Preconditions.checkArgument(fieldSpec.getDataType() == DataType.MAP,
         "Map Index requires the data type to be MAP.");
@@ -81,17 +74,34 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
     _valueType = valueType;
     String columnName = fieldSpec.getName();
-    _mapIndexFile = new File(indexDir, columnName + MAP_DENSE_INDEX_FILE_EXTENSION);
+
+    // The Dense map column is composed of other indexes, so we'll store those index in a subdirectory
+    // Then when those indexes are created, they are created in the this columns subdirectory.
+    _mapIndexDir = String.format("%s/%s/", indexDir, columnName + MAP_DENSE_INDEX_FILE_EXTENSION);
     _numValues = numDocs;
+    _denseKeyCreators = new HashMap<>();
   }
 
   @Override
-  public void add(@Nonnull Map<String, Object> mapValue) {
+  public void add(@Nonnull Map<String, Object> mapValue) throws IOException {
     for (Map.Entry<String, Object> entry : mapValue.entrySet()) {
       String entryKey = entry.getKey();
       Object entryVal = entry.getValue();
       DataType valType = convertToDataType(PinotDataType.getSingleValueType(entryVal.getClass()));
+
+      IndexCreator keyCreator = getKeyCreator(entryKey, valType);
+      assert keyCreator != null;
+      try {
+        keyCreator.add(entryVal, -1);
+      } catch (IOException ioe) {
+        LOGGER.error("Error writing to dense key '{}' with type '{}': ", entryKey, valType, ioe);
+        throw ioe;
+      }
     }
+  }
+
+  private IndexCreator getKeyCreator(String key, DataType valType) {
+    return null;
   }
 
   @Override
@@ -130,6 +140,16 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
         return FieldSpec.DataType.STRING;
       default:
         throw new UnsupportedOperationException();
+    }
+  }
+
+  private static class DenseIndexCreator {
+    private final int _offset;
+    private final IndexCreator _creator;
+
+    public DenseIndexCreator(IndexCreator creator, int offset) {
+      _creator = creator;
+      _offset = offset;
     }
   }
 }
