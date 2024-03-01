@@ -194,6 +194,10 @@ public class MutableMapDenseColumn implements MutableMapIndex {
     }
   }
 
+  /**
+   * A wrapper class around a Dense Mutable Forward index. This is necessary because a dense forward index may have
+   * a Doc ID Offset.
+   */
   private static class DenseColumn implements MutableForwardIndex {
     // A key may be added to the index after the first document. In which case, when the Forward index for that key
     // is created, the docIds for this index will not begin with 0, but they will be stored in the index with docId
