@@ -40,7 +40,7 @@ public interface MutableMapIndex extends MapIndexReader {
    * @param value The nonnull value of the cell. In case the cell was actually null, a default value is received instead
    * @param docId The document id of the given row. A non-negative value.
    */
-  void add(@Nonnull Map<String, Object> value, int docId);
+  void add(Map<String, Object> value, int docId);
 
   /**
    * Adds the given multi value cell to the index.
@@ -51,5 +51,5 @@ public interface MutableMapIndex extends MapIndexReader {
    * @param values The nonnull value of the cell. In case the cell was actually null, an empty array is received instead
    * @param docIds The document id of the given row. A non-negative value.
    */
-  void add(@Nonnull Map<String, Object>[] values, int[] docIds);
+  void add(Map<String, Object>[] values, int[] docIds);
 }

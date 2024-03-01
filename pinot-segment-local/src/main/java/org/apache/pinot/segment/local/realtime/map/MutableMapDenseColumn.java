@@ -104,7 +104,7 @@ public class MutableMapDenseColumn implements MutableMapIndex {
   }
 
   @Override
-  public void add(@Nonnull Map<String, Object>[] values, int[] docIds) {
+  public void add(Map<String, Object>[] values, int[] docIds) {
     assert values.length == docIds.length;
 
     for(int i = 0; i < values.length; i++) {
