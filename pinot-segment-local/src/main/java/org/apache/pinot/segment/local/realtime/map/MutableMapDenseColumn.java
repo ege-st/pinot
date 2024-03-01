@@ -61,7 +61,8 @@ public class MutableMapDenseColumn implements MutableMapIndex {
   private final File _consumerDir;
   private final String _segmentName;
 
-  public MutableMapDenseColumn(int maxKeys, PinotDataBufferMemoryManager memoryManager, int capacity, boolean offHeap, boolean isDictionary, String consumerDir, String segmentName) {
+  public MutableMapDenseColumn(int maxKeys, PinotDataBufferMemoryManager memoryManager, int capacity, boolean offHeap,
+      boolean isDictionary, String consumerDir, String segmentName) {
     LOGGER.info("Creating Mutable Map Dense Column. Max Keys: {}, Capacity: {}, offHeap: {}, isDictionary: {}, consumerDir: {}, Segment name: {}",
         maxKeys, capacity, offHeap, isDictionary, consumerDir, segmentName);
     _maxKeys = maxKeys;
