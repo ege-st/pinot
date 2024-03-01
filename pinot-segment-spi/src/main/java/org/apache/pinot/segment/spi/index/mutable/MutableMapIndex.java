@@ -29,7 +29,7 @@ import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 /**
  * Implementations of this interface can be used to represent indexes that store dynamically typed map values.
  */
-public interface MutableMapIndex extends IndexReader, MapIndexReader {
+public interface MutableMapIndex extends MapIndexReader {
 
   /**
    * Adds the given single value cell to the index.
