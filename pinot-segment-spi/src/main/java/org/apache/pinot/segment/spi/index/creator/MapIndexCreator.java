@@ -54,6 +54,13 @@ public interface MapIndexCreator extends IndexCreator {
 
   default void add(@Nonnull Map<String, Object> mapValue) {
     // Iterate over each KV pair in this map and add to the underlying index
+    for (Map.Entry<String, Object> entry : mapValue.entrySet()) {
+      String entryKey = entry.getKey();
+      Object entryValue = entry.getValue();
+
+      // Get the type of the entryValue
+      // Call the appropriate put function
+    }
   }
 
   /**
