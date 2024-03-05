@@ -25,14 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.apache.pinot.segment.local.realtime.impl.json.MutableJsonIndexImpl;
-import org.apache.pinot.segment.local.segment.creator.impl.inv.json.OffHeapJsonIndexCreator;
-import org.apache.pinot.segment.local.segment.creator.impl.inv.json.OnHeapJsonIndexCreator;
 import org.apache.pinot.segment.local.segment.creator.impl.map.DenseMapIndexCreator;
 import org.apache.pinot.segment.local.segment.index.loader.ConfigurableFromIndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.IndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.invertedindex.JsonIndexHandler;
-import org.apache.pinot.segment.local.segment.index.readers.json.ImmutableJsonIndexReader;
 import org.apache.pinot.segment.local.segment.index.readers.map.ImmutableMapIndexReader;
 import org.apache.pinot.segment.spi.ColumnMetadata;
 import org.apache.pinot.segment.spi.V1Constants;
@@ -46,29 +42,26 @@ import org.apache.pinot.segment.spi.index.IndexReaderConstraintException;
 import org.apache.pinot.segment.spi.index.IndexReaderFactory;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
-import org.apache.pinot.segment.spi.index.creator.JsonIndexCreator;
 import org.apache.pinot.segment.spi.index.creator.MapIndexCreator;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
 import org.apache.pinot.segment.spi.index.mutable.provider.MutableIndexContext;
-import org.apache.pinot.segment.spi.index.reader.JsonIndexReader;
 import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.segment.spi.store.SegmentDirectory;
-import org.apache.pinot.spi.config.table.JsonIndexConfig;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.apache.pinot.spi.data.Schema;
 
 
-public class MapIndexType extends AbstractIndexType<MapIndexConfig, MapIndexReader, MapIndexCreator>
+public class MapDenseIndexType extends AbstractIndexType<MapIndexConfig, MapIndexReader, MapIndexCreator>
     implements ConfigurableFromIndexLoadingConfig<MapIndexConfig> {
-  public static final String INDEX_DISPLAY_NAME = "json";
+  public static final String INDEX_DISPLAY_NAME = "map_dense";
   private static final List<String> EXTENSIONS =
-      Collections.singletonList(V1Constants.Indexes.JSON_INDEX_FILE_EXTENSION);
+      Collections.singletonList(V1Constants.Indexes.MAP_DENSE_INDEX_FILE_EXTENSION);
 
-  protected MapIndexType() {
-    super(StandardIndexes.JSON_ID);
+  protected MapDenseIndexType() {
+    super(StandardIndexes.MAP_DENSE_ID);
   }
 
   @Override
@@ -78,7 +71,7 @@ public class MapIndexType extends AbstractIndexType<MapIndexConfig, MapIndexRead
 
   @Override
   public Map<String, MapIndexConfig> fromIndexLoadingConfig(IndexLoadingConfig indexLoadingConfig) {
-    return indexLoadingConfig.getMap();
+    return indexLoadingConfig.getMapIndexConfigs();
   }
 
   @Override
@@ -93,10 +86,10 @@ public class MapIndexType extends AbstractIndexType<MapIndexConfig, MapIndexRead
 
   @Override
   public ColumnConfigDeserializer<MapIndexConfig> createDeserializer() {
-    // reads tableConfig.indexingConfig.jsonIndexConfigs
+    // reads tableConfig.indexingConfig.mapIndexConfigs
     ColumnConfigDeserializer<MapIndexConfig> fromMapIndexConf =
         IndexConfigDeserializer.fromMap(tableConfig -> tableConfig.getIndexingConfig().getMapIndexConfigs());
-    // reads tableConfig.indexingConfig.jsonIndexColumns
+    // reads tableConfig.indexingConfig.mapIndexColumns
     ColumnConfigDeserializer<MapIndexConfig> fromMapIndexCols =
         IndexConfigDeserializer.fromCollection(
             tableConfig -> tableConfig.getIndexingConfig().getJsonIndexColumns(),
@@ -110,9 +103,7 @@ public class MapIndexType extends AbstractIndexType<MapIndexConfig, MapIndexRead
   public MapIndexCreator createIndexCreator(IndexCreationContext context, MapIndexConfig indexConfig)
       throws IOException {
     Preconditions.checkState(context.getFieldSpec().isSingleValueField(),
-        "Json index is currently only supported on single-value columns");
-    Preconditions.checkState(context.getFieldSpec().getDataType().getStoredType() == FieldSpec.DataType.STRING,
-        "Json index is currently only supported on STRING columns");
+        "Map index is currently only supported on single-value columns");
     return new DenseMapIndexCreator(context.getIndexDir().getPath(), context.getFieldSpec(), indexConfig);
   }
 
@@ -159,11 +150,7 @@ public class MapIndexType extends AbstractIndexType<MapIndexConfig, MapIndexRead
         throws IndexReaderConstraintException {
       if (!metadata.getFieldSpec().isSingleValueField()) {
         throw new IndexReaderConstraintException(metadata.getColumnName(), StandardIndexes.json(),
-            "Json index is currently only supported on single-value columns");
-      }
-      if (metadata.getFieldSpec().getDataType().getStoredType() != FieldSpec.DataType.STRING) {
-        throw new IndexReaderConstraintException(metadata.getColumnName(), StandardIndexes.json(),
-            "Json index is currently only supported on STRING columns");
+            "Map index is currently only supported on single-value columns");
       }
       return new ImmutableMapIndexReader(dataBuffer, metadata.getTotalDocs());
     }

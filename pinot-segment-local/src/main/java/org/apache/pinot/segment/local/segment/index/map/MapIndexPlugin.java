@@ -20,16 +20,15 @@
 package org.apache.pinot.segment.local.segment.index.map;
 
 import com.google.auto.service.AutoService;
-import org.apache.pinot.segment.local.segment.index.json.JsonIndexType;
 import org.apache.pinot.segment.spi.index.IndexPlugin;
 
 
 @AutoService(IndexPlugin.class)
-public class MapIndexPlugin implements IndexPlugin<MapIndexType> {
-  public static final MapIndexType INSTANCE = new MapIndexType();
+public class MapIndexPlugin implements IndexPlugin<MapDenseIndexType> {
+  public static final MapDenseIndexType INSTANCE = new MapDenseIndexType();
 
   @Override
-  public MapIndexType getIndexType() {
+  public MapDenseIndexType getIndexType() {
     return INSTANCE;
   }
 }

@@ -41,7 +41,6 @@ public class IndexingConfig extends BaseJsonConfig {
   @Deprecated
   private List<String> _jsonIndexColumns;
   private Map<String, JsonIndexConfig> _jsonIndexConfigs;
-  private List<String> _mapIndexColumns;
   private Map<String, MapIndexConfig> _mapIndexConfigs;
   private List<String> _h3IndexColumns;
   private List<String> _vectorIndexColumns;
@@ -143,16 +142,8 @@ public class IndexingConfig extends BaseJsonConfig {
     _jsonIndexConfigs = jsonIndexConfigs;
   }
 
-  public void setMapIndexColumns(List <String> mapIndexColumns) {
-    _mapIndexColumns = mapIndexColumns;
-  }
-
   public void setMapIndexConfigs(Map<String, MapIndexConfig> mapIndexConfigs) {
     _mapIndexConfigs = mapIndexConfigs;
-  }
-
-  public List<String> getMapIndexColumns() {
-    return _mapIndexColumns;
   }
 
   public Map<String, MapIndexConfig> getMapIndexConfigs() {
