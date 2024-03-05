@@ -19,35 +19,10 @@
 package org.apache.pinot.segment.local.segment.index.readers.map;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.pinot.common.request.context.ExpressionContext;
-import org.apache.pinot.common.request.context.FilterContext;
-import org.apache.pinot.common.request.context.RequestContextUtils;
-import org.apache.pinot.common.request.context.predicate.EqPredicate;
-import org.apache.pinot.common.request.context.predicate.InPredicate;
-import org.apache.pinot.common.request.context.predicate.NotEqPredicate;
-import org.apache.pinot.common.request.context.predicate.NotInPredicate;
-import org.apache.pinot.common.request.context.predicate.Predicate;
-import org.apache.pinot.segment.local.segment.creator.impl.inv.json.BaseJsonIndexCreator;
-import org.apache.pinot.segment.local.segment.index.readers.BitmapInvertedIndexReader;
-import org.apache.pinot.segment.local.segment.index.readers.StringDictionary;
 import org.apache.pinot.segment.spi.index.creator.MapIndexCreator;
-import org.apache.pinot.segment.spi.index.reader.JsonIndexReader;
 import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.spi.data.FieldSpec;
-import org.apache.pinot.spi.exception.BadQueryRequestException;
-import org.apache.pinot.spi.utils.JsonUtils;
-import org.apache.pinot.sql.parsers.CalciteSqlParser;
-import org.roaringbitmap.IntConsumer;
-import org.roaringbitmap.PeekableIntIterator;
-import org.roaringbitmap.RoaringBitmap;
-import org.roaringbitmap.buffer.ImmutableRoaringBitmap;
-import org.roaringbitmap.buffer.MutableRoaringBitmap;
 
 
 /**
