@@ -30,6 +30,8 @@ import org.apache.pinot.spi.data.FieldSpec.DataType;
  * Interface for map index creator.
  */
 public interface MapIndexCreator extends IndexCreator {
+  public static final int VERSION_1 = 1;
+
   default void seal()
       throws IOException {
   }

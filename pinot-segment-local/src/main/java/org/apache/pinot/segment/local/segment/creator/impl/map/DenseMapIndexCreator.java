@@ -26,8 +26,13 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.apache.jute.Index;
 import org.apache.pinot.common.utils.PinotDataType;
+import org.apache.pinot.segment.spi.creator.IndexCreationContext;
 import org.apache.pinot.segment.spi.index.IndexCreator;
+import org.apache.pinot.segment.spi.index.IndexType;
+import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
+import org.apache.pinot.spi.config.table.IndexConfig;
+import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,35 +55,29 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   //output file which will hold the range index
   private final String _mapIndexDir;
 
-  private final int _numValues;
   private int _nextDocId;
   private int _nextValueId;
-  private final DataType _valueType;
 
-  private final HashMap<String, DenseIndexCreator> _denseKeyCreators;
+  private final HashMap<String, IndexCreator> _denseKeyCreators;
 
   /**
    *
    * @param indexDir destination of the map index file
    * @param fieldSpec fieldspec of the column to generate the map index
-   * @param valueType DataType of the column, must be MAP
-   * @param numDocs total number of documents
    * @throws IOException
    */
-  public DenseMapIndexCreator(String indexDir, FieldSpec fieldSpec, DataType valueType, int numDocs)
+  public DenseMapIndexCreator(String indexDir, FieldSpec fieldSpec, MapIndexConfig config)
       throws IOException {
     Preconditions.checkArgument(fieldSpec.getDataType() == DataType.MAP,
         "Map Index requires the data type to be MAP.");
     Preconditions.checkArgument(fieldSpec.isSingleValueField(),
         "Map Index must be marked as a single value field.");
 
-    _valueType = valueType;
     String columnName = fieldSpec.getName();
 
     // The Dense map column is composed of other indexes, so we'll store those index in a subdirectory
-    // Then when those indexes are created, they are created in the this columns subdirectory.
+    // Then when those indexes are created, they are created in this column's subdirectory.
     _mapIndexDir = String.format("%s/%s/", indexDir, columnName + MAP_DENSE_INDEX_FILE_EXTENSION);
-    _numValues = numDocs;
     _denseKeyCreators = new HashMap<>();
   }
 
@@ -89,19 +88,33 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
       Object entryVal = entry.getValue();
       DataType valType = convertToDataType(PinotDataType.getSingleValueType(entryVal.getClass()));
 
-      IndexCreator keyCreator = getKeyCreator(entryKey, valType);
-      assert keyCreator != null;
       try {
+        IndexCreator keyCreator = getKeyCreator(entryKey);
+        assert keyCreator != null;
         keyCreator.add(entryVal, -1);
       } catch (IOException ioe) {
         LOGGER.error("Error writing to dense key '{}' with type '{}': ", entryKey, valType, ioe);
         throw ioe;
+      } catch (Exception e) {
+        LOGGER.error("Error getting dense key '{}': ", entryKey);
       }
     }
   }
 
-  private IndexCreator getKeyCreator(String key, DataType valType) {
-    return null;
+  private IndexCreator getKeyCreator(String key)
+  throws Exception {
+    // Check the map for the given key
+    IndexCreator keyCreator = _denseKeyCreators.get(key);
+    assert keyCreator != null;
+    return keyCreator;
+  }
+
+  private IndexCreator createKeyIndex(IndexType type, IndexCreationContext context, IndexConfig config) throws Exception {
+    assert type != null;
+    assert context != null;
+    assert config != null;
+
+    return type.createIndexCreator(context, config);
   }
 
   @Override
@@ -150,6 +163,10 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
     public DenseIndexCreator(IndexCreator creator, int offset) {
       _creator = creator;
       _offset = offset;
+    }
+
+    public void add(Object value, int dictId) throws IOException {
+      throw new UnsupportedOperationException();
     }
   }
 }
