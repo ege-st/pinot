@@ -103,7 +103,7 @@ public class MapDenseIndexType extends AbstractIndexType<MapIndexConfig, MapInde
       throws IOException {
     Preconditions.checkState(context.getFieldSpec().isSingleValueField(),
         "Map index is currently only supported on single-value columns");
-    return new DenseMapIndexCreator(context.getIndexDir().getPath(), context.getFieldSpec(), indexConfig);
+    return new DenseMapIndexCreator(context, context.getFieldSpec(), indexConfig);
   }
 
   @Override

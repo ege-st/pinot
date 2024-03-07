@@ -19,21 +19,37 @@
 package org.apache.pinot.segment.local.segment.creator.impl.map;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.apache.jute.Index;
 import org.apache.pinot.common.utils.PinotDataType;
+import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
+import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
+import org.apache.pinot.segment.spi.creator.ColumnStatistics;
 import org.apache.pinot.segment.spi.creator.IndexCreationContext;
+import org.apache.pinot.segment.spi.creator.SegmentGeneratorConfig;
+import org.apache.pinot.segment.spi.creator.SegmentPreIndexStatsContainer;
+import org.apache.pinot.segment.spi.index.FieldIndexConfigs;
+import org.apache.pinot.segment.spi.index.ForwardIndexConfig;
 import org.apache.pinot.segment.spi.index.IndexCreator;
+import org.apache.pinot.segment.spi.index.IndexService;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.spi.config.table.IndexConfig;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
+import org.apache.pinot.spi.data.DimensionFieldSpec;
 import org.apache.pinot.spi.data.FieldSpec;
+import org.apache.pinot.spi.utils.ByteArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,15 +74,21 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   private int _nextDocId;
   private int _nextValueId;
 
-  private final HashMap<String, IndexCreator> _denseKeyCreators;
+  private Map<String, Map<IndexType<?, ?, ?>, IndexCreator>> _creatorsByColAndIndex = new HashMap<>();
+  private TreeMap<String, ColumnIndexCreationInfo> _keyIndexCreationInfoMap;
+  private final List<FieldSpec> _denseKeys;
+  //private final List<DataType> _denseKeyTypes;
+  private final int _totalDocs;
+  private final MapIndexConfig _config;
+  private SegmentPreIndexStatsContainer _keyStats;
 
   /**
    *
-   * @param indexDir destination of the map index file
+   * @param context The Index Creation Context, used for configuring many of the options for index creation.
    * @param fieldSpec fieldspec of the column to generate the map index
    * @throws IOException
    */
-  public DenseMapIndexCreator(String indexDir, FieldSpec fieldSpec, MapIndexConfig config)
+  public DenseMapIndexCreator(IndexCreationContext context, FieldSpec fieldSpec, MapIndexConfig config)
       throws IOException {
     Preconditions.checkArgument(fieldSpec.getDataType() == DataType.MAP,
         "Map Index requires the data type to be MAP.");
@@ -77,8 +99,137 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
     // The Dense map column is composed of other indexes, so we'll store those index in a subdirectory
     // Then when those indexes are created, they are created in this column's subdirectory.
+    String indexDir = context.getIndexDir().getPath();
+    _config = config;
+    _totalDocs = context.getTotalDocs();
     _mapIndexDir = String.format("%s/%s/", indexDir, columnName + MAP_DENSE_INDEX_FILE_EXTENSION);
-    _denseKeyCreators = new HashMap<>();
+    //_denseKeys = config.getDenseKeys();
+    _denseKeys = new ArrayList<>(_config.getMaxKeys());
+    for (int i = 0; i < _config.getDenseKeys().size(); i++) {
+      FieldSpec keySpec = new DimensionFieldSpec();
+      keySpec.setDataType(_config.getDenseKeyTypes().get(i));
+      keySpec.setName(_config.getDenseKeys().get(i));
+      keySpec.setNullable(false);
+      keySpec.setSingleValueField(true);
+      keySpec.setDefaultNullValue(null);  // Sets the default default null value
+      _denseKeys.add(keySpec);
+    }
+
+    //_denseKeyTypes = config.getDenseKeyTypes();
+    _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeys.size());
+    for (FieldSpec key : _denseKeys) {
+      // Create the context for this dense key
+      File denseKeyDir = new File(String.format("%s/%s", _mapIndexDir, key.getName()));
+
+      boolean dictEnabledColumn = false; //createDictionaryForColumn(columnIndexCreationInfo, segmentCreationSpec, fieldSpec);
+      ColumnIndexCreationInfo columnIndexCreationInfo = _keyIndexCreationInfoMap.get(key.getName());
+
+      FieldIndexConfigs keyConfig = getKeyIndexConfig(columnName, columnIndexCreationInfo);
+      IndexCreationContext.Common keyContext = IndexCreationContext.builder()
+          .withIndexDir(denseKeyDir)
+          .withDictionary(dictEnabledColumn)
+          .withFieldSpec(fieldSpec)
+          //.withTotalDocs(segmentIndexCreationInfo.getTotalDocs())
+          .withTotalDocs(_totalDocs)
+          .withColumnIndexCreationInfo(columnIndexCreationInfo)
+          //.withOptimizedDictionary(_config.isOptimizeDictionary()
+              //|| _config.isOptimizeDictionaryForMetrics() && fieldSpec.getFieldType() == FieldSpec.FieldType.METRIC)
+          .withOptimizedDictionary(false)
+          .onHeap(context.isOnHeap())
+          //.withForwardIndexDisabled(forwardIndexDisabled)
+          .withForwardIndexDisabled(false)
+          .withTextCommitOnClose(true)
+          .build();
+      // Create the forward index creator for this key
+      // TODO: Pass index configurations through the MapConfig and then create creators for each index type
+      Map<IndexType<?, ?, ?>, IndexCreator> creatorsByIndex =
+          Maps.newHashMapWithExpectedSize(IndexService.getInstance().getAllIndexes().size());
+      for (IndexType<?, ?, ?> index : IndexService.getInstance().getAllIndexes()) {
+        if (index.getIndexBuildLifecycle() != IndexType.BuildLifecycle.DURING_SEGMENT_CREATION) {
+          continue;
+        }
+        try {
+          tryCreateIndexCreator(creatorsByIndex, index, keyContext, keyConfig);
+        } catch (Exception e) {
+          LOGGER.error("An exception happened while creating IndexCreator for key '{}' for index '{}'", key.getName(), index.getId(), e);
+        }
+      }
+    }
+  }
+
+  private FieldIndexConfigs getKeyIndexConfig(String keyName,
+        ColumnIndexCreationInfo columnIndexCreationInfo) {
+
+    FieldIndexConfigs.Builder builder = new FieldIndexConfigs.Builder();
+    // Sorted columns treat the 'forwardIndexDisabled' flag as a no-op
+    // ForwardIndexConfig fwdConfig = config.getConfig(StandardIndexes.forward());
+
+    ForwardIndexConfig fwdConfig = new ForwardIndexConfig.Builder().build();
+    if (!fwdConfig.isEnabled() && columnIndexCreationInfo.isSorted()) {
+      builder.add(StandardIndexes.forward(),
+          new ForwardIndexConfig.Builder(fwdConfig)
+              //.withLegacyProperties(segmentCreationSpec.getColumnProperties(), keyName)
+              .build());
+    }
+    // Initialize inverted index creator; skip creating inverted index if sorted
+    if (columnIndexCreationInfo.isSorted()) {
+      builder.undeclare(StandardIndexes.inverted());
+    }
+    return builder.build();
+  }
+
+  /**
+   * Complete the stats gathering process and store the stats information in indexCreationInfoMap.
+   */
+  void buildIndexCreationInfo()
+      throws Exception {
+    Set<String> varLengthDictionaryColumns = new HashSet<>(); //new HashSet<>(_config.getVarLengthDictionaryColumns());
+    //List<String> rawIndexCreationColumns = _denseKeys; //_config.getRawIndexCreationColumns();
+    //List<String> rawIndexCompressionTypeKeys = _denseKeys; //_config.getRawIndexCompressionType().keySet();
+    for (FieldSpec key : _denseKeys) {
+      String keyName = key.getName();
+      DataType storedType = key.getDataType().getStoredType();
+      ColumnStatistics columnProfile = _keyStats.getColumnProfileFor(keyName);
+      boolean useVarLengthDictionary = false;
+          //shouldUseVarLengthDictionary(columnName, varLengthDictionaryColumns, storedType, columnProfile);
+      Object defaultNullValue = key.getDefaultNullValue();
+      if (storedType == DataType.BYTES) {
+        defaultNullValue = new ByteArray((byte[]) defaultNullValue);
+      }
+      boolean createDictionary = false;
+          //!rawIndexCreationColumns.contains(keyName) && !rawIndexCompressionTypeKeys.contains(keyName);
+      _keyIndexCreationInfoMap.put(keyName,
+          new ColumnIndexCreationInfo(columnProfile, createDictionary, useVarLengthDictionary, false/*isAutoGenerated*/,
+              defaultNullValue));
+    }
+  }
+
+  private boolean createDictionaryForColumn(ColumnIndexCreationInfo info, SegmentGeneratorConfig config,
+      FieldSpec spec) {
+    String column = spec.getName();
+    boolean createDictionary = false;
+    if (config.getRawIndexCreationColumns().contains(column) || config.getRawIndexCompressionType()
+        .containsKey(column)) {
+      return createDictionary;
+    }
+
+    FieldIndexConfigs fieldIndexConfigs = config.getIndexConfigsByColName().get(column);
+    if (DictionaryIndexType.ignoreDictionaryOverride(config.isOptimizeDictionary(),
+        config.isOptimizeDictionaryForMetrics(), config.getNoDictionarySizeRatioThreshold(), spec, fieldIndexConfigs,
+        info.getDistinctValueCount(), info.getTotalNumberOfEntries())) {
+      // Ignore overrides and pick from config
+      createDictionary = info.isCreateDictionary();
+    }
+    return createDictionary;
+  }
+
+  private <C extends IndexConfig> void tryCreateIndexCreator(Map<IndexType<?, ?, ?>, IndexCreator> creatorsByIndex,
+      IndexType<C, ?, ?> index, IndexCreationContext.Common context, FieldIndexConfigs fieldIndexConfigs)
+      throws Exception {
+    C config = fieldIndexConfigs.getConfig(index);
+    if (config.isEnabled()) {
+      creatorsByIndex.put(index, index.createIndexCreator(context, config));
+    }
   }
 
   @Override
@@ -89,9 +240,16 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
       DataType valType = convertToDataType(PinotDataType.getSingleValueType(entryVal.getClass()));
 
       try {
-        IndexCreator keyCreator = getKeyCreator(entryKey);
-        assert keyCreator != null;
-        keyCreator.add(entryVal, -1);
+        // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
+        // the null value
+        for (Map.Entry<String, Map<IndexType<?,?,?>, IndexCreator>> keysInMap : _creatorsByColAndIndex.entrySet()) {
+          String key = keysInMap.getKey();
+
+          for (IndexType<?,?,?> idxType : IndexService.getInstance().getAllIndexes()) {
+            IndexCreator keyIdxCreator = keysInMap.getValue().get(idxType);
+            keyIdxCreator.add(mapValue.get(key), -1); // TODO: Add in dictionary encoding support
+          }
+        }
       } catch (IOException ioe) {
         LOGGER.error("Error writing to dense key '{}' with type '{}': ", entryKey, valType, ioe);
         throw ioe;
@@ -104,17 +262,10 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   private IndexCreator getKeyCreator(String key)
   throws Exception {
     // Check the map for the given key
-    IndexCreator keyCreator = _denseKeyCreators.get(key);
+    // TODO: start with forward index first and then expand to configurable indexes
+    IndexCreator keyCreator = _creatorsByColAndIndex.get(key).get(StandardIndexes.forward());
     assert keyCreator != null;
     return keyCreator;
-  }
-
-  private IndexCreator createKeyIndex(IndexType type, IndexCreationContext context, IndexConfig config) throws Exception {
-    assert type != null;
-    assert context != null;
-    assert config != null;
-
-    return type.createIndexCreator(context, config);
   }
 
   @Override
@@ -133,6 +284,7 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   }
 
   static FieldSpec.DataType convertToDataType(PinotDataType ty) {
+    // TODO: I've been told that we already have a function to do this, so find that function and replace this
     switch (ty) {
       case BOOLEAN:
         return FieldSpec.DataType.BOOLEAN;
@@ -153,20 +305,6 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
         return FieldSpec.DataType.STRING;
       default:
         throw new UnsupportedOperationException();
-    }
-  }
-
-  private static class DenseIndexCreator {
-    private final int _offset;
-    private final IndexCreator _creator;
-
-    public DenseIndexCreator(IndexCreator creator, int offset) {
-      _creator = creator;
-      _offset = offset;
-    }
-
-    public void add(Object value, int dictId) throws IOException {
-      throw new UnsupportedOperationException();
     }
   }
 }

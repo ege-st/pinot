@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.apache.pinot.spi.data.FieldSpec;
 
 
 /**
@@ -36,6 +37,7 @@ public class MapIndexConfig extends IndexConfig {
 
   private int _maxKeys = 100;
   private List<String> _denseKeys;
+  private List<FieldSpec.DataType> _denseKeyTypes;
 
   public MapIndexConfig() {
     super(false);
@@ -48,10 +50,13 @@ public class MapIndexConfig extends IndexConfig {
   @JsonCreator
   public MapIndexConfig(@JsonProperty("disabled") Boolean disabled,
       @JsonProperty("maxKeys") int maxKeys,
-      @JsonProperty("denseKeys") List<String> denseKeys)  {
+      @JsonProperty("denseKeys") List<String> denseKeys,
+      @JsonProperty("denseKeyTypes") List<FieldSpec.DataType> denseKeyTypes
+  )  {
     super(disabled);
     _maxKeys = maxKeys;
     _denseKeys = denseKeys;
+    _denseKeyTypes = denseKeyTypes;
   }
 
   public int getMaxKeys() {
@@ -60,6 +65,22 @@ public class MapIndexConfig extends IndexConfig {
 
   public void setMaxLevels(int maxKeys) {
     _maxKeys = maxKeys;
+  }
+
+  public List<String> getDenseKeys() {
+    return _denseKeys;
+  }
+
+  public void setDenseKeys(List<String> denseKeys) {
+    _denseKeys = denseKeys;
+  }
+
+  public List<FieldSpec.DataType> getDenseKeyTypes() {
+    return _denseKeyTypes;
+  }
+
+  public void setDenseKeyTypes(List<FieldSpec.DataType> denseKeyTypes) {
+    _denseKeyTypes = denseKeyTypes;
   }
 
   @Override
@@ -74,11 +95,11 @@ public class MapIndexConfig extends IndexConfig {
       return false;
     }
     MapIndexConfig config = (MapIndexConfig) o;
-    return _maxKeys == config._maxKeys;
+    return _maxKeys == config._maxKeys && _denseKeys.equals(config._denseKeys);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), _maxKeys);
+    return Objects.hash(super.hashCode(), _maxKeys, _denseKeys);
   }
 }
