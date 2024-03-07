@@ -117,6 +117,7 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
     //_denseKeyTypes = config.getDenseKeyTypes();
     _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeys.size());
+    buildIndexCreationInfo();
     createKeyCreators(context);
   }
 
@@ -188,14 +189,19 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
    * Complete the stats gathering process and store the stats information in indexCreationInfoMap.
    */
   void buildIndexCreationInfo()
-      throws Exception {
+      throws IOException {
     Set<String> varLengthDictionaryColumns = new HashSet<>(); //new HashSet<>(_config.getVarLengthDictionaryColumns());
     //List<String> rawIndexCreationColumns = _denseKeys; //_config.getRawIndexCreationColumns();
     //List<String> rawIndexCompressionTypeKeys = _denseKeys; //_config.getRawIndexCompressionType().keySet();
     for (FieldSpec key : _denseKeys) {
       String keyName = key.getName();
       DataType storedType = key.getDataType().getStoredType();
-      ColumnStatistics columnProfile = _keyStats.getColumnProfileFor(keyName);
+      ColumnStatistics columnProfile = null;
+      try {
+        columnProfile = _keyStats.getColumnProfileFor(keyName);
+      } catch (Exception ex) {
+        LOGGER.error("Failed to get profile for key: '{}'", keyName, ex);
+      }
       boolean useVarLengthDictionary = false;
           //shouldUseVarLengthDictionary(columnName, varLengthDictionaryColumns, storedType, columnProfile);
       Object defaultNullValue = key.getDefaultNullValue();
