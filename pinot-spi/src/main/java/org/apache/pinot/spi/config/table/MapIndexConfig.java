@@ -63,7 +63,7 @@ public class MapIndexConfig extends IndexConfig {
     return _maxKeys;
   }
 
-  public void setMaxLevels(int maxKeys) {
+  public void setMaxKeys(int maxKeys) {
     _maxKeys = maxKeys;
   }
 

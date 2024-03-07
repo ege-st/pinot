@@ -85,17 +85,15 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   /**
    *
    * @param context The Index Creation Context, used for configuring many of the options for index creation.
-   * @param fieldSpec fieldspec of the column to generate the map index
+   * @param columnName name of the column
    * @throws IOException
    */
-  public DenseMapIndexCreator(IndexCreationContext context, FieldSpec fieldSpec, MapIndexConfig config)
+  public DenseMapIndexCreator(IndexCreationContext context, String columnName, MapIndexConfig config)
       throws IOException {
-    Preconditions.checkArgument(fieldSpec.getDataType() == DataType.MAP,
+    /*Preconditions.checkArgument(fieldSpec.getDataType() == DataType.MAP,
         "Map Index requires the data type to be MAP.");
     Preconditions.checkArgument(fieldSpec.isSingleValueField(),
-        "Map Index must be marked as a single value field.");
-
-    String columnName = fieldSpec.getName();
+        "Map Index must be marked as a single value field.");*/
 
     // The Dense map column is composed of other indexes, so we'll store those index in a subdirectory
     // Then when those indexes are created, they are created in this column's subdirectory.

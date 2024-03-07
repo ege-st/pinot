@@ -60,6 +60,7 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
   public static final String DEFAULT_DIMENSION_NULL_VALUE_OF_JSON = "null";
   public static final byte[] DEFAULT_DIMENSION_NULL_VALUE_OF_BYTES = new byte[0];
   public static final BigDecimal DEFAULT_DIMENSION_NULL_VALUE_OF_BIG_DECIMAL = BigDecimal.ZERO;
+  public static final HashMap<String, Object> DEFAULT_DIMENSION_NULL_VALUE_OF_MAP = new HashMap<>();
 
   public static final Integer DEFAULT_METRIC_NULL_VALUE_OF_INT = 0;
   public static final Long DEFAULT_METRIC_NULL_VALUE_OF_LONG = 0L;
@@ -276,6 +277,8 @@ public abstract class FieldSpec implements Comparable<FieldSpec>, Serializable {
               return DEFAULT_DIMENSION_NULL_VALUE_OF_BYTES;
             case BIG_DECIMAL:
               return DEFAULT_DIMENSION_NULL_VALUE_OF_BIG_DECIMAL;
+            case MAP:
+              return DEFAULT_DIMENSION_NULL_VALUE_OF_MAP;
             default:
               throw new IllegalStateException("Unsupported dimension/time data type: " + dataType);
           }
