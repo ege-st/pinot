@@ -117,29 +117,35 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
     //_denseKeyTypes = config.getDenseKeyTypes();
     _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeys.size());
+    createKeyCreators(context);
+  }
+
+  private void createKeyCreators(IndexCreationContext context) {
     for (FieldSpec key : _denseKeys) {
       // Create the context for this dense key
-      File denseKeyDir = new File(String.format("%s/%s", _mapIndexDir, key.getName()));
+      final String keyName = key.getName();
+      File denseKeyDir = new File(String.format("%s/%s", _mapIndexDir, keyName));
 
       boolean dictEnabledColumn = false; //createDictionaryForColumn(columnIndexCreationInfo, segmentCreationSpec, fieldSpec);
       ColumnIndexCreationInfo columnIndexCreationInfo = _keyIndexCreationInfoMap.get(key.getName());
 
-      FieldIndexConfigs keyConfig = getKeyIndexConfig(columnName, columnIndexCreationInfo);
+      FieldIndexConfigs keyConfig = getKeyIndexConfig(keyName, columnIndexCreationInfo);
       IndexCreationContext.Common keyContext = IndexCreationContext.builder()
           .withIndexDir(denseKeyDir)
           .withDictionary(dictEnabledColumn)
-          .withFieldSpec(fieldSpec)
+          .withFieldSpec(key)
           //.withTotalDocs(segmentIndexCreationInfo.getTotalDocs())
           .withTotalDocs(_totalDocs)
           .withColumnIndexCreationInfo(columnIndexCreationInfo)
           //.withOptimizedDictionary(_config.isOptimizeDictionary()
-              //|| _config.isOptimizeDictionaryForMetrics() && fieldSpec.getFieldType() == FieldSpec.FieldType.METRIC)
+          //|| _config.isOptimizeDictionaryForMetrics() && fieldSpec.getFieldType() == FieldSpec.FieldType.METRIC)
           .withOptimizedDictionary(false)
           .onHeap(context.isOnHeap())
           //.withForwardIndexDisabled(forwardIndexDisabled)
           .withForwardIndexDisabled(false)
           .withTextCommitOnClose(true)
           .build();
+
       // Create the forward index creator for this key
       // TODO: Pass index configurations through the MapConfig and then create creators for each index type
       Map<IndexType<?, ?, ?>, IndexCreator> creatorsByIndex =
@@ -204,25 +210,6 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
     }
   }
 
-  private boolean createDictionaryForColumn(ColumnIndexCreationInfo info, SegmentGeneratorConfig config,
-      FieldSpec spec) {
-    String column = spec.getName();
-    boolean createDictionary = false;
-    if (config.getRawIndexCreationColumns().contains(column) || config.getRawIndexCompressionType()
-        .containsKey(column)) {
-      return createDictionary;
-    }
-
-    FieldIndexConfigs fieldIndexConfigs = config.getIndexConfigsByColName().get(column);
-    if (DictionaryIndexType.ignoreDictionaryOverride(config.isOptimizeDictionary(),
-        config.isOptimizeDictionaryForMetrics(), config.getNoDictionarySizeRatioThreshold(), spec, fieldIndexConfigs,
-        info.getDistinctValueCount(), info.getTotalNumberOfEntries())) {
-      // Ignore overrides and pick from config
-      createDictionary = info.isCreateDictionary();
-    }
-    return createDictionary;
-  }
-
   private <C extends IndexConfig> void tryCreateIndexCreator(Map<IndexType<?, ?, ?>, IndexCreator> creatorsByIndex,
       IndexType<C, ?, ?> index, IndexCreationContext.Common context, FieldIndexConfigs fieldIndexConfigs)
       throws Exception {
@@ -247,7 +234,14 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
           for (IndexType<?,?,?> idxType : IndexService.getInstance().getAllIndexes()) {
             IndexCreator keyIdxCreator = keysInMap.getValue().get(idxType);
-            keyIdxCreator.add(mapValue.get(key), -1); // TODO: Add in dictionary encoding support
+
+            Object value = mapValue.get(key);
+            if (value != null) {
+              keyIdxCreator.add(mapValue.get(key), -1); // TODO: Add in dictionary encoding support
+            } else {
+              // For dense columns the Mutable Segment should take care of making sure that every entry in the key has a value
+              throw new RuntimeException(String.format("Null value found under key: '%s'", key));
+            }
           }
         }
       } catch (IOException ioe) {
@@ -306,5 +300,24 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
       default:
         throw new UnsupportedOperationException();
     }
+  }
+
+  private boolean createDictionaryForColumn(ColumnIndexCreationInfo info, SegmentGeneratorConfig config,
+      FieldSpec spec) {
+    String column = spec.getName();
+    boolean createDictionary = false;
+    if (config.getRawIndexCreationColumns().contains(column) || config.getRawIndexCompressionType()
+        .containsKey(column)) {
+      return createDictionary;
+    }
+
+    FieldIndexConfigs fieldIndexConfigs = config.getIndexConfigsByColName().get(column);
+    if (DictionaryIndexType.ignoreDictionaryOverride(config.isOptimizeDictionary(),
+        config.isOptimizeDictionaryForMetrics(), config.getNoDictionarySizeRatioThreshold(), spec, fieldIndexConfigs,
+        info.getDistinctValueCount(), info.getTotalNumberOfEntries())) {
+      // Ignore overrides and pick from config
+      createDictionary = info.isCreateDictionary();
+    }
+    return createDictionary;
   }
 }
