@@ -480,56 +480,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    */
   default void readValuesMV(String key, int[] docIds, int length,
       int maxNumValuesPerMVEntry, int[][] values, T context) {
-    switch (getStoredType(key)) {
-      case INT:
-        for (int i = 0; i < length; i++) {
-          values[i] = getIntMV(key, docIds[i], context);
-        }
-        break;
-      case LONG:
-        long[] longValueBuffer = new long[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getLongMV(key, docIds[i], longValueBuffer, context);
-          values[i] = new int[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = (int) longValueBuffer[j];
-          }
-        }
-        break;
-      case FLOAT:
-        float[] floatValueBuffer = new float[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getFloatMV(key, docIds[i], floatValueBuffer, context);
-          values[i] = new int[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = (int) floatValueBuffer[j];
-          }
-        }
-        break;
-      case DOUBLE:
-        double[] doubleValueBuffer = new double[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getDoubleMV(key, docIds[i], doubleValueBuffer, context);
-          values[i] = new int[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = (int) doubleValueBuffer[j];
-          }
-        }
-        break;
-      case STRING:
-        String[] stringValueBuffer = new String[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getStringMV(key, docIds[i], stringValueBuffer, context);
-          values[i] = new int[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = Integer.parseInt(stringValueBuffer[j]);
-          }
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("readValuesMV not supported for type "
-            + getStoredType(key) + " on key " + key);
-    }
+      throw new UnsupportedOperationException("readValuesMV not supported for type "
+          + getStoredType(key));
   }
 
   /**
@@ -543,56 +495,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    */
   default void readValuesMV(String key, int[] docIds, int length,
       int maxNumValuesPerMVEntry, long[][] values, T context) {
-    switch (getStoredType(key)) {
-      case INT:
-        int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getIntMV(key, docIds[i], intValueBuffer, context);
-          values[i] = new long[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = intValueBuffer[j];
-          }
-        }
-        break;
-      case LONG:
-        for (int i = 0; i < length; i++) {
-          values[i] = getLongMV(key, docIds[i], context);
-        }
-        break;
-      case FLOAT:
-        float[] floatValueBuffer = new float[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getFloatMV(key, docIds[i], floatValueBuffer, context);
-          values[i] = new long[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = (long) floatValueBuffer[j];
-          }
-        }
-        break;
-      case DOUBLE:
-        double[] doubleValueBuffer = new double[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getDoubleMV(key, docIds[i], doubleValueBuffer, context);
-          values[i] = new long[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = (long) doubleValueBuffer[j];
-          }
-        }
-        break;
-      case STRING:
-        String[] stringValueBuffer = new String[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getStringMV(key, docIds[i], stringValueBuffer, context);
-          values[i] = new long[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = Long.parseLong(stringValueBuffer[j]);
-          }
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("readValuesMV not supported for type "
-            + getStoredType(key) + " on key " + key);
-    }
+    throw new UnsupportedOperationException("readValuesMV not supported for type "
+        + getStoredType(key));
   }
 
   /**
@@ -606,56 +510,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    */
   default void readValuesMV(String key, int[] docIds, int length,
       int maxNumValuesPerMVEntry, float[][] values, T context) {
-    switch (getStoredType(key)) {
-      case INT:
-        int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getIntMV(key, docIds[i], intValueBuffer, context);
-          values[i] = new float[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = intValueBuffer[j];
-          }
-        }
-        break;
-      case LONG:
-        long[] longValueBuffer = new long[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getLongMV(key, docIds[i], longValueBuffer, context);
-          values[i] = new float[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = longValueBuffer[j];
-          }
-        }
-        break;
-      case FLOAT:
-        for (int i = 0; i < length; i++) {
-          values[i] = getFloatMV(key, docIds[i], context);
-        }
-        break;
-      case DOUBLE:
-        double[] doubleValueBuffer = new double[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getDoubleMV(key, docIds[i], doubleValueBuffer, context);
-          values[i] = new float[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = (float) doubleValueBuffer[j];
-          }
-        }
-        break;
-      case STRING:
-        String[] stringValueBuffer = new String[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getStringMV(key, docIds[i], stringValueBuffer, context);
-          values[i] = new float[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = Float.parseFloat(stringValueBuffer[j]);
-          }
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("readValuesMV not supported for type "
-            + getStoredType(key) + " on key " + key);
-    }
+    throw new UnsupportedOperationException("readValuesMV not supported for type "
+        + getStoredType(key));
   }
 
   /**
@@ -669,56 +525,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    */
   default void readValuesMV(String key, int[] docIds, int length,
       int maxNumValuesPerMVEntry, double[][] values, T context) {
-    switch (getStoredType(key)) {
-      case INT:
-        int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getIntMV(key, docIds[i], intValueBuffer, context);
-          values[i] = new double[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = intValueBuffer[j];
-          }
-        }
-        break;
-      case LONG:
-        long[] longValueBuffer = new long[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getLongMV(key, docIds[i], longValueBuffer, context);
-          values[i] = new double[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = longValueBuffer[j];
-          }
-        }
-        break;
-      case FLOAT:
-        float[] floatValueBuffer = new float[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getFloatMV(key, docIds[i], floatValueBuffer, context);
-          values[i] = new double[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = floatValueBuffer[j];
-          }
-        }
-        break;
-      case DOUBLE:
-        for (int i = 0; i < length; i++) {
-          values[i] = getDoubleMV(key, docIds[i], context);
-        }
-        break;
-      case STRING:
-        String[] stringValueBuffer = new String[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getStringMV(key, docIds[i], stringValueBuffer, context);
-          values[i] = new double[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = Double.parseDouble(stringValueBuffer[j]);
-          }
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("readValuesMV not supported for type "
-            + getStoredType(key) + " on key " + key);
-    }
+    throw new UnsupportedOperationException("readValuesMV not supported for type "
+        + getStoredType(key));
   }
 
   /**
@@ -732,56 +540,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    */
   default void readValuesMV(String key, int[] docIds, int length,
       int maxNumValuesPerMVEntry, String[][] values, T context) {
-    switch (getStoredType(key)) {
-      case INT:
-        int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getIntMV(key, docIds[i], intValueBuffer, context);
-          values[i] = new String[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = String.valueOf(intValueBuffer[j]);
-          }
-        }
-        break;
-      case LONG:
-        long[] longValueBuffer = new long[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getLongMV(key, docIds[i], longValueBuffer, context);
-          values[i] = new String[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = String.valueOf(longValueBuffer[j]);
-          }
-        }
-        break;
-      case FLOAT:
-        float[] floatValueBuffer = new float[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getFloatMV(key, docIds[i], floatValueBuffer, context);
-          values[i] = new String[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = String.valueOf(floatValueBuffer[j]);
-          }
-        }
-        break;
-      case DOUBLE:
-        double[] doubleValueBuffer = new double[maxNumValuesPerMVEntry];
-        for (int i = 0; i < length; i++) {
-          int numValues = getDoubleMV(key, docIds[i], doubleValueBuffer, context);
-          values[i] = new String[numValues];
-          for (int j = 0; j < numValues; j++) {
-            values[i][j] = String.valueOf(doubleValueBuffer[j]);
-          }
-        }
-        break;
-      case STRING:
-        for (int i = 0; i < length; i++) {
-          values[i] = getStringMV(key, docIds[i], context);
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("readValuesMV not supported for type "
-            + getStoredType(key) + " on key " + key);
-    }
+    throw new UnsupportedOperationException("readValuesMV not supported for type "
+        + getStoredType(key));
   }
 
   /**
