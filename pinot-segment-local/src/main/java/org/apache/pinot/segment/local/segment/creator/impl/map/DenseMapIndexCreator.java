@@ -18,7 +18,6 @@
  */
 package org.apache.pinot.segment.local.segment.creator.impl.map;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.apache.jute.Index;
 import org.apache.pinot.common.utils.PinotDataType;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
@@ -44,7 +42,6 @@ import org.apache.pinot.segment.spi.index.IndexCreator;
 import org.apache.pinot.segment.spi.index.IndexService;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
-import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.spi.config.table.IndexConfig;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;

@@ -478,7 +478,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    * @param values Values to fill
    * @param context Reader context
    */
-  default void readValuesMV(String key, int[] docIds, int length, int maxNumValuesPerMVEntry, int[][] values, T context) {
+  default void readValuesMV(String key, int[] docIds, int length,
+      int maxNumValuesPerMVEntry, int[][] values, T context) {
     switch (getStoredType(key)) {
       case INT:
         for (int i = 0; i < length; i++) {
@@ -526,7 +527,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
         }
         break;
       default:
-        throw new IllegalArgumentException("readValuesMV not supported for type " + getStoredType(key) + " on key " + key);
+        throw new IllegalArgumentException("readValuesMV not supported for type "
+            + getStoredType(key) + " on key " + key);
     }
   }
 
@@ -539,7 +541,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    * @param values Values to fill
    * @param context Reader context
    */
-  default void readValuesMV(String key, int[] docIds, int length, int maxNumValuesPerMVEntry, long[][] values, T context) {
+  default void readValuesMV(String key, int[] docIds, int length,
+      int maxNumValuesPerMVEntry, long[][] values, T context) {
     switch (getStoredType(key)) {
       case INT:
         int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
@@ -587,7 +590,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
         }
         break;
       default:
-        throw new IllegalArgumentException("readValuesMV not supported for type " + getStoredType(key) + " on key " + key);
+        throw new IllegalArgumentException("readValuesMV not supported for type "
+            + getStoredType(key) + " on key " + key);
     }
   }
 
@@ -600,7 +604,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    * @param values Values to fill
    * @param context Reader context
    */
-  default void readValuesMV(String key, int[] docIds, int length, int maxNumValuesPerMVEntry, float[][] values, T context) {
+  default void readValuesMV(String key, int[] docIds, int length,
+      int maxNumValuesPerMVEntry, float[][] values, T context) {
     switch (getStoredType(key)) {
       case INT:
         int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
@@ -648,7 +653,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
         }
         break;
       default:
-        throw new IllegalArgumentException("readValuesMV not supported for type " + getStoredType(key) + " on key " + key);
+        throw new IllegalArgumentException("readValuesMV not supported for type "
+            + getStoredType(key) + " on key " + key);
     }
   }
 
@@ -661,7 +667,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    * @param values Values to fill
    * @param context Reader context
    */
-  default void readValuesMV(String key, int[] docIds, int length, int maxNumValuesPerMVEntry, double[][] values, T context) {
+  default void readValuesMV(String key, int[] docIds, int length,
+      int maxNumValuesPerMVEntry, double[][] values, T context) {
     switch (getStoredType(key)) {
       case INT:
         int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
@@ -709,7 +716,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
         }
         break;
       default:
-        throw new IllegalArgumentException("readValuesMV not supported for type " + getStoredType(key) + " on key " + key);
+        throw new IllegalArgumentException("readValuesMV not supported for type "
+            + getStoredType(key) + " on key " + key);
     }
   }
 
@@ -722,7 +730,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    * @param values Values to fill
    * @param context Reader context
    */
-  default void readValuesMV(String key, int[] docIds, int length, int maxNumValuesPerMVEntry, String[][] values, T context) {
+  default void readValuesMV(String key, int[] docIds, int length,
+      int maxNumValuesPerMVEntry, String[][] values, T context) {
     switch (getStoredType(key)) {
       case INT:
         int[] intValueBuffer = new int[maxNumValuesPerMVEntry];
@@ -770,7 +779,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
         }
         break;
       default:
-        throw new IllegalArgumentException("readValuesMV not supported for type " + getStoredType(key) + " on key " + key);
+        throw new IllegalArgumentException("readValuesMV not supported for type "
+            + getStoredType(key) + " on key " + key);
     }
   }
 
@@ -783,7 +793,8 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    * @param values Values to fill
    * @param context Reader context
    */
-  default void readValuesMV(String key, int[] docIds, int length, int maxNumValuesPerMVEntry, byte[][][] values, T context) {
+  default void readValuesMV(String key, int[] docIds, int length,
+      int maxNumValuesPerMVEntry, byte[][][] values, T context) {
     for (int i = 0; i < length; i++) {
       values[i] = getBytesMV(key, docIds[i], context);
     }

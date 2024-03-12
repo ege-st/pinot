@@ -20,12 +20,8 @@ package org.apache.pinot.spi.config.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import javax.annotation.Nullable;
 import org.apache.pinot.spi.data.FieldSpec;
 
 
@@ -52,7 +48,7 @@ public class MapIndexConfig extends IndexConfig {
       @JsonProperty("maxKeys") int maxKeys,
       @JsonProperty("denseKeys") List<String> denseKeys,
       @JsonProperty("denseKeyTypes") List<FieldSpec.DataType> denseKeyTypes
-  )  {
+  ) {
     super(disabled);
     _maxKeys = maxKeys;
     _denseKeys = denseKeys;

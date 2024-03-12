@@ -19,9 +19,7 @@
 package org.apache.pinot.segment.spi.index.creator;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Map;
-import javax.annotation.Nonnull;
 import org.apache.pinot.segment.spi.index.IndexCreator;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 
@@ -60,7 +58,8 @@ public interface MapIndexCreator extends IndexCreator {
   boolean isDictionaryEncoded(String key);
 
   /**
-   * Returns {@code true} if the forward index for the given key is for a single-value column, {@code false} if it is for a multi-value
+   * Returns {@code true} if the forward index for the given key is for a single-value column,
+   * {@code false} if it is for a multi-value
    * column.
    */
   default boolean isSingleValue(String key) {
@@ -69,7 +68,8 @@ public interface MapIndexCreator extends IndexCreator {
   }
 
   /**
-   * Returns the data type of the values in the forward index for the given key. Returns {@link DataType#INT} for dictionary-encoded
+   * Returns the data type of the values in the forward index for the given key.
+   * Returns {@link DataType#INT} for dictionary-encoded
    * forward index.
    */
   DataType getValueType(String key);
