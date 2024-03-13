@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.apache.pinot.common.utils.PinotDataType;
+import org.apache.pinot.segment.local.realtime.converter.stats.MutableColumnStatistics;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
 import org.apache.pinot.segment.spi.creator.ColumnStatistics;
@@ -87,11 +88,6 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
    */
   public DenseMapIndexCreator(IndexCreationContext context, String columnName, MapIndexConfig config)
       throws IOException {
-    /*Preconditions.checkArgument(fieldSpec.getDataType() == DataType.MAP,
-        "Map Index requires the data type to be MAP.");
-    Preconditions.checkArgument(fieldSpec.isSingleValueField(),
-        "Map Index must be marked as a single value field.");*/
-
     // The Dense map column is composed of other indexes, so we'll store those index in a subdirectory
     // Then when those indexes are created, they are created in this column's subdirectory.
     String indexDir = context.getIndexDir().getPath();
@@ -112,8 +108,18 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
     //_denseKeyTypes = config.getDenseKeyTypes();
     _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeys.size());
+    buildKeyStats();
     buildIndexCreationInfo();
     createKeyCreators(context);
+  }
+
+  private void buildKeyStats() {
+    // For each dense key, construct the Column stats for that key
+    for (FieldSpec key : _denseKeys) {
+      String keyName = key.getName();
+      // Create stats for it
+      // MutableColumnStatistics stats = new MutableColumnStatistics();
+    }
   }
 
   private void createKeyCreators(IndexCreationContext context) {
@@ -186,8 +192,6 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   void buildIndexCreationInfo()
       throws IOException {
     Set<String> varLengthDictionaryColumns = new HashSet<>(); //new HashSet<>(_config.getVarLengthDictionaryColumns());
-    //List<String> rawIndexCreationColumns = _denseKeys; //_config.getRawIndexCreationColumns();
-    //List<String> rawIndexCompressionTypeKeys = _denseKeys; //_config.getRawIndexCompressionType().keySet();
     for (FieldSpec key : _denseKeys) {
       String keyName = key.getName();
       DataType storedType = key.getDataType().getStoredType();

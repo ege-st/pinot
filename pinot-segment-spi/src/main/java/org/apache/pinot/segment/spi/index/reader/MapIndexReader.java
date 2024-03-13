@@ -46,6 +46,7 @@ public interface MapIndexReader<T extends ForwardIndexReaderContext> extends Ind
    * column.
    */
   default boolean isSingleValue(String key) {
+    // Currently only support Single Valued keys
     return true;
   }
 
