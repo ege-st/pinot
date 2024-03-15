@@ -6,10 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.apache.pinot.segment.local.segment.creator.impl.map.DenseMapIndexCreator;
+import org.apache.pinot.segment.local.segment.creator.impl.map.MapIndexCreator;
 import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.creator.IndexCreationContext;
-import org.apache.pinot.segment.spi.index.creator.MapIndexCreator;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
 import org.apache.pinot.spi.data.FieldSpec;
@@ -82,7 +81,7 @@ public class DenseMapIndexTest {
         .withDictionary(false)
         .withFieldSpec(mapSpec)
         .build();
-    try (MapIndexCreator indexCreator =  new DenseMapIndexCreator(context, MAP_COLUMN_NAME, mapIndexConfig)) {
+    try (org.apache.pinot.segment.spi.index.creator.MapIndexCreator indexCreator =  new MapIndexCreator(context, MAP_COLUMN_NAME, mapIndexConfig)) {
       for (HashMap<String, Object> record : records) {
         indexCreator.add(record);
       }

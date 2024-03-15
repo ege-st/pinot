@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.apache.pinot.common.utils.PinotDataType;
-import org.apache.pinot.segment.local.realtime.converter.stats.MutableColumnStatistics;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
 import org.apache.pinot.segment.spi.creator.ColumnStatistics;
@@ -59,8 +58,8 @@ import static org.apache.pinot.spi.data.FieldSpec.DataType;
  * Dense Map Index Creator. This creates <i>Dense</i> indexes for keys. It does this by using existing indexes
  * for any key that is stored in the dense index creator.
  */
-public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.index.creator.MapIndexCreator {
-  private static final Logger LOGGER = LoggerFactory.getLogger(DenseMapIndexCreator.class);
+public final class MapIndexCreator implements org.apache.pinot.segment.spi.index.creator.MapIndexCreator {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MapIndexCreator.class);
 
 
   public static final int VERSION = 1;
@@ -74,8 +73,8 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
   private Map<String, Map<IndexType<?, ?, ?>, IndexCreator>> _creatorsByColAndIndex = new HashMap<>();
   private TreeMap<String, ColumnIndexCreationInfo> _keyIndexCreationInfoMap;
-  private final List<FieldSpec> _denseKeys;
-  //private final List<DataType> _denseKeyTypes;
+  private final List<FieldSpec> _denseKeySpecs;
+  private final Set<String> _denseKeys;
   private final int _totalDocs;
   private final MapIndexConfig _config;
   private SegmentPreIndexStatsContainer _keyStats;
@@ -86,7 +85,7 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
    * @param columnName name of the column
    * @throws IOException
    */
-  public DenseMapIndexCreator(IndexCreationContext context, String columnName, MapIndexConfig config)
+  public MapIndexCreator(IndexCreationContext context, String columnName, MapIndexConfig config)
       throws IOException {
     // The Dense map column is composed of other indexes, so we'll store those index in a subdirectory
     // Then when those indexes are created, they are created in this column's subdirectory.
@@ -94,20 +93,18 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
     _config = config;
     _totalDocs = context.getTotalDocs();
     _mapIndexDir = String.format("%s/%s/", indexDir, columnName + MAP_DENSE_INDEX_FILE_EXTENSION);
-    //_denseKeys = config.getDenseKeys();
-    _denseKeys = new ArrayList<>(_config.getMaxKeys());
+    _denseKeySpecs = new ArrayList<>(_config.getMaxKeys());
     for (int i = 0; i < _config.getDenseKeys().size(); i++) {
       FieldSpec keySpec = new DimensionFieldSpec();
       keySpec.setDataType(_config.getDenseKeyTypes().get(i));
       keySpec.setName(_config.getDenseKeys().get(i));
-      keySpec.setNullable(false);
+      keySpec.setNullable(true);
       keySpec.setSingleValueField(true);
       keySpec.setDefaultNullValue(null);  // Sets the default default null value
-      _denseKeys.add(keySpec);
+      _denseKeySpecs.add(keySpec);
     }
 
-    //_denseKeyTypes = config.getDenseKeyTypes();
-    _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeys.size());
+    _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeySpecs.size());
     buildKeyStats();
     buildIndexCreationInfo();
     createKeyCreators(context);
@@ -115,7 +112,7 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
 
   private void buildKeyStats() {
     // For each dense key, construct the Column stats for that key
-    for (FieldSpec key : _denseKeys) {
+    for (FieldSpec key : _denseKeySpecs) {
       String keyName = key.getName();
       // Create stats for it
       // MutableColumnStatistics stats = new MutableColumnStatistics();
@@ -123,7 +120,7 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   }
 
   private void createKeyCreators(IndexCreationContext context) {
-    for (FieldSpec key : _denseKeys) {
+    for (FieldSpec key : _denseKeySpecs) {
       // Create the context for this dense key
       final String keyName = key.getName();
       File denseKeyDir = new File(String.format("%s/%s", _mapIndexDir, keyName));
@@ -192,7 +189,7 @@ public final class DenseMapIndexCreator implements org.apache.pinot.segment.spi.
   void buildIndexCreationInfo()
       throws IOException {
     Set<String> varLengthDictionaryColumns = new HashSet<>(); //new HashSet<>(_config.getVarLengthDictionaryColumns());
-    for (FieldSpec key : _denseKeys) {
+    for (FieldSpec key : _denseKeySpecs) {
       String keyName = key.getName();
       DataType storedType = key.getDataType().getStoredType();
       ColumnStatistics columnProfile = null;

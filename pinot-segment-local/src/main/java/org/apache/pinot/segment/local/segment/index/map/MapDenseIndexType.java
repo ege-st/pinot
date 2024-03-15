@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.apache.pinot.segment.local.segment.creator.impl.map.DenseMapIndexCreator;
+import org.apache.pinot.segment.local.segment.creator.impl.map.MapIndexCreator;
 import org.apache.pinot.segment.local.segment.index.loader.ConfigurableFromIndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.IndexLoadingConfig;
 import org.apache.pinot.segment.local.segment.index.loader.invertedindex.JsonIndexHandler;
@@ -42,7 +42,6 @@ import org.apache.pinot.segment.spi.index.IndexReaderConstraintException;
 import org.apache.pinot.segment.spi.index.IndexReaderFactory;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
-import org.apache.pinot.segment.spi.index.creator.MapIndexCreator;
 import org.apache.pinot.segment.spi.index.mutable.MutableIndex;
 import org.apache.pinot.segment.spi.index.mutable.provider.MutableIndexContext;
 import org.apache.pinot.segment.spi.index.reader.MapIndexReader;
@@ -53,7 +52,7 @@ import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.data.Schema;
 
 
-public class MapDenseIndexType extends AbstractIndexType<MapIndexConfig, MapIndexReader, MapIndexCreator>
+public class MapDenseIndexType extends AbstractIndexType<MapIndexConfig, MapIndexReader, org.apache.pinot.segment.spi.index.creator.MapIndexCreator>
     implements ConfigurableFromIndexLoadingConfig<MapIndexConfig> {
   public static final String INDEX_DISPLAY_NAME = "map_dense";
   private static final List<String> EXTENSIONS =
@@ -99,11 +98,11 @@ public class MapDenseIndexType extends AbstractIndexType<MapIndexConfig, MapInde
   }
 
   @Override
-  public MapIndexCreator createIndexCreator(IndexCreationContext context, MapIndexConfig indexConfig)
+  public org.apache.pinot.segment.spi.index.creator.MapIndexCreator createIndexCreator(IndexCreationContext context, MapIndexConfig indexConfig)
       throws IOException {
     Preconditions.checkState(context.getFieldSpec().isSingleValueField(),
         "Map index is currently only supported on single-value columns");
-    return new DenseMapIndexCreator(context, context.getFieldSpec().getName(), indexConfig);
+    return new MapIndexCreator(context, context.getFieldSpec().getName(), indexConfig);
   }
 
   @Override

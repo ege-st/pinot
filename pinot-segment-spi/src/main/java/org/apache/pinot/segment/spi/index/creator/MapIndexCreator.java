@@ -64,7 +64,7 @@ public interface MapIndexCreator extends IndexCreator {
    */
   default boolean isSingleValue(String key) {
     // First version will not handle multivalue values in the map
-    return false;
+    return true;
   }
 
   /**
