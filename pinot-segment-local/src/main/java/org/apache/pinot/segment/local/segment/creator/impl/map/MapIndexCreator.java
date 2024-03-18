@@ -261,11 +261,12 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
         DataType valType = convertToDataType(PinotDataType.getSingleValueType(value.getClass()));
         if (!valType.equals(denseKey.getDataType())) {
           value = _keyIndexCreationInfoMap.get(keyName).getDefaultNullValue();
+        } else {
+          LOGGER.warn("Type mismatch, expected '{}' but got '{}'", denseKey.getDataType(), valType);
         }
       }
 
       // Get the type of the value to check that it matches the Dense Key's type
-
       try {
         // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
         // the null value
@@ -273,7 +274,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
           indexes.getValue().add(value, -1); // TODO: Add in dictionary encoding support
         }
       } catch (IOException ioe) {
-        LOGGER.error("Error writing to dense key '{}' with type '{}': ", keyName, valType, ioe);
+        LOGGER.error("Error writing to dense key '{}': ", keyName, ioe);
         throw ioe;
       } catch (Exception e) {
         LOGGER.error("Error getting dense key '{}': ", keyName);
