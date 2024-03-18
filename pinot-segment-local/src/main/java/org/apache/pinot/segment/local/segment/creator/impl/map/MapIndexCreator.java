@@ -30,7 +30,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.apache.pinot.common.utils.PinotDataType;
+import org.apache.pinot.segment.local.realtime.converter.stats.MutableColumnStatistics;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
+import org.apache.pinot.segment.local.segment.index.loader.defaultcolumn.DefaultColumnStatistics;
 import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
 import org.apache.pinot.segment.spi.creator.ColumnStatistics;
 import org.apache.pinot.segment.spi.creator.IndexCreationContext;
@@ -42,6 +44,7 @@ import org.apache.pinot.segment.spi.index.IndexCreator;
 import org.apache.pinot.segment.spi.index.IndexService;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
+import org.apache.pinot.spi.config.table.FieldConfig;
 import org.apache.pinot.spi.config.table.IndexConfig;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
@@ -71,13 +74,13 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   private int _nextDocId;
   private int _nextValueId;
 
-  private Map<String, Map<IndexType<?, ?, ?>, IndexCreator>> _creatorsByColAndIndex = new HashMap<>();
-  private TreeMap<String, ColumnIndexCreationInfo> _keyIndexCreationInfoMap;
+  private final Map<String, Map<IndexType<?, ?, ?>, IndexCreator>> _creatorsByColAndIndex;
+  private final TreeMap<String, ColumnIndexCreationInfo> _keyIndexCreationInfoMap = new TreeMap<>();
   private final List<FieldSpec> _denseKeySpecs;
   private final Set<String> _denseKeys;
   private final int _totalDocs;
   private final MapIndexConfig _config;
-  private SegmentPreIndexStatsContainer _keyStats;
+  private final Map<String, ColumnStatistics> _keyStats = new HashMap<>();
 
   /**
    *
@@ -94,6 +97,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     _totalDocs = context.getTotalDocs();
     _mapIndexDir = String.format("%s/%s/", indexDir, columnName + MAP_DENSE_INDEX_FILE_EXTENSION);
     _denseKeySpecs = new ArrayList<>(_config.getMaxKeys());
+    _denseKeys = new HashSet<>();
     for (int i = 0; i < _config.getDenseKeys().size(); i++) {
       FieldSpec keySpec = new DimensionFieldSpec();
       keySpec.setDataType(_config.getDenseKeyTypes().get(i));
@@ -102,6 +106,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       keySpec.setSingleValueField(true);
       keySpec.setDefaultNullValue(null);  // Sets the default default null value
       _denseKeySpecs.add(keySpec);
+      _denseKeys.add(keySpec.getName());
     }
 
     _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeySpecs.size());
@@ -112,10 +117,11 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
 
   private void buildKeyStats() {
     // For each dense key, construct the Column stats for that key
-    for (FieldSpec key : _denseKeySpecs) {
-      String keyName = key.getName();
+    for (String key : _denseKeys) {
       // Create stats for it
-      // MutableColumnStatistics stats = new MutableColumnStatistics();
+      ColumnStatistics stats = new DefaultColumnStatistics(null, null, null,
+          false, _totalDocs, 0);
+      _keyStats.put(key, stats);
     }
   }
 
@@ -123,7 +129,14 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     for (FieldSpec key : _denseKeySpecs) {
       // Create the context for this dense key
       final String keyName = key.getName();
-      File denseKeyDir = new File(String.format("%s/%s", _mapIndexDir, keyName));
+      final File denseKeyDir = new File(_mapIndexDir);
+      try {
+        if (!denseKeyDir.mkdirs()) {
+          LOGGER.error("Failed to create directory: {}", denseKeyDir);
+        }
+      } catch (Exception ex) {
+        LOGGER.error("", ex);
+      }
 
       boolean dictEnabledColumn = false; //createDictionaryForColumn(columnIndexCreationInfo, segmentCreationSpec, fieldSpec);
       ColumnIndexCreationInfo columnIndexCreationInfo = _keyIndexCreationInfoMap.get(key.getName());
@@ -133,7 +146,6 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
           .withIndexDir(denseKeyDir)
           .withDictionary(dictEnabledColumn)
           .withFieldSpec(key)
-          //.withTotalDocs(segmentIndexCreationInfo.getTotalDocs())
           .withTotalDocs(_totalDocs)
           .withColumnIndexCreationInfo(columnIndexCreationInfo)
           //.withOptimizedDictionary(_config.isOptimizeDictionary()
@@ -159,6 +171,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
           LOGGER.error("An exception happened while creating IndexCreator for key '{}' for index '{}'", key.getName(), index.getId(), e);
         }
       }
+      _creatorsByColAndIndex.put(key.getName(), creatorsByIndex);
     }
   }
 
@@ -169,13 +182,14 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     // Sorted columns treat the 'forwardIndexDisabled' flag as a no-op
     // ForwardIndexConfig fwdConfig = config.getConfig(StandardIndexes.forward());
 
-    ForwardIndexConfig fwdConfig = new ForwardIndexConfig.Builder().build();
-    if (!fwdConfig.isEnabled() && columnIndexCreationInfo.isSorted()) {
-      builder.add(StandardIndexes.forward(),
-          new ForwardIndexConfig.Builder(fwdConfig)
-              //.withLegacyProperties(segmentCreationSpec.getColumnProperties(), keyName)
-              .build());
-    }
+    ForwardIndexConfig fwdConfig = new ForwardIndexConfig.Builder()
+        .withCompressionCodec(FieldConfig.CompressionCodec.PASS_THROUGH)
+        .build();
+    // TODO(What's this for?)   if (!fwdConfig.isEnabled() && columnIndexCreationInfo.isSorted()) {
+    builder.add(StandardIndexes.forward(),
+        new ForwardIndexConfig.Builder(fwdConfig)
+            .build());
+    //}
     // Initialize inverted index creator; skip creating inverted index if sorted
     if (columnIndexCreationInfo.isSorted()) {
       builder.undeclare(StandardIndexes.inverted());
@@ -194,7 +208,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       DataType storedType = key.getDataType().getStoredType();
       ColumnStatistics columnProfile = null;
       try {
-        columnProfile = _keyStats.getColumnProfileFor(keyName);
+        columnProfile = _keyStats.get(keyName);
       } catch (Exception ex) {
         LOGGER.error("Failed to get profile for key: '{}'", keyName, ex);
       }
@@ -222,6 +236,15 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   }
 
   @Override
+  public void seal() throws IOException {
+    for (Map.Entry<String, Map<IndexType<?, ?, ?>, IndexCreator>> keysInMap : _creatorsByColAndIndex.entrySet()) {
+      for (IndexCreator keyIdxCreator : keysInMap.getValue().values()) {
+        keyIdxCreator.seal();
+      }
+    }
+  }
+
+  @Override
   public void add(@Nonnull Map<String, Object> mapValue) throws IOException {
     for (Map.Entry<String, Object> entry : mapValue.entrySet()) {
       String entryKey = entry.getKey();
@@ -233,11 +256,13 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
         // the null value
         for (Map.Entry<String, Map<IndexType<?,?,?>, IndexCreator>> keysInMap : _creatorsByColAndIndex.entrySet()) {
           String key = keysInMap.getKey();
+          Object value = mapValue.get(key);
 
-          for (IndexType<?,?,?> idxType : IndexService.getInstance().getAllIndexes()) {
-            IndexCreator keyIdxCreator = keysInMap.getValue().get(idxType);
+          for (IndexCreator keyIdxCreator : keysInMap.getValue().values()) {
+            if (keyIdxCreator == null) {
+              continue;
+            }
 
-            Object value = mapValue.get(key);
             if (value != null) {
               keyIdxCreator.add(mapValue.get(key), -1); // TODO: Add in dictionary encoding support
             } else {
