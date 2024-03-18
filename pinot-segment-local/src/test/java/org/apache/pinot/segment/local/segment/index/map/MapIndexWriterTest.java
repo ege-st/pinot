@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.pinot.segment.local.segment.creator.impl.map.MapIndexCreator;
-import org.apache.pinot.segment.spi.V1Constants;
 import org.apache.pinot.segment.spi.creator.IndexCreationContext;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
@@ -18,7 +17,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 
-public class MapIndexTest {
+public class MapIndexWriterTest {
   private static final File INDEX_DIR = new File(FileUtils.getTempDirectory(), "JsonIndexTest");
   private static final String MAP_COLUMN_NAME = "dense_map";
 
