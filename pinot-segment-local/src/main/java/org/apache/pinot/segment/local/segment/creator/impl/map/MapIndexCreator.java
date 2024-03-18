@@ -183,7 +183,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     // ForwardIndexConfig fwdConfig = config.getConfig(StandardIndexes.forward());
 
     ForwardIndexConfig fwdConfig = new ForwardIndexConfig.Builder()
-        .withCompressionCodec(FieldConfig.CompressionCodec.PASS_THROUGH)
+        // TODO (make configurable): .withCompressionCodec(FieldConfig.CompressionCodec.PASS_THROUGH)
         .build();
     // TODO(What's this for?)   if (!fwdConfig.isEnabled() && columnIndexCreationInfo.isSorted()) {
     builder.add(StandardIndexes.forward(),
