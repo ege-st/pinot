@@ -35,7 +35,7 @@ public class MapIndexTest {
   }
 
   @Test
-  public void simpleTest() {
+  public void testingWritingMultipleChunks() {
     List<String> keys = List.of("a", "b");
     List<HashMap<String, Object>> records = createTestData(keys, 2000);
     File denseColumnIndexFile = new File(INDEX_DIR, MAP_COLUMN_NAME + V1Constants.Indexes.MAP_DENSE_INDEX_FILE_EXTENSION);
