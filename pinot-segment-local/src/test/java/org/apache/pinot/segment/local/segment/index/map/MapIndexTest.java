@@ -18,7 +18,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 
-public class DenseMapIndexTest {
+public class MapIndexTest {
   private static final File INDEX_DIR = new File(FileUtils.getTempDirectory(), "JsonIndexTest");
   private static final String MAP_COLUMN_NAME = "dense_map";
 
@@ -58,7 +58,9 @@ public class DenseMapIndexTest {
     record.put("d", 1);
 
     ArrayList<HashMap<String, Object>> records = new ArrayList<>();
-    records.add(record);
+    for (int i = 0; i < 499; i++) {
+      records.add(record);
+    }
 
     return records;
   }
@@ -82,8 +84,8 @@ public class DenseMapIndexTest {
         .withFieldSpec(mapSpec)
         .build();
     try (org.apache.pinot.segment.spi.index.creator.MapIndexCreator indexCreator =  new MapIndexCreator(context, MAP_COLUMN_NAME, mapIndexConfig)) {
-      for (HashMap<String, Object> record : records) {
-        indexCreator.add(record);
+      for (int i = 0; i < records.size(); i++) {
+        indexCreator.add(records.get(i));
       }
       indexCreator.seal();
     }
