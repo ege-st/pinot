@@ -245,28 +245,33 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   }
 
   @Override
-  public void add(@Nonnull Map<String, Object> mapValue) throws IOException {
-    for (Map.Entry<String, Object> entry : mapValue.entrySet()) {
-      String entryKey = entry.getKey();
-      Object entryVal = entry.getValue();
-      DataType valType = convertToDataType(PinotDataType.getSingleValueType(entryVal.getClass()));
+  public void add(Map<String, Object> mapValue) throws IOException {
+    // Iterate over every dense key in this map
+    for (Map.Entry<String, Map<IndexType<?,?,?>, IndexCreator>> denseKeyIndexes : _creatorsByColAndIndex.entrySet()) {
+      String keyName = denseKeyIndexes.getKey();
+
+      // Get the value of the key from the input map and write to each index
+      Object value = mapValue.get(keyName);
+
+      // Get the type of the value to check that it matches the Dense Key's type
+      DataType valType = convertToDataType(PinotDataType.getSingleValueType(value.getClass()));
+      if (value == null) {
+        // If the value is NULL or the value's type does not match the key's index type then
+        // Write the default value to the index
+        value = _keyIndexCreationInfoMap.get(keyName).getDefaultNullValue();
+      }
 
       try {
         // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
         // the null value
-        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : _creatorsByColAndIndex.get(entryKey).entrySet()) {
-            if (entryVal != null) {
-              indexes.getValue().add(entryVal, -1); // TODO: Add in dictionary encoding support
-            } else {
-              // For dense columns the Mutable Segment should take care of making sure that every entry in the key has a value
-              throw new RuntimeException(String.format("Null value found under key: '%s'", entryKey));
-            }
+        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : denseKeyIndexes.getValue().entrySet()) {
+            indexes.getValue().add(value, -1); // TODO: Add in dictionary encoding support
           }
       } catch (IOException ioe) {
-        LOGGER.error("Error writing to dense key '{}' with type '{}': ", entryKey, valType, ioe);
+        LOGGER.error("Error writing to dense key '{}' with type '{}': ", keyName, valType, ioe);
         throw ioe;
       } catch (Exception e) {
-        LOGGER.error("Error getting dense key '{}': ", entryKey);
+        LOGGER.error("Error getting dense key '{}': ", keyName);
       }
     }
   }
