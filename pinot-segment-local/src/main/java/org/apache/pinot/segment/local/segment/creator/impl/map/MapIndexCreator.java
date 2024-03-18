@@ -253,13 +253,18 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       // Get the value of the key from the input map and write to each index
       Object value = mapValue.get(keyName);
 
-      // Get the type of the value to check that it matches the Dense Key's type
-      DataType valType = convertToDataType(PinotDataType.getSingleValueType(value.getClass()));
-      if (value == null || !valType.equals(denseKey.getDataType())) {
-        // If the value is NULL or the value's type does not match the key's index type then
-        // Write the default value to the index
+      // If the value is NULL or the value's type does not match the key's index type then
+      // Write the default value to the index
+      if (value == null) {
         value = _keyIndexCreationInfoMap.get(keyName).getDefaultNullValue();
+      } else {
+        DataType valType = convertToDataType(PinotDataType.getSingleValueType(value.getClass()));
+        if (!valType.equals(denseKey.getDataType())) {
+          value = _keyIndexCreationInfoMap.get(keyName).getDefaultNullValue();
+        }
       }
+
+      // Get the type of the value to check that it matches the Dense Key's type
 
       try {
         // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
