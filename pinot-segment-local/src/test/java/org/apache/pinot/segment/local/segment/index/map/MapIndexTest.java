@@ -38,9 +38,7 @@ public class MapIndexTest {
   public void testingWritingMultipleChunks() {
     List<String> keys = List.of("a", "b");
     List<HashMap<String, Object>> records = createTestData(keys, 2000);
-    File denseColumnIndexFile = new File(INDEX_DIR, MAP_COLUMN_NAME + V1Constants.Indexes.MAP_DENSE_INDEX_FILE_EXTENSION);
     MapIndexConfig config = new MapIndexConfig();
-    //config.setDenseKeys(List.of("a", "b", "c", "d"));
     config.setDenseKeys(keys);
     config.setDenseKeyTypes(List.of(FieldSpec.DataType.INT, FieldSpec.DataType.INT, FieldSpec.DataType.INT,
         FieldSpec.DataType.INT));
