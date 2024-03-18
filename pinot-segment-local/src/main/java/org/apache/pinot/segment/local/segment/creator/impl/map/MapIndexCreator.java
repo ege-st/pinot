@@ -247,15 +247,15 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   @Override
   public void add(Map<String, Object> mapValue) throws IOException {
     // Iterate over every dense key in this map
-    for (Map.Entry<String, Map<IndexType<?,?,?>, IndexCreator>> denseKeyIndexes : _creatorsByColAndIndex.entrySet()) {
-      String keyName = denseKeyIndexes.getKey();
+    for (FieldSpec denseKey : _denseKeySpecs) {
+      String keyName = denseKey.getName();
 
       // Get the value of the key from the input map and write to each index
       Object value = mapValue.get(keyName);
 
       // Get the type of the value to check that it matches the Dense Key's type
       DataType valType = convertToDataType(PinotDataType.getSingleValueType(value.getClass()));
-      if (value == null) {
+      if (value == null || !valType.equals(denseKey.getDataType())) {
         // If the value is NULL or the value's type does not match the key's index type then
         // Write the default value to the index
         value = _keyIndexCreationInfoMap.get(keyName).getDefaultNullValue();
@@ -264,9 +264,9 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       try {
         // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
         // the null value
-        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : denseKeyIndexes.getValue().entrySet()) {
-            indexes.getValue().add(value, -1); // TODO: Add in dictionary encoding support
-          }
+        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : _creatorsByColAndIndex.get(keyName).entrySet()) {
+          indexes.getValue().add(value, -1); // TODO: Add in dictionary encoding support
+        }
       } catch (IOException ioe) {
         LOGGER.error("Error writing to dense key '{}' with type '{}': ", keyName, valType, ioe);
         throw ioe;
