@@ -36,10 +36,12 @@ public class MapIndexTest {
 
   @Test
   public void simpleTest() {
-    List<HashMap<String, Object>> records = createTestData();
+    List<String> keys = List.of("a", "b");
+    List<HashMap<String, Object>> records = createTestData(keys, 2000);
     File denseColumnIndexFile = new File(INDEX_DIR, MAP_COLUMN_NAME + V1Constants.Indexes.MAP_DENSE_INDEX_FILE_EXTENSION);
     MapIndexConfig config = new MapIndexConfig();
-    config.setDenseKeys(List.of("a", "b", "c", "d"));
+    //config.setDenseKeys(List.of("a", "b", "c", "d"));
+    config.setDenseKeys(keys);
     config.setDenseKeyTypes(List.of(FieldSpec.DataType.INT, FieldSpec.DataType.INT, FieldSpec.DataType.INT,
         FieldSpec.DataType.INT));
     config.setMaxKeys(4);
@@ -50,15 +52,15 @@ public class MapIndexTest {
     }
   }
 
-  private List<HashMap<String, Object>> createTestData() {
+  private List<HashMap<String, Object>> createTestData(List<String> keys, int numRecords) {
     HashMap<String, Object> record = new HashMap<>();
-    record.put("a", 1);
-    record.put("b", 1);
-    record.put("c", 1);
-    record.put("d", 1);
+
+    for(String key: keys) {
+      record.put(key, 1);
+    }
 
     ArrayList<HashMap<String, Object>> records = new ArrayList<>();
-    for (int i = 0; i < 499; i++) {
+    for (int i = 0; i < numRecords; i++) {
       records.add(record);
     }
 

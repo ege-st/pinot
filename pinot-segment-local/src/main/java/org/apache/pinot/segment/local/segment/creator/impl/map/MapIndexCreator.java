@@ -254,23 +254,14 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       try {
         // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
         // the null value
-        for (Map.Entry<String, Map<IndexType<?,?,?>, IndexCreator>> keysInMap : _creatorsByColAndIndex.entrySet()) {
-          String key = keysInMap.getKey();
-          Object value = mapValue.get(key);
-
-          for (IndexCreator keyIdxCreator : keysInMap.getValue().values()) {
-            if (keyIdxCreator == null) {
-              continue;
-            }
-
-            if (value != null) {
-              keyIdxCreator.add(mapValue.get(key), -1); // TODO: Add in dictionary encoding support
+        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : _creatorsByColAndIndex.get(entryKey).entrySet()) {
+            if (entryVal != null) {
+              indexes.getValue().add(entryVal, -1); // TODO: Add in dictionary encoding support
             } else {
               // For dense columns the Mutable Segment should take care of making sure that every entry in the key has a value
-              throw new RuntimeException(String.format("Null value found under key: '%s'", key));
+              throw new RuntimeException(String.format("Null value found under key: '%s'", entryKey));
             }
           }
-        }
       } catch (IOException ioe) {
         LOGGER.error("Error writing to dense key '{}' with type '{}': ", entryKey, valType, ioe);
         throw ioe;
