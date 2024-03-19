@@ -64,9 +64,7 @@ import static org.apache.pinot.spi.data.FieldSpec.DataType;
 public final class MapIndexCreator implements org.apache.pinot.segment.spi.index.creator.MapIndexCreator {
   private static final Logger LOGGER = LoggerFactory.getLogger(MapIndexCreator.class);
 
-
   public static final int VERSION = 1;
-
 
   //output file which will hold the range index
   private final String _mapIndexDir;
@@ -126,17 +124,18 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   }
 
   private void createKeyCreators(IndexCreationContext context) {
+    final File denseKeyDir = new File(_mapIndexDir);
+    try {
+      if (!denseKeyDir.mkdirs()) {
+        LOGGER.error("Failed to create directory: {}", denseKeyDir);
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Exception while creating temporary directory: '{}'", denseKeyDir, ex);
+    }
+
     for (FieldSpec key : _denseKeySpecs) {
       // Create the context for this dense key
       final String keyName = key.getName();
-      final File denseKeyDir = new File(_mapIndexDir);
-      try {
-        if (!denseKeyDir.mkdirs()) {
-          LOGGER.error("Failed to create directory: {}", denseKeyDir);
-        }
-      } catch (Exception ex) {
-        LOGGER.error("", ex);
-      }
 
       boolean dictEnabledColumn = false; //createDictionaryForColumn(columnIndexCreationInfo, segmentCreationSpec, fieldSpec);
       ColumnIndexCreationInfo columnIndexCreationInfo = _keyIndexCreationInfoMap.get(key.getName());
@@ -148,6 +147,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
           .withFieldSpec(key)
           .withTotalDocs(_totalDocs)
           .withColumnIndexCreationInfo(columnIndexCreationInfo)
+          .withLengthOfLongestEntry(10)
           //.withOptimizedDictionary(_config.isOptimizeDictionary()
           //|| _config.isOptimizeDictionaryForMetrics() && fieldSpec.getFieldType() == FieldSpec.FieldType.METRIC)
           .withOptimizedDictionary(false)
@@ -260,9 +260,8 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       } else {
         DataType valType = convertToDataType(PinotDataType.getSingleValueType(value.getClass()));
         if (!valType.equals(denseKey.getDataType())) {
-          value = _keyIndexCreationInfoMap.get(keyName).getDefaultNullValue();
-        } else {
           LOGGER.warn("Type mismatch, expected '{}' but got '{}'", denseKey.getDataType(), valType);
+          value = _keyIndexCreationInfoMap.get(keyName).getDefaultNullValue();
         }
       }
 
@@ -277,7 +276,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
         LOGGER.error("Error writing to dense key '{}': ", keyName, ioe);
         throw ioe;
       } catch (Exception e) {
-        LOGGER.error("Error getting dense key '{}': ", keyName);
+        LOGGER.error("Error getting dense key '{}': ", keyName, e);
       }
     }
   }
