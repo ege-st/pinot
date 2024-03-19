@@ -36,7 +36,8 @@ public class MapIndexWriterTest {
   @Test
   public void testingWritingMultipleChunks() {
     List<String> keys = List.of("a", "b");
-    List<HashMap<String, Object>> records = createTestData(keys, 2000);
+    List<FieldSpec.DataType> keyTypes = List.of(FieldSpec.DataType.INT, FieldSpec.DataType.INT);
+    List<HashMap<String, Object>> records = createTestData(keys, keyTypes, 2000);
     MapIndexConfig config = new MapIndexConfig();
     config.setDenseKeys(keys);
     config.setDenseKeyTypes(List.of(FieldSpec.DataType.INT, FieldSpec.DataType.INT, FieldSpec.DataType.INT,
@@ -49,11 +50,77 @@ public class MapIndexWriterTest {
     }
   }
 
-  private List<HashMap<String, Object>> createTestData(List<String> keys, int numRecords) {
+  @Test
+  public void testingWithStringType() {
+    // Create test data
+    List<String> keys = List.of("a");
+    List<FieldSpec.DataType> valueTypes = List.of(
+        FieldSpec.DataType.STRING
+    );
+    List<HashMap<String, Object>> records = createTestData(keys, valueTypes, 2000);
+
+    // Configure map index
+    MapIndexConfig config = new MapIndexConfig();
+    config.setDenseKeys(keys);
+    config.setDenseKeyTypes(valueTypes);
+    config.setMaxKeys(4);
+    try {
+      createIndex(config, records);
+    } catch (Exception ex) {
+      Assert.fail("Error Creating Index", ex);
+    }
+  }
+
+  @Test
+  public void testingWithDifferentTypes() {
+    // Create test data
+    List<String> keys = List.of("a", "b", "c", "d", "e", "f");
+    List<FieldSpec.DataType> valueTypes = List.of(
+        FieldSpec.DataType.INT,
+        FieldSpec.DataType.LONG,
+        FieldSpec.DataType.FLOAT,
+        FieldSpec.DataType.DOUBLE,
+        FieldSpec.DataType.BOOLEAN,
+        FieldSpec.DataType.STRING
+    );
+    List<HashMap<String, Object>> records = createTestData(keys, valueTypes, 2000);
+
+    // Configure map index
+    MapIndexConfig config = new MapIndexConfig();
+    config.setDenseKeys(keys);
+    config.setDenseKeyTypes(valueTypes);
+    config.setMaxKeys(4);
+    try {
+      createIndex(config, records);
+    } catch (Exception ex) {
+      Assert.fail("Error Creating Index", ex);
+    }
+  }
+
+  @Test
+  public void typeMismatch() {
+    // If a key from the input Map Value has a type that differs from the already defined type of the dense key then
+    // Write the default value to the column.
+    List<String> keys = List.of("a", "b");
+    List<FieldSpec.DataType> valueTypes = List.of(FieldSpec.DataType.STRING, FieldSpec.DataType.INT);
+    List<HashMap<String, Object>> records = createTestData(keys,  valueTypes, 2000);
+    MapIndexConfig config = new MapIndexConfig();
+    config.setDenseKeys(keys);
+    config.setDenseKeyTypes(List.of(FieldSpec.DataType.STRING, FieldSpec.DataType.STRING));
+    config.setMaxKeys(4);
+    try {
+      createIndex(config, records);
+    } catch (Exception ex) {
+      Assert.fail("Error Creating Index", ex);
+    }
+  }
+
+  private List<HashMap<String, Object>> createTestData(List<String> keys, List<FieldSpec.DataType> keyTypes,
+      int numRecords) {
     HashMap<String, Object> record = new HashMap<>();
 
-    for(String key: keys) {
-      record.put(key, 1);
+    for(int i = 0; i < keys.size(); i++) {
+      record.put(keys.get(i), generateTestValue(keyTypes.get(i)));
     }
 
     ArrayList<HashMap<String, Object>> records = new ArrayList<>();
@@ -62,6 +129,35 @@ public class MapIndexWriterTest {
     }
 
     return records;
+  }
+
+  private Object generateTestValue(FieldSpec.DataType type) {
+    switch(type) {
+
+      case INT:
+        return 1;
+      case LONG:
+        return 2L;
+      case FLOAT:
+        return 3.0F;
+      case DOUBLE:
+        return 4.5D;
+      case BOOLEAN:
+        return true;
+      case TIMESTAMP:
+      case STRING:
+        return "hello";
+      case JSON:
+      case BIG_DECIMAL:
+      case BYTES:
+      case STRUCT:
+      case MAP:
+      case LIST:
+      case UNKNOWN:
+        throw new UnsupportedOperationException();
+    }
+
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -77,6 +173,7 @@ public class MapIndexWriterTest {
     IndexCreationContext context = new IndexCreationContext.Common.Builder()
         .withIndexDir(INDEX_DIR)
         .withTotalDocs(records.size())
+        .withLengthOfLongestEntry(30)
         .sorted(false)
         .onHeap(false)
         .withDictionary(false)
