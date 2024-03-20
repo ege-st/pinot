@@ -28,23 +28,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.annotation.Nonnull;
 import org.apache.pinot.common.utils.PinotDataType;
-import org.apache.pinot.segment.local.realtime.converter.stats.MutableColumnStatistics;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.local.segment.index.loader.defaultcolumn.DefaultColumnStatistics;
 import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
 import org.apache.pinot.segment.spi.creator.ColumnStatistics;
 import org.apache.pinot.segment.spi.creator.IndexCreationContext;
 import org.apache.pinot.segment.spi.creator.SegmentGeneratorConfig;
-import org.apache.pinot.segment.spi.creator.SegmentPreIndexStatsContainer;
 import org.apache.pinot.segment.spi.index.FieldIndexConfigs;
 import org.apache.pinot.segment.spi.index.ForwardIndexConfig;
 import org.apache.pinot.segment.spi.index.IndexCreator;
 import org.apache.pinot.segment.spi.index.IndexService;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
-import org.apache.pinot.spi.config.table.FieldConfig;
 import org.apache.pinot.spi.config.table.IndexConfig;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
@@ -69,7 +65,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   //output file which will hold the range index
   private final String _mapIndexDir;
 
-  private final Map<String, Map<IndexType<?, ?, ?>, IndexCreator>> _creatorsByColAndIndex;
+  private final Map<String, Map<IndexType<?, ?, ?>, IndexCreator>> _creatorsByKeyAndIndex;
   private final TreeMap<String, ColumnIndexCreationInfo> _keyIndexCreationInfoMap = new TreeMap<>();
   private final List<FieldSpec> _denseKeySpecs;
   private final Set<String> _denseKeys;
@@ -104,7 +100,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       _denseKeys.add(keySpec.getName());
     }
 
-    _creatorsByColAndIndex = Maps.newHashMapWithExpectedSize(_denseKeySpecs.size());
+    _creatorsByKeyAndIndex = Maps.newHashMapWithExpectedSize(_denseKeySpecs.size());
     buildKeyStats();
     buildIndexCreationInfo();
     createKeyCreators(context);
@@ -145,11 +141,8 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
           .withTotalDocs(_totalDocs)
           .withColumnIndexCreationInfo(columnIndexCreationInfo)
           .withLengthOfLongestEntry(10)
-          //.withOptimizedDictionary(_config.isOptimizeDictionary()
-          //|| _config.isOptimizeDictionaryForMetrics() && fieldSpec.getFieldType() == FieldSpec.FieldType.METRIC)
           .withOptimizedDictionary(false)
           .onHeap(context.isOnHeap())
-          //.withForwardIndexDisabled(forwardIndexDisabled)
           .withForwardIndexDisabled(false)
           .withTextCommitOnClose(true)
           .build();
@@ -168,7 +161,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
           LOGGER.error("An exception happened while creating IndexCreator for key '{}' for index '{}'", key.getName(), index.getId(), e);
         }
       }
-      _creatorsByColAndIndex.put(key.getName(), creatorsByIndex);
+      _creatorsByKeyAndIndex.put(key.getName(), creatorsByIndex);
     }
   }
 
@@ -234,7 +227,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
 
   @Override
   public void seal() throws IOException {
-    for (Map.Entry<String, Map<IndexType<?, ?, ?>, IndexCreator>> keysInMap : _creatorsByColAndIndex.entrySet()) {
+    for (Map.Entry<String, Map<IndexType<?, ?, ?>, IndexCreator>> keysInMap : _creatorsByKeyAndIndex.entrySet()) {
       for (IndexCreator keyIdxCreator : keysInMap.getValue().values()) {
         keyIdxCreator.seal();
       }
@@ -266,7 +259,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       try {
         // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
         // the null value
-        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : _creatorsByColAndIndex.get(keyName).entrySet()) {
+        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : _creatorsByKeyAndIndex.get(keyName).entrySet()) {
           indexes.getValue().add(value, -1); // TODO: Add in dictionary encoding support
         }
       } catch (IOException ioe) {
@@ -282,7 +275,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   throws Exception {
     // Check the map for the given key
     // TODO: start with forward index first and then expand to configurable indexes
-    IndexCreator keyCreator = _creatorsByColAndIndex.get(key).get(StandardIndexes.forward());
+    IndexCreator keyCreator = _creatorsByKeyAndIndex.get(key).get(StandardIndexes.forward());
     assert keyCreator != null;
     return keyCreator;
   }
