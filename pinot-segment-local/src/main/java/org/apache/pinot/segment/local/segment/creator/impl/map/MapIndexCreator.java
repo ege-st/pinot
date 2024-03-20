@@ -69,9 +69,6 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   //output file which will hold the range index
   private final String _mapIndexDir;
 
-  private int _nextDocId;
-  private int _nextValueId;
-
   private final Map<String, Map<IndexType<?, ?, ?>, IndexCreator>> _creatorsByColAndIndex;
   private final TreeMap<String, ColumnIndexCreationInfo> _keyIndexCreationInfoMap = new TreeMap<>();
   private final List<FieldSpec> _denseKeySpecs;
