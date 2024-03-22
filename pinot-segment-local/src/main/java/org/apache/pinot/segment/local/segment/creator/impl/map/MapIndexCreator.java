@@ -31,6 +31,7 @@ import java.util.TreeMap;
 import org.apache.pinot.common.utils.PinotDataType;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.local.segment.index.loader.defaultcolumn.DefaultColumnStatistics;
+import org.apache.pinot.segment.local.segment.store.SegmentLocalFSDirectory;
 import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
 import org.apache.pinot.segment.spi.creator.ColumnStatistics;
 import org.apache.pinot.segment.spi.creator.IndexCreationContext;
@@ -46,6 +47,7 @@ import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
 import org.apache.pinot.spi.data.FieldSpec;
 import org.apache.pinot.spi.utils.ByteArray;
+import org.apache.pinot.spi.utils.ReadMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -231,6 +233,34 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       for (IndexCreator keyIdxCreator : keysInMap.getValue().values()) {
         keyIdxCreator.seal();
       }
+    }
+
+    // Stitch the index files together
+    mergeKeyFiles();
+  }
+
+  private void mergeKeyFiles() {
+    // Create a localfsdirectory class for loading files from disk
+    File indexDir = new File(_mapIndexDir);
+
+    // TODO: doing this approach would require also writing a Segment Metadata file for the map index.
+    //   Instead I am looking at just using what FilePerIndexDirectory uses under the hood to read the individual
+    //   files and merge them together.
+    try(SegmentLocalFSDirectory fsd = new SegmentLocalFSDirectory(indexDir, ReadMode.mmap)) {
+      SegmentLocalFSDirectory.Reader reader = fsd.createReader();
+      for (String key : _denseKeys) {
+        reader.getIndexFor(key, StandardIndexes.forward());
+        // Create an output buffer for writing to (see the V2 to V3 conversion logic for what to do here)
+        // Create the header for the stitched file
+        // Create a SegmentMetadataImpl object based upon info for the dense index keys we've created
+        // Create a FilePerIndexDirectory pointing to the map directory  looks like that's private so I'll see about going through SegmentLocalFSDirectory
+        //_columnIndexDirectory = new FilePerIndexDirectory(_segmentDirectory, _segmentMetadata, _readMode);
+        // Iterate over a list of dense keys that we have as a property
+        // For each dense key index, load its file
+        // Write the file to the output buffer.
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Failed to load indexes for merging: ", ex);
     }
   }
 
