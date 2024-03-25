@@ -23,7 +23,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.pinot.segment.spi.V1Constants.Indexes.MAP_DENSE_INDEX_FILE_EXTENSION;
+import static org.apache.pinot.segment.spi.V1Constants.Indexes.MAP_INDEX_FILE_EXTENSION;
 import static org.apache.pinot.spi.data.FieldSpec.DataType;
 
 
@@ -82,6 +86,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   private final MapIndexConfig _config;
   private final Map<String, ColumnStatistics> _keyStats = new HashMap<>();
   private final Map<String, ColumnMetadata> _denseKeyMetadata = new HashMap<>();
+  private final String _columnName;
 
   /**
    *
@@ -99,6 +104,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     _mapIndexDir = String.format("%s/%s/", indexDir, columnName + MAP_DENSE_INDEX_FILE_EXTENSION);
     _denseKeySpecs = new ArrayList<>(_config.getMaxKeys());
     _denseKeys = new HashSet<>();
+    _columnName = columnName;
     for (int i = 0; i < _config.getDenseKeys().size(); i++) {
       FieldSpec keySpec = new DimensionFieldSpec();
       keySpec.setDataType(_config.getDenseKeyTypes().get(i));
@@ -249,32 +255,60 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
 
   private void mergeKeyFiles() {
     // Create a localfsdirectory class for loading files from disk
-    File indexDir = new File(_mapIndexDir);
+    File mergedIndexFile = new File(_mapIndexDir, _columnName + MAP_INDEX_FILE_EXTENSION);
 
-    // TODO: doing this approach would require also writing a Segment Metadata file for the map index.
-    //   Instead I am looking at just using what FilePerIndexDirectory uses under the hood to read the individual
-    //   files and merge them together.
     try {
-      // Create an output buffer for writing to (see the V2 to V3 conversion logic for what to do here)
+      int offset = 0;
+      final int HEADER_BYTES = 0;
+      int totalIndexLength = 0;
 
+      // Compute the total size of the indexes
       for (String key : _denseKeys) {
-        PinotDataBuffer reader = getReadBufferForDenseKey(key, StandardIndexes.forward(), ReadMode.mmap);
-        long size = reader.size();
-        LOGGER.info("'{}', size: {}", key, size);
-        byte[] data = new byte[(int)reader.size()];
-        reader.copyTo(0, data);
-        LOGGER.info("{}", data);
-        SegmentLocalFSDirectory.Writer writer = new SegmentLocalFSDirectory.Writer();
-        // Create the header for the stitched file
-        // Create a SegmentMetadataImpl object based upon info for the dense index keys we've created
-        // Create a FilePerIndexDirectory pointing to the map directory  looks like that's private so I'll see about going through SegmentLocalFSDirectory
-        //_columnIndexDirectory = new FilePerIndexDirectory(_segmentDirectory, _segmentMetadata, _readMode);
-        // Iterate over a list of dense keys that we have as a property
-        // For each dense key index, load its file
-        // Write the file to the output buffer.
+        File keyFile = getFileFor(key, StandardIndexes.forward());
+        try (FileChannel denseKeyFileChannel = new RandomAccessFile(keyFile, "r").getChannel()) {
+          long indexSize = denseKeyFileChannel.size();
+          totalIndexLength += indexSize;
+        } catch (Exception ex) {
+
+        }
       }
+
+      // Create an output buffer for writing to (see the V2 to V3 conversion logic for what to do here)
+       PinotDataBuffer buffer = PinotDataBuffer.mapFile(mergedIndexFile, false, offset,
+            HEADER_BYTES + totalIndexLength, ByteOrder.BIG_ENDIAN, null);
+
+
+      // Iterate over each key and find the index and write the index to a file
+      for (String key : _denseKeys) {
+        File keyFile = getFileFor(key, StandardIndexes.forward());
+        try (FileChannel denseKeyFileChannel = new RandomAccessFile(keyFile, "r").getChannel()) {
+          long indexSize = denseKeyFileChannel.size();
+          ByteBuffer denseKeyIndexFile =
+              denseKeyFileChannel.map(FileChannel.MapMode.READ_ONLY, 0, indexSize);
+          while (denseKeyIndexFile.hasRemaining()) {
+            buffer.putByte(offset, denseKeyIndexFile.get());
+            offset++;
+          }
+        } catch (Exception ex) {
+          LOGGER.error("Error opening dense key file '{}': ", keyFile, ex);
+        }
+      }
+
+      // Delete the index files
+      buffer.close();
     } catch (Exception ex) {
-      LOGGER.error("Failed to load indexes for merging: ", ex);
+      LOGGER.error("Exception while merging dense key indexes: ", ex);
+    }
+  }
+
+  private void deleteIntermediateFiles() {
+    for (String key : _denseKeys) {
+      File keyFile = getFileFor(key, StandardIndexes.forward());
+      try {
+        keyFile.delete();
+      } catch (Exception ex) {
+        LOGGER.error("Failed to delete intermediate file '{}'", keyFile, ex);
+      }
     }
   }
 
@@ -349,7 +383,6 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     return mapForReads(file, type.getId() + ".reader", readMode);
   }
 
-  @VisibleForTesting
   File getFileFor(String column, IndexType<?, ?, ?> indexType) {
     List<File> candidates = getFilesFor(column, indexType);
     if (candidates.isEmpty()) {
