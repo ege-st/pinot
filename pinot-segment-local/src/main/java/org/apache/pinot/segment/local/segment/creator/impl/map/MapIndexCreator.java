@@ -126,8 +126,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     // For each dense key, construct the Column stats for that key
     for (String key : _denseKeys) {
       // Create stats for it
-      ColumnStatistics stats = new DefaultColumnStatistics(null, null, null,
-          false, _totalDocs, 0);
+      ColumnStatistics stats = new DefaultColumnStatistics(null, null, null, false, _totalDocs, 0);
       _keyStats.put(key, stats);
     }
   }
@@ -146,22 +145,16 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       // Create the context for this dense key
       final String keyName = key.getName();
 
-      boolean dictEnabledColumn = false; //createDictionaryForColumn(columnIndexCreationInfo, segmentCreationSpec, fieldSpec);
+      boolean dictEnabledColumn =
+          false; //createDictionaryForColumn(columnIndexCreationInfo, segmentCreationSpec, fieldSpec);
       ColumnIndexCreationInfo columnIndexCreationInfo = _keyIndexCreationInfoMap.get(key.getName());
 
       FieldIndexConfigs keyConfig = getKeyIndexConfig(keyName, columnIndexCreationInfo);
-      IndexCreationContext.Common keyContext = IndexCreationContext.builder()
-          .withIndexDir(denseKeyDir)
-          .withDictionary(dictEnabledColumn)
-          .withFieldSpec(key)
-          .withTotalDocs(_totalDocs)
-          .withColumnIndexCreationInfo(columnIndexCreationInfo)
-          .withLengthOfLongestEntry(10)
-          .withOptimizedDictionary(false)
-          .onHeap(context.isOnHeap())
-          .withForwardIndexDisabled(false)
-          .withTextCommitOnClose(true)
-          .build();
+      IndexCreationContext.Common keyContext =
+          IndexCreationContext.builder().withIndexDir(denseKeyDir).withDictionary(dictEnabledColumn).withFieldSpec(key)
+              .withTotalDocs(_totalDocs).withColumnIndexCreationInfo(columnIndexCreationInfo)
+              .withLengthOfLongestEntry(10).withOptimizedDictionary(false).onHeap(context.isOnHeap())
+              .withForwardIndexDisabled(false).withTextCommitOnClose(true).build();
 
       // Create the forward index creator for this key
       // TODO: Pass index configurations through the MapConfig and then create creators for each index type
@@ -174,15 +167,15 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
         try {
           tryCreateIndexCreator(creatorsByIndex, index, keyContext, keyConfig);
         } catch (Exception e) {
-          LOGGER.error("An exception happened while creating IndexCreator for key '{}' for index '{}'", key.getName(), index.getId(), e);
+          LOGGER.error("An exception happened while creating IndexCreator for key '{}' for index '{}'", key.getName(),
+              index.getId(), e);
         }
       }
       _creatorsByKeyAndIndex.put(key.getName(), creatorsByIndex);
     }
   }
 
-  private FieldIndexConfigs getKeyIndexConfig(String keyName,
-        ColumnIndexCreationInfo columnIndexCreationInfo) {
+  private FieldIndexConfigs getKeyIndexConfig(String keyName, ColumnIndexCreationInfo columnIndexCreationInfo) {
 
     FieldIndexConfigs.Builder builder = new FieldIndexConfigs.Builder();
     // Sorted columns treat the 'forwardIndexDisabled' flag as a no-op
@@ -192,9 +185,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
         // TODO (make configurable): .withCompressionCodec(FieldConfig.CompressionCodec.PASS_THROUGH)
         .build();
     // TODO(What's this for?)   if (!fwdConfig.isEnabled() && columnIndexCreationInfo.isSorted()) {
-    builder.add(StandardIndexes.forward(),
-        new ForwardIndexConfig.Builder(fwdConfig)
-            .build());
+    builder.add(StandardIndexes.forward(), new ForwardIndexConfig.Builder(fwdConfig).build());
     //}
     // Initialize inverted index creator; skip creating inverted index if sorted
     if (columnIndexCreationInfo.isSorted()) {
@@ -219,13 +210,13 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
         LOGGER.error("Failed to get profile for key: '{}'", keyName, ex);
       }
       boolean useVarLengthDictionary = false;
-          //shouldUseVarLengthDictionary(columnName, varLengthDictionaryColumns, storedType, columnProfile);
+      //shouldUseVarLengthDictionary(columnName, varLengthDictionaryColumns, storedType, columnProfile);
       Object defaultNullValue = key.getDefaultNullValue();
       if (storedType == DataType.BYTES) {
         defaultNullValue = new ByteArray((byte[]) defaultNullValue);
       }
       boolean createDictionary = false;
-          //!rawIndexCreationColumns.contains(keyName) && !rawIndexCompressionTypeKeys.contains(keyName);
+      //!rawIndexCreationColumns.contains(keyName) && !rawIndexCompressionTypeKeys.contains(keyName);
       _keyIndexCreationInfoMap.put(keyName,
           new ColumnIndexCreationInfo(columnProfile, createDictionary, useVarLengthDictionary, false/*isAutoGenerated*/,
               defaultNullValue));
@@ -242,7 +233,8 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   }
 
   @Override
-  public void seal() throws IOException {
+  public void seal()
+      throws IOException {
     for (Map.Entry<String, Map<IndexType<?, ?, ?>, IndexCreator>> keysInMap : _creatorsByKeyAndIndex.entrySet()) {
       for (IndexCreator keyIdxCreator : keysInMap.getValue().values()) {
         keyIdxCreator.seal();
@@ -258,7 +250,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     File mergedIndexFile = new File(_mapIndexDir, _columnName + MAP_INDEX_FILE_EXTENSION);
 
     try {
-      int offset = 0;
+      long offset = 0;
       final int HEADER_BYTES = 0;
       int totalIndexLength = 0;
 
@@ -274,20 +266,21 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       }
 
       // Create an output buffer for writing to (see the V2 to V3 conversion logic for what to do here)
-       PinotDataBuffer buffer = PinotDataBuffer.mapFile(mergedIndexFile, false, offset,
-            HEADER_BYTES + totalIndexLength, ByteOrder.BIG_ENDIAN, null);
-
+      PinotDataBuffer buffer =
+          PinotDataBuffer.mapFile(mergedIndexFile, false, offset, HEADER_BYTES + totalIndexLength, ByteOrder.BIG_ENDIAN,
+              null);
 
       // Iterate over each key and find the index and write the index to a file
       for (String key : _denseKeys) {
         File keyFile = getFileFor(key, StandardIndexes.forward());
         try (FileChannel denseKeyFileChannel = new RandomAccessFile(keyFile, "r").getChannel()) {
           long indexSize = denseKeyFileChannel.size();
-          ByteBuffer denseKeyIndexFile =
-              denseKeyFileChannel.map(FileChannel.MapMode.READ_ONLY, 0, indexSize);
-          while (denseKeyIndexFile.hasRemaining()) {
-            buffer.putByte(offset, denseKeyIndexFile.get());
-            offset++;
+          try (PinotDataBuffer keyBuffer = PinotDataBuffer.mapFile(keyFile, true, 0, indexSize, ByteOrder.BIG_ENDIAN,
+              null)) {
+            keyBuffer.copyTo(0, buffer, offset, indexSize);
+            offset += indexSize;
+          } catch (Exception ex) {
+            LOGGER.error("Error opening PinotDataBuffer for '{}'", keyFile, ex);
           }
         } catch (Exception ex) {
           LOGGER.error("Error opening dense key file '{}': ", keyFile, ex);
@@ -313,7 +306,8 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   }
 
   @Override
-  public void add(Map<String, Object> mapValue) throws IOException {
+  public void add(Map<String, Object> mapValue)
+      throws IOException {
     // Iterate over every dense key in this map
     for (FieldSpec denseKey : _denseKeySpecs) {
       String keyName = denseKey.getName();
@@ -337,7 +331,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       try {
         // Iterate over each key in the dictionary and if it exists in the record write a value, otherwise write
         // the null value
-        for (Map.Entry<IndexType<?,?,?>, IndexCreator> indexes : _creatorsByKeyAndIndex.get(keyName).entrySet()) {
+        for (Map.Entry<IndexType<?, ?, ?>, IndexCreator> indexes : _creatorsByKeyAndIndex.get(keyName).entrySet()) {
           indexes.getValue().add(value, -1); // TODO: Add in dictionary encoding support
         }
       } catch (IOException ioe) {
@@ -350,7 +344,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   }
 
   private IndexCreator getKeyCreator(String key)
-  throws Exception {
+      throws Exception {
     // Check the map for the given key
     // TODO: start with forward index first and then expand to configurable indexes
     IndexCreator keyCreator = _creatorsByKeyAndIndex.get(key).get(StandardIndexes.forward());
@@ -373,7 +367,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
 
   }
 
-  private PinotDataBuffer getReadBufferForDenseKey(String key, IndexType<?,?,?> type, ReadMode readMode)
+  private PinotDataBuffer getReadBufferForDenseKey(String key, IndexType<?, ?, ?> type, ReadMode readMode)
       throws IOException {
     File file = getFileFor(key, type);
     if (!file.exists()) {
@@ -389,16 +383,12 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       throw new RuntimeException("No file candidates for index " + indexType + " and column " + column);
     }
 
-    return candidates.stream()
-        .filter(File::exists)
-        .findAny()
-        .orElse(candidates.get(0));
+    return candidates.stream().filter(File::exists).findAny().orElse(candidates.get(0));
   }
 
   private List<File> getFilesFor(String key, IndexType<?, ?, ?> indexType) {
     return indexType.getFileExtensions(_denseKeyMetadata.get(key)).stream()
-        .map(fileExtension -> new File(_mapIndexDir, key + fileExtension))
-        .collect(Collectors.toList());
+        .map(fileExtension -> new File(_mapIndexDir, key + fileExtension)).collect(Collectors.toList());
   }
 
   private PinotDataBuffer mapForReads(File file, String context, ReadMode readMode)
