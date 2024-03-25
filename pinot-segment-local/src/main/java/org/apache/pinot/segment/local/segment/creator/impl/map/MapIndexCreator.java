@@ -18,9 +18,12 @@
  */
 package org.apache.pinot.segment.local.segment.creator.impl.map;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,10 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.apache.pinot.common.utils.PinotDataType;
 import org.apache.pinot.segment.local.segment.index.dictionary.DictionaryIndexType;
 import org.apache.pinot.segment.local.segment.index.loader.defaultcolumn.DefaultColumnStatistics;
+import org.apache.pinot.segment.local.segment.store.IndexKey;
 import org.apache.pinot.segment.local.segment.store.SegmentLocalFSDirectory;
+import org.apache.pinot.segment.spi.ColumnMetadata;
 import org.apache.pinot.segment.spi.creator.ColumnIndexCreationInfo;
 import org.apache.pinot.segment.spi.creator.ColumnStatistics;
 import org.apache.pinot.segment.spi.creator.IndexCreationContext;
@@ -42,6 +48,7 @@ import org.apache.pinot.segment.spi.index.IndexCreator;
 import org.apache.pinot.segment.spi.index.IndexService;
 import org.apache.pinot.segment.spi.index.IndexType;
 import org.apache.pinot.segment.spi.index.StandardIndexes;
+import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.spi.config.table.IndexConfig;
 import org.apache.pinot.spi.config.table.MapIndexConfig;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
@@ -74,6 +81,7 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   private final int _totalDocs;
   private final MapIndexConfig _config;
   private final Map<String, ColumnStatistics> _keyStats = new HashMap<>();
+  private final Map<String, ColumnMetadata> _denseKeyMetadata = new HashMap<>();
 
   /**
    *
@@ -246,11 +254,17 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     // TODO: doing this approach would require also writing a Segment Metadata file for the map index.
     //   Instead I am looking at just using what FilePerIndexDirectory uses under the hood to read the individual
     //   files and merge them together.
-    try(SegmentLocalFSDirectory fsd = new SegmentLocalFSDirectory(indexDir, ReadMode.mmap)) {
-      SegmentLocalFSDirectory.Reader reader = fsd.createReader();
+    try {
+      // Create an output buffer for writing to (see the V2 to V3 conversion logic for what to do here)
+
       for (String key : _denseKeys) {
-        reader.getIndexFor(key, StandardIndexes.forward());
-        // Create an output buffer for writing to (see the V2 to V3 conversion logic for what to do here)
+        PinotDataBuffer reader = getReadBufferForDenseKey(key, StandardIndexes.forward(), ReadMode.mmap);
+        long size = reader.size();
+        LOGGER.info("'{}', size: {}", key, size);
+        byte[] data = new byte[(int)reader.size()];
+        reader.copyTo(0, data);
+        LOGGER.info("{}", data);
+        SegmentLocalFSDirectory.Writer writer = new SegmentLocalFSDirectory.Writer();
         // Create the header for the stitched file
         // Create a SegmentMetadataImpl object based upon info for the dense index keys we've created
         // Create a FilePerIndexDirectory pointing to the map directory  looks like that's private so I'll see about going through SegmentLocalFSDirectory
@@ -323,6 +337,55 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   public void close()
       throws IOException {
 
+  }
+
+  private PinotDataBuffer getReadBufferForDenseKey(String key, IndexType<?,?,?> type, ReadMode readMode)
+      throws IOException {
+    File file = getFileFor(key, type);
+    if (!file.exists()) {
+      throw new RuntimeException(
+          "Could not find index for dense key: " + key + ", type: " + type + ", map: " + _mapIndexDir);
+    }
+    return mapForReads(file, type.getId() + ".reader", readMode);
+  }
+
+  @VisibleForTesting
+  File getFileFor(String column, IndexType<?, ?, ?> indexType) {
+    List<File> candidates = getFilesFor(column, indexType);
+    if (candidates.isEmpty()) {
+      throw new RuntimeException("No file candidates for index " + indexType + " and column " + column);
+    }
+
+    return candidates.stream()
+        .filter(File::exists)
+        .findAny()
+        .orElse(candidates.get(0));
+  }
+
+  private List<File> getFilesFor(String key, IndexType<?, ?, ?> indexType) {
+    return indexType.getFileExtensions(_denseKeyMetadata.get(key)).stream()
+        .map(fileExtension -> new File(_mapIndexDir, key + fileExtension))
+        .collect(Collectors.toList());
+  }
+
+  private PinotDataBuffer mapForReads(File file, String context, ReadMode readMode)
+      throws IOException {
+    Preconditions.checkNotNull(file);
+    Preconditions.checkNotNull(context);
+    Preconditions.checkArgument(file.exists(), "File: " + file + " must exist");
+    Preconditions.checkArgument(file.isFile(), "File: " + file + " must be a regular file");
+    String allocationContext = allocationContext(file, context);
+
+    // Backward-compatible: index file is always big-endian
+    if (readMode == ReadMode.heap) {
+      return PinotDataBuffer.loadFile(file, 0, file.length(), ByteOrder.BIG_ENDIAN, allocationContext);
+    } else {
+      return PinotDataBuffer.mapFile(file, true, 0, file.length(), ByteOrder.BIG_ENDIAN, allocationContext);
+    }
+  }
+
+  private String allocationContext(File f, String context) {
+    return this.getClass().getSimpleName() + "." + f.toString() + "." + context;
   }
 
   static FieldSpec.DataType convertToDataType(PinotDataType ty) {
