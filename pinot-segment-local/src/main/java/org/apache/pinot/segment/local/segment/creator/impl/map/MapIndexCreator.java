@@ -27,6 +27,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -246,23 +247,38 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   }
 
   private void mergeKeyFiles() {
-    // Create a localfsdirectory class for loading files from disk
     File mergedIndexFile = new File(_mapIndexDir, _columnName + MAP_INDEX_FILE_EXTENSION);
+
+    /*
+    HEADER
+    Version #
+    Size of Header
+    Number of Dense Keys
+
+    <Dense Key>
+    <Data Type>
+    <Number of Indexes>
+    <Index type> | <Index Offset>
+     */
+
+    // Compute the length of the longest key name
+    // Compute the size of the header:
+    //    size(version) size(header size) size(number keys)
+    //    length of longest key * number of keys
+    //    1 integer * number of keys  (data type per key)
+    //    (1 integer + 1 long) * number of indexes (indexes for each key)
 
     try {
       long offset = 0;
       final int HEADER_BYTES = 0;
-      int totalIndexLength = 0;
+      long totalIndexLength = 0;
 
       // Compute the total size of the indexes
+      List<File> keyFiles = new ArrayList<>(_denseKeys.size());
       for (String key : _denseKeys) {
         File keyFile = getFileFor(key, StandardIndexes.forward());
-        try (FileChannel denseKeyFileChannel = new RandomAccessFile(keyFile, "r").getChannel()) {
-          long indexSize = denseKeyFileChannel.size();
-          totalIndexLength += indexSize;
-        } catch (Exception ex) {
-
-        }
+        totalIndexLength += Files.size(keyFile.toPath());
+        keyFiles.add(keyFile);
       }
 
       // Create an output buffer for writing to (see the V2 to V3 conversion logic for what to do here)
@@ -271,12 +287,11 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
               null);
 
       // Iterate over each key and find the index and write the index to a file
-      for (String key : _denseKeys) {
-        File keyFile = getFileFor(key, StandardIndexes.forward());
+      for (File keyFile : keyFiles) {
         try (FileChannel denseKeyFileChannel = new RandomAccessFile(keyFile, "r").getChannel()) {
           long indexSize = denseKeyFileChannel.size();
           try (PinotDataBuffer keyBuffer = PinotDataBuffer.mapFile(keyFile, true, 0, indexSize, ByteOrder.BIG_ENDIAN,
-              null)) {
+              keyFile.getName())) {
             keyBuffer.copyTo(0, buffer, offset, indexSize);
             offset += indexSize;
           } catch (Exception ex) {
@@ -289,18 +304,21 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
 
       // Delete the index files
       buffer.close();
+
+      deleteIntermediateFiles(keyFiles);
     } catch (Exception ex) {
       LOGGER.error("Exception while merging dense key indexes: ", ex);
     }
   }
 
-  private void deleteIntermediateFiles() {
-    for (String key : _denseKeys) {
-      File keyFile = getFileFor(key, StandardIndexes.forward());
+  private void deleteIntermediateFiles(List<File> files) {
+    for (File file : files) {
       try {
-        keyFile.delete();
+        if (!file.delete()) {
+          LOGGER.error("Failed to delete file '{}'. Reason is unknown", file);
+        }
       } catch (Exception ex) {
-        LOGGER.error("Failed to delete intermediate file '{}'", keyFile, ex);
+        LOGGER.error("Failed to delete intermediate file '{}'", file, ex);
       }
     }
   }
@@ -453,5 +471,47 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       createDictionary = info.isCreateDictionary();
     }
     return createDictionary;
+  }
+
+  class Header {
+    /*
+    HEADER
+    Version #
+    Size of Header
+    Number of Dense Keys
+
+    <Dense Key>
+    <Data Type>
+    <Number of Indexes>
+    <Index type> | <Index Offset>
+     */
+
+    // Compute the length of the longest key name
+    // Compute the size of the header:
+    //    size(version) size(header size) size(number keys)
+    //    length of longest key * number of keys
+    //    1 integer * number of keys  (data type per key)
+    //    (1 integer + 1 long) * number of indexes (indexes for each key)
+
+    final int _version = 1;
+    int  _headerSize;
+    int _numberOfKeys;
+    List<KeyEntry> _keys;
+
+    class KeyEntry {
+      final String _key;
+      final DataType _type;
+      final List<IndexType<?,?,?>> _indexes;
+
+      public KeyEntry(String key, DataType type) {
+        _key = key;
+        _type = type;
+        _indexes = new ArrayList<>();
+      }
+
+      public void addIndex(IndexType<?,?,?> indexType) {
+        _indexes.add(indexType);
+      }
+    }
   }
 }
