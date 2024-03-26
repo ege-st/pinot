@@ -249,25 +249,6 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   private void mergeKeyFiles() {
     File mergedIndexFile = new File(_mapIndexDir, _columnName + MAP_INDEX_FILE_EXTENSION);
 
-    /*
-    HEADER
-    Version #
-    Size of Header
-    Number of Dense Keys
-
-    <Dense Key>
-    <Data Type>
-    <Number of Indexes>
-    <Index type> | <Index Offset>
-     */
-
-    // Compute the length of the longest key name
-    // Compute the size of the header:
-    //    size(version) size(header size) size(number keys)
-    //    length of longest key * number of keys
-    //    1 integer * number of keys  (data type per key)
-    //    (1 integer + 1 long) * number of indexes (indexes for each key)
-
     try {
       long offset = 0;
       final int HEADER_BYTES = 0;
@@ -361,15 +342,6 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
     }
   }
 
-  private IndexCreator getKeyCreator(String key)
-      throws Exception {
-    // Check the map for the given key
-    // TODO: start with forward index first and then expand to configurable indexes
-    IndexCreator keyCreator = _creatorsByKeyAndIndex.get(key).get(StandardIndexes.forward());
-    assert keyCreator != null;
-    return keyCreator;
-  }
-
   @Override
   public boolean isDictionaryEncoded(String key) {
     return false;
@@ -383,16 +355,6 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
   public void close()
       throws IOException {
 
-  }
-
-  private PinotDataBuffer getReadBufferForDenseKey(String key, IndexType<?, ?, ?> type, ReadMode readMode)
-      throws IOException {
-    File file = getFileFor(key, type);
-    if (!file.exists()) {
-      throw new RuntimeException(
-          "Could not find index for dense key: " + key + ", type: " + type + ", map: " + _mapIndexDir);
-    }
-    return mapForReads(file, type.getId() + ".reader", readMode);
   }
 
   File getFileFor(String column, IndexType<?, ?, ?> indexType) {
@@ -452,25 +414,6 @@ public final class MapIndexCreator implements org.apache.pinot.segment.spi.index
       default:
         throw new UnsupportedOperationException();
     }
-  }
-
-  private boolean createDictionaryForColumn(ColumnIndexCreationInfo info, SegmentGeneratorConfig config,
-      FieldSpec spec) {
-    String column = spec.getName();
-    boolean createDictionary = false;
-    if (config.getRawIndexCreationColumns().contains(column) || config.getRawIndexCompressionType()
-        .containsKey(column)) {
-      return createDictionary;
-    }
-
-    FieldIndexConfigs fieldIndexConfigs = config.getIndexConfigsByColName().get(column);
-    if (DictionaryIndexType.ignoreDictionaryOverride(config.isOptimizeDictionary(),
-        config.isOptimizeDictionaryForMetrics(), config.getNoDictionarySizeRatioThreshold(), spec, fieldIndexConfigs,
-        info.getDistinctValueCount(), info.getTotalNumberOfEntries())) {
-      // Ignore overrides and pick from config
-      createDictionary = info.isCreateDictionary();
-    }
-    return createDictionary;
   }
 
   class Header {
