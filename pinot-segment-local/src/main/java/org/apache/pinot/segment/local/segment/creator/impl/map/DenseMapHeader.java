@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.pinot.segment.local.segment.creator.impl.map;
 
 import java.io.IOException;
@@ -5,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,9 +34,6 @@ import org.apache.pinot.segment.spi.index.metadata.ColumnMetadataImpl;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
 import org.apache.pinot.spi.data.DimensionFieldSpec;
 import org.apache.pinot.spi.data.FieldSpec;
-
-import static org.apache.pinot.segment.local.segment.creator.impl.map.MapIndexHeader.readString;
-import static org.apache.pinot.segment.local.segment.creator.impl.map.MapIndexHeader.readValue;
 
 
 /**
@@ -87,7 +103,7 @@ public class DenseMapHeader {
   public static Pair<DenseMapHeader, Integer> read(PinotDataBuffer buffer, int offset)
       throws IOException {
     // read the type  of index this is
-    Pair<String, Integer> indexTypeResult = readString(buffer, offset);
+    Pair<String, Integer> indexTypeResult = MapIndexHeader.readString(buffer, offset);
     String type = indexTypeResult.getLeft();
     assert type.equals(ID);
 
@@ -116,10 +132,14 @@ public class DenseMapHeader {
 
   public boolean equals(Object obj) {
     if (obj instanceof DenseMapHeader) {
-      return this._denseKeyMetadata.equals( ((DenseMapHeader) obj)._denseKeyMetadata);
+      return _denseKeyMetadata.equals(((DenseMapHeader) obj)._denseKeyMetadata);
     } else {
       return false;
     }
+  }
+
+  public int hashCode() {
+    return Objects.hash(_denseKeyMetadata);
   }
 
   public static class DenseKeyMetadata {
@@ -130,7 +150,8 @@ public class DenseMapHeader {
     static final long PLACEHOLDER = 0xDEADBEEFDEADBEEFL;
     final ColumnMetadata _columnMetadata;
 
-    public DenseKeyMetadata(String key, ColumnMetadata metadata, Map<IndexType<?, ?, ?>, Long> indexOffsets, int docIdOffset) {
+    public DenseKeyMetadata(String key, ColumnMetadata metadata,
+        Map<IndexType<?, ?, ?>, Long> indexOffsets, int docIdOffset) {
       _keyOffsetPosition = new HashMap<>();
       _docIdOffset = docIdOffset;
       _key = key;
@@ -197,7 +218,7 @@ public class DenseMapHeader {
 
     public static Pair<DenseKeyMetadata, Integer> read(PinotDataBuffer buffer, int offset) throws IOException {
       // Read the key name
-      Pair<String, Integer> keyResult = readString(buffer, offset);
+      Pair<String, Integer> keyResult = MapIndexHeader.readString(buffer, offset);
       offset = keyResult.getRight();
       String key = keyResult.getLeft();
 
@@ -212,7 +233,7 @@ public class DenseMapHeader {
       // Read each index
       HashMap<IndexType<?, ?, ?>, Long> indexOffsets = new HashMap<>();
       for (int i = 0; i < numIndexes; i++) {
-        Pair<String, Integer> indexIdResult = readString(buffer, offset);
+        Pair<String, Integer> indexIdResult = MapIndexHeader.readString(buffer, offset);
         offset = indexIdResult.getRight();
         long indexOffset = buffer.getLong(offset);
         offset += Long.BYTES;
@@ -292,13 +313,17 @@ public class DenseMapHeader {
     public boolean equals(Object obj) {
       if (obj instanceof DenseKeyMetadata) {
         DenseKeyMetadata b = (DenseKeyMetadata) obj;
-        return this._key.equals(b._key)
-            && this._columnMetadata.equals(b._columnMetadata)
-            && this._indexOffsets.equals(b._indexOffsets)
-            && this._docIdOffset == b._docIdOffset;
+        return _key.equals(b._key)
+            && _columnMetadata.equals(b._columnMetadata)
+            && _indexOffsets.equals(b._indexOffsets)
+            && _docIdOffset == b._docIdOffset;
       } else {
         return false;
       }
+    }
+
+    public int hashCode() {
+      return Objects.hash(_key, _columnMetadata, _indexOffsets, _docIdOffset);
     }
   }
 
@@ -307,7 +332,7 @@ public class DenseMapHeader {
     int offset = mdOffset;
 
     // Data type
-    Pair<String, Integer> typeResult = readString(buffer, offset);
+    Pair<String, Integer> typeResult = MapIndexHeader.readString(buffer, offset);
     final FieldSpec.DataType dataType = FieldSpec.DataType.valueOf(typeResult.getLeft());
     offset = typeResult.getRight();
 
@@ -348,11 +373,11 @@ public class DenseMapHeader {
     offset += Integer.BYTES;
 
     // Read the min value (this is dynamic in size so we need to store a size followed by value)
-    Pair<Comparable<?>, Integer> valueResult = readValue(buffer, offset, dataType);
+    Pair<Comparable<?>, Integer> valueResult = MapIndexHeader.readValue(buffer, offset, dataType);
     Comparable<?> minValue = valueResult.getLeft();
     offset = valueResult.getRight();
     // Read the max value
-    valueResult = readValue(buffer, offset, dataType);
+    valueResult = MapIndexHeader.readValue(buffer, offset, dataType);
     Comparable<?> maxValue = valueResult.getLeft();
     offset = valueResult.getRight();
 
@@ -368,7 +393,7 @@ public class DenseMapHeader {
     HashMap<IndexType<?, ?, ?>, Long> indexSizeMap = new HashMap<>();
     for (int i = 0; i < numIndexes; i++) {
       // Type code
-      Pair<String, Integer> indexTypeResult = readString(buffer, offset);
+      Pair<String, Integer> indexTypeResult = MapIndexHeader.readString(buffer, offset);
       final String indexTypeId = indexTypeResult.getLeft();
       offset = indexTypeResult.getRight();
 

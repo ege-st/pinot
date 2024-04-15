@@ -615,5 +615,4 @@ public class MapIndexWriterTest {
       return 0;
     }
   }
-
 }

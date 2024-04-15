@@ -1,8 +1,27 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.pinot.segment.local.segment.creator.impl.map;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.pinot.segment.spi.memory.PinotDataBuffer;
@@ -142,10 +161,14 @@ public class MapIndexHeader {
 
   public boolean equals(Object obj) {
     if (obj instanceof MapIndexHeader) {
-      return this._mapIndexes.equals(((MapIndexHeader) obj)._mapIndexes);
+      return _mapIndexes.equals(((MapIndexHeader) obj)._mapIndexes);
     } else {
       return false;
     }
+  }
+
+  public int hashCode() {
+    return Objects.hash(_mapIndexes);
   }
 
   public interface MapHeaderWriter {
@@ -191,7 +214,7 @@ public class MapIndexHeader {
     }
   }
 
-  public static class PinotDataBufferWriter  implements MapHeaderWriter {
+  public static class PinotDataBufferWriter implements MapHeaderWriter {
     private final PinotDataBuffer _buffer;
 
     public PinotDataBufferWriter(PinotDataBuffer buffer) {
@@ -241,7 +264,6 @@ public class MapIndexHeader {
       _buffer.putDouble(offset, value);
       return offset + Double.BYTES;
     }
-
   }
 
   public static class HeaderSizeComputer implements MapHeaderWriter {
