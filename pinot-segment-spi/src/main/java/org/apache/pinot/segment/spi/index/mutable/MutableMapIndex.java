@@ -45,8 +45,7 @@ public interface MutableMapIndex extends MapIndexReader<ForwardIndexReaderContex
 
   @Override
   default void add(@Nonnull Object[] values, @Nullable int[] dictIds, int docId) {
-    // TODO: I thought I had these implemented, that may have been added to the Immutable Index
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException("MultiValues are not yet supported for MAP columns");
   }
 
   /**
