@@ -4087,7 +4087,8 @@ public class PinotHelixResourceManager {
     Stat stat = _propertyStore.getStat(zkPath, AccessOption.PERSISTENT);
     Preconditions.checkState(stat != null, "Failed to read ZK stats for table: %s", tableNameWithType);
     String creationTime = SIMPLE_DATE_FORMAT.format(Instant.ofEpochMilli(stat.getCtime()));
-    return new TableStats(creationTime);
+    final String modificationTime = SIMPLE_DATE_FORMAT.format(Instant.ofEpochMilli(stat.getMtime()));
+    return new TableStats(creationTime, modificationTime);
   }
 
   /**
