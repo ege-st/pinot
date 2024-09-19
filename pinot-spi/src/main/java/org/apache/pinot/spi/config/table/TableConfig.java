@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import org.apache.pinot.spi.config.table.assignment.InstanceAssignmentConfig;
 import org.apache.pinot.spi.config.table.assignment.InstancePartitionsType;
 import org.apache.pinot.spi.config.table.assignment.SegmentAssignmentConfig;
 import org.apache.pinot.spi.config.table.ingestion.IngestionConfig;
+import org.apache.pinot.spi.utils.JsonUtils;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 
 
@@ -58,6 +60,8 @@ public class TableConfig extends BaseJsonConfig {
   public static final String TIER_CONFIGS_LIST_KEY = "tierConfigs";
   public static final String TUNER_CONFIG_LIST_KEY = "tunerConfigs";
   public static final String TIER_OVERWRITES_KEY = "tierOverwrites";
+  public static final String CREATED_BY = "createdBy";
+  public static final String CREATION_METADATA = "creationMetadata";
 
   // Double underscore is reserved for real-time segment name delimiter
   private static final String TABLE_NAME_FORBIDDEN_SUBSTRING = "__";
@@ -113,6 +117,9 @@ public class TableConfig extends BaseJsonConfig {
 
   @JsonPropertyDescription(value = "Configs for Table config tuner")
   private List<TunerConfig> _tunerConfigList;
+
+  @JsonPropertyDescription(value = "Identifies the User that created the table")
+  private CreationMetadata _creationMetadata;
 
   @JsonCreator
   public TableConfig(@JsonProperty(value = TABLE_NAME_KEY, required = true) String tableName,
@@ -195,6 +202,7 @@ public class TableConfig extends BaseJsonConfig {
     _tunerConfigList = tableConfig.getTunerConfigsList();
     _instancePartitionsMap = tableConfig.getInstancePartitionsMap();
     _segmentAssignmentConfigMap = tableConfig.getSegmentAssignmentConfigMap();
+    _creationMetadata = tableConfig.getCreationMetadata();
   }
 
   @JsonProperty(TABLE_NAME_KEY)
@@ -339,6 +347,15 @@ public class TableConfig extends BaseJsonConfig {
     _dedupConfig = dedupConfig;
   }
 
+  @JsonProperty(CREATION_METADATA)
+  public CreationMetadata getCreationMetadata() {
+    return _creationMetadata;
+  }
+
+  public void setCreationMetadata(CreationMetadata creationMetadata) {
+    _creationMetadata = creationMetadata;
+  }
+
   @JsonIgnore
   public boolean isDedupEnabled() {
     return _dedupConfig != null && _dedupConfig.isDedupEnabled();
@@ -455,5 +472,28 @@ public class TableConfig extends BaseJsonConfig {
       }
     }
     return Integer.parseInt(_validationConfig.getReplication());
+  }
+
+  public static class CreationMetadata {
+    @JsonPropertyDescription(value = "Identifies the User that created the table")
+    private String _createdBy;
+
+    public void setCreatedBy(String createdBy) {
+      _createdBy = createdBy;
+    }
+
+    @JsonProperty(CREATED_BY)
+    @Nullable
+    public String getCreatedBy() {
+      return _createdBy;
+    }
+
+    public String toJsonString() {
+      try {
+        return JsonUtils.objectToString(this);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }

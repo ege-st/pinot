@@ -105,6 +105,12 @@ public class TableConfigUtils {
       quotaConfig = JsonUtils.stringToObject(quotaConfigString, QuotaConfig.class);
     }
 
+    TableConfig.CreationMetadata creationMetadata = null;
+    String creationMetadataString = simpleFields.get(TableConfig.CREATION_METADATA);
+    if (creationMetadataString != null) {
+      creationMetadata = JsonUtils.stringToObject(creationMetadataString, TableConfig.CreationMetadata.class);
+    }
+
     TableTaskConfig taskConfig = null;
     String taskConfigString = simpleFields.get(TableConfig.TASK_CONFIG_KEY);
     if (taskConfigString != null) {
@@ -190,10 +196,12 @@ public class TableConfigUtils {
           new TypeReference<Map<String, SegmentAssignmentConfig>>() { });
     }
 
-    return new TableConfig(tableName, tableType, validationConfig, tenantConfig, indexingConfig, customConfig,
+    TableConfig config = new TableConfig(tableName, tableType, validationConfig, tenantConfig, indexingConfig, customConfig,
         quotaConfig, taskConfig, routingConfig, queryConfig, instanceAssignmentConfigMap, fieldConfigList, upsertConfig,
         dedupConfig, dimensionTableConfig, ingestionConfig, tierConfigList, isDimTable, tunerConfigList,
         instancePartitionsMap, segmentAssignmentConfigMap);
+    config.setCreationMetadata(creationMetadata);
+    return config;
   }
 
   public static ZNRecord toZNRecord(TableConfig tableConfig)
@@ -213,6 +221,10 @@ public class TableConfigUtils {
     QuotaConfig quotaConfig = tableConfig.getQuotaConfig();
     if (quotaConfig != null) {
       simpleFields.put(TableConfig.QUOTA_CONFIG_KEY, quotaConfig.toJsonString());
+    }
+    TableConfig.CreationMetadata creationMetadata = tableConfig.getCreationMetadata();
+    if (creationMetadata != null) {
+      simpleFields.put(TableConfig.CREATION_METADATA, creationMetadata.toJsonString());
     }
     TableTaskConfig taskConfig = tableConfig.getTaskConfig();
     if (taskConfig != null) {
