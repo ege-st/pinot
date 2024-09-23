@@ -196,9 +196,9 @@ public class TableConfigUtils {
           new TypeReference<Map<String, SegmentAssignmentConfig>>() { });
     }
 
-    TableConfig config = new TableConfig(tableName, tableType, validationConfig, tenantConfig, indexingConfig, customConfig,
-        quotaConfig, taskConfig, routingConfig, queryConfig, instanceAssignmentConfigMap, fieldConfigList, upsertConfig,
-        dedupConfig, dimensionTableConfig, ingestionConfig, tierConfigList, isDimTable, tunerConfigList,
+    TableConfig config = new TableConfig(tableName, tableType, validationConfig, tenantConfig, indexingConfig,
+        customConfig, quotaConfig, taskConfig, routingConfig, queryConfig, instanceAssignmentConfigMap, fieldConfigList,
+        upsertConfig, dedupConfig, dimensionTableConfig, ingestionConfig, tierConfigList, isDimTable, tunerConfigList,
         instancePartitionsMap, segmentAssignmentConfigMap);
     config.setCreationMetadata(creationMetadata);
     return config;
